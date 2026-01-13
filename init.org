@@ -1,0 +1,222 @@
+#+TITLE: nemacs's config (2_
+#+AUTHOR: Quentin Burgess (quentin.burgess@frafos.com)
+#+DESCRIPTION: Quick summary of tasks for nemacs second gen
+#+STARTUP: show2levels
+#+OPTIONS: toc:2
+
+Thanks
+
+- [[https://github.com/progfolio/.emacs.d/tree/master][nice helper]]
+- [[https://github.com/syl20bnr/spacemacs][spcemacs]] of course
+- [[https://github.com/doomemacs/doomemacs][doomecas]] also
+- stackoverflow
+- DT' youtube
+- [[https://ianyepan.github.io/posts/emacs-emojis/][nice tuto about emojis]]
+- [[https://github.com/mickeynp/ligature.el/wiki#cascadia--fira-code][ligatures official doc]]
+- [[https://www.rahuljuliato.com/posts/emacs-tab-bar-groups][better native tab-bar]]
+
+
+
+* how to use
+
+TODO: intro + usage
+
+** misc
+chemacs
+start config raw
+as server w/ systemctl service
+
+*** test configuration
+
+#+begin_example console
+$ emacs -q -l ~/repo/perso/nemacs/emacs-init.el
+#+end_example
+
+* TODO
+** TODO v1 [0/3] [0%]
+*** TODO UI
+*** TODO utils
+*** TODO LSP
+
+
+* the config
+
+** early-init
+
+emacs 27+ offer the ealy-init, allowing us to speed thing up at start time.
+
+*** header
+
+`early-init.el` header
+
+#+begin_src emacs-lisp
+;;; early-init.el --- Early Init File -*- lexical-binding: t; no-byte-compile: t -*-
+;;; Code:
+#+end_src
+
+*** elpa tweaks custom dir
+
+Since we're using elpaca as our package manager, we add the following to early-init.el to prevent package.el from loading packages, prior to our init file loading.
+
+
+#+BEGIN_SRC emacs-lisp
+;; Do not attempt to load package before init-el finised.
+(setq package-enable-at-startup nil)
+#+END_SRC
+
+We configure elpa to download in a dir per emacs version
+
+#+BEGIN_SRC emacs-lisp
+;; elpa dir per emacs version
+(setq package-user-dir (locate-user-emacs-file
+                        (concat
+                         (file-name-as-directory "elpa")
+                         emacs-version)))
+#+END_SRC
+
+*** speed things up
+
+#+BEGIN_SRC emacs-lisp
+;; Skip default.el loading.
+(setq inhibit-default-init nil)
+;; Report native comp async warnings as errors.
+(setq native-comp-async-report-warnings-errors nil)
+;; skipping bunch of regex at start time
+(defvar default-file-name-handler-alist
+  file-name-handler-alist)
+(setq file-name-handler-alist nil)
+#+END_SRC
+
+*** garbage collect tweak
+
+`gc-cons-threshold` (800 KB) and `gc-cons-percentage` (0.1) control when the Emacs garbage collector can kick in. Temporarily turning these off during init should decrease startup time. Resetting them afterward will ensure that normal  operations don’t suffer from a large GC periods.
+
+The following is a table shows values from popular Emacs configurations.
+
+| Distribution | gc-cons-threshold |
+|--------------+-------------------|
+| Doom         |          16777216 |
+| Spacemacs    |         100000000 |
+| Default      |            800000 |
+
+#+BEGIN_SRC emacs-lisp
+;; tmp disable GC for startup, then re-activating it
+(setq gc-cons-threshold most-positive-fixnum
+      gc-cons-percentage 1)
+
+(defun +nemacs/gc-after-focus-change ()
+  "Run GC when frame loses focus."
+  (run-with-idle-timer
+   5 nil
+   (lambda () (unless (frame-focus-state) (garbage-collect)))))
+
+;; ;; FIXME: not called via w/ after-init-hook
+(defun +nemacs/better-init-values ()
+  "Set GC value to some sensitive one."
+  (run-with-idle-timer
+   1 nil
+   (lambda ()
+     (setq file-name-handler-alist default-file-name-handler-alist
+           gc-cons-threshold 50000000
+           read-process-output-max (* 1024 1024)
+           gc-cons-percentage 0.2)
+     (message "gc-cons-threshold & file-name-handler-alist restored")
+     (when (boundp 'after-focus-change-function)
+       (add-function :after after-focus-change-function #'+nemacs/gc-after-focus-change))
+     )))
+
+;; enable gbc msg
+(setq garbage-collection-messages t)
+
+;; FIXME: doesn't work - manually called at the end ...
+;; (add-hook 'after-init-hook #'+nemacs/better-init-values)
+#+END_SRC
+
+*** ui tweaks
+
+Modify GUI elements before we have a chance to peek.
+
+
+#+BEGIN_SRC emacs-lisp
+;; disable some UI stuff for quicker startup
+(push
+ ;; disables menubar
+ '(menu-bar-lines . 0) default-frame-alist)
+(push
+ ;; disables toolbar
+ '(tool-bar-lines . 0) default-frame-alist)
+(push
+ ;; disables vertical scrollbar
+ '(vertical-scroll-bars) default-frame-alist)
+
+;; change clientframe close instruction
+(setq server-client-instructions nil)
+(setq frame-inhibit-implied-resize t)
+
+;; enable smooth scrolling
+(pixel-scroll-precision-mode 1)
+
+;; ignore X resources
+(advice-add #'x-apply-session-resources :override #'ignore)
+;; silence bell
+(setq ring-bell-function #'ignore)
+
+(setq
+ ;; no thanks
+ inhibit-splash-screen t
+ ;; don't use system file dialog
+ use-file-dialog nil
+ ;; don't show new tab button
+ tab-bar-new-button-show nil
+ ;; don't show tab close button
+ tab-bar-close-button-show nil
+ ;; don't show tab close button
+ tab-line-close-button-show nil)
+
+;; undecorate windows
+;; this should be called before toggle-frame-maximized
+(set-frame-parameter nil 'undecorated t)
+(set-frame-parameter nil 'internal-border-width 0)
+(add-to-list 'default-frame-alist '(undecorated . t))
+(add-to-list 'default-frame-alist '(internal-border-width . 0))
+
+;; Set fonts.
+(push '(font . "Fira Code Retina") default-frame-alist)
+(set-face-font 'default "Fira Code Retina")
+(set-face-font 'variable-pitch "Fira Code Retina")
+(copy-face 'default 'fixed-pitch)
+;; NOTE: needed for emacsclient - fix reduced font size
+(add-to-list 'default-frame-alist '(font . "Fira Code Retina"))
+
+
+;; Start as maximized window.
+(unless (frame-parameter nil 'fullscreen)
+  (toggle-frame-maximized))
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
+#+END_SRC
+
+*** let's "provide" the early init
+
+#+BEGIN_SRC emacs-lisp
+(provide 'early-init)
+;;; early-init.el ends here
+#+END_SRC
+
+
+** config
+
+*** init.el header
+
+#+begin_src emacs-lisp
+;;; init.el --- Personal configuration file -*- lexical-binding: t; no-byte-compile: t; -*-
+;; NOTE: init.el is generated from init.org.  Please edit that file instead
+#+end_src
+
+*** restore gc
+
+#+BEGIN_SRC emacs-lisp
+
+(add-hook 'emacs-startup-hook #'+nemacs/better-init-values)
+
+;; (+nemacs/better-init-values)
+#+END_SRC
