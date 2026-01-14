@@ -40,6 +40,8 @@ chemacs
 *** DONE elpa management
 *** DONE key describe (helpful)
 *** WIP keybinding
+- [ ] migrate global-set-key to :map
+- [ ] migrate from :map to :general (+ which key)
 *** DONE UI [3/3]
 **** DONE dashboard
 **** DONE fonts / faces / emojies / ligatures
@@ -628,7 +630,7 @@ And a few keybindings that doesn't belong to any groups
 
 #+begin_src emacs-lisp
 (general-define-key
-  ;; "C-M-j" '(counsel-switch-buffer :wk "Better file buffer")
+ ;; "C-x b" '(counsel-switch-buffer :wk "Better file buffer")
  "C-x <down>" '(bs-show :wk "BS show")
  "C-x 1" '(nemacs/toggle-maximize-buffer :wk "Maximize")
  "C-=" '(text-scale-increase :wk "Zoom in")
@@ -720,10 +722,130 @@ extra information when selecting files, etc. Nice enhancement without learning a
   (marginalia-mode))
 #+end_src
 
-*** TODO completion
-**** TODO counsel
-**** TODO ivy
-**** others
+*** completion
+
+Generic auto-complete with boosted Ivy
+
+**** ivy
+
+#+begin_src emacs-lisp
+;; Use 'ivy' instead of 'helm' (default).
+(use-package ivy
+  :ensure (:wait t)
+  :demand t
+  :diminish ivy-mode
+  ;; TODO: which-key
+  :bind
+  (
+   :map ivy-minibuffer-map
+   ("<left>" . ivy-backward-delete-char)
+   ;; ("TAB" . ivy-alt-done)
+   ;; ("C-l" . ivy-alt-done)
+   ;; ("C-j" . ivy-next-line)
+   ;; ("C-k" . ivy-previous-line)
+   :map ivy-switch-buffer-map
+   ("<left>" . ivy-backward-delete-char)
+   ;; ("C-k" . ivy-previous-line)
+   ;; ("C-l" . ivy-done)
+   ;; ("C-d" . ivy-switch-buffer-kill)
+   :map ivy-reverse-i-search-map
+   ;; ("C-k" . ivy-previous-line)
+   ;; ("C-d" . ivy-reverse-i-search-kill)
+   ("<left>" . ivy-backward-delete-char))
+  :config
+  (setq ivy-use-virtual-buffers t
+        ivy-count-format "%d/%d ")
+  (global-set-key (kbd "C-x b") 'ivy-switch-buffer)
+  (ivy-mode 1)
+  )
+
+(setq ivy-use-selectable-prompt t)
+
+;; ??
+(use-package ivy-prescient
+  :ensure (:wait t)
+  :demand t
+  :init
+  (setq prescient-use-char-folding nil) ;; helps with regexp too big errors for long paths
+  :config
+  (ivy-prescient-mode))
+#+end_src
+
+**** ivy-rich
+
+#+begin_src emacs-lisp
+(use-package all-the-icons-ivy-rich
+  :ensure t
+  :after (ivy ivy-rich all-the-icons)
+  :init (all-the-icons-ivy-rich-mode 1))
+
+(use-package ivy-rich
+  :ensure (:wait t)
+  :demand t
+  :after (ivy counsel)
+  :init  (ivy-rich-mode 1)
+  :custom
+  (ivy-virtual-abbreviate 'full
+                          ivy-rich-switch-buffer-align-virtual-buffer t
+                          ivy-rich-path-style 'abbrev)
+  :config
+  (ivy-set-display-transformer 'ivy-switch-buffer
+                               'ivy-rich-switch-buffer-transformer))
+#+end_src
+
+**** counsel
+
+Enhance common Emacs meta commands (counsel)
+
+#+begin_src  emacs-lisp
+(use-package counsel
+  :ensure (:wait t)
+  :demand t
+  :diminish
+  :config (counsel-mode)
+  :general
+  (general-define-key
+   "C-x b" '(counsel-switch-buffer :wk "Better file buffer")
+   "C-x C-f" '(counsel-find-file :wk "Beffer find file")
+   )
+  :bind (("M-x" . counsel-M-x)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history)))
+
+(use-package counsel-projectile
+  :ensure (:wait t)
+  :demand t
+  :diminish
+  :after projectile
+  :config (counsel-projectile-mode))
+#+end_src
+
+**** swiper
+
+Enhance Ivy with swiper.
+
+#+begin_src emacs-lisp
+(use-package swiper
+  :config
+  ;; TODO: add which key
+  (global-set-key (kbd "C-s") 'swiper-isearch))
+#+end_src
+
+
+**** smex
+
+Enhance ivy & other with frequently / most used invocation.
+See [[https://github.com/nonsequitur/smex][the official repo]] for more.
+
+#+BEGIN_SRC emacs-lisp
+(use-package smex
+  :ensure (:wait t)
+  :demand t
+  :after (ivy counsel)
+  :config
+  (smex-initialize)
+)
+#+END_SRC
 
 *** TODO UI
 **** bell
@@ -1738,7 +1860,7 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
   :config (add-to-list 'projectile-globally-ignored-directories "*node_modules")
   (add-to-list 'projectile-globally-ignored-directories "*vendor")
   (projectile-mode 1)
-  ;; :custom ((project-completion-system 'ivy))
+  :custom ((project-completion-system 'ivy))
   :init
   (when (file-directory-p "~/repo")
     (setq projectile-project-search-path '("~/repo")))
