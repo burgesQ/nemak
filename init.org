@@ -1579,6 +1579,20 @@ Visual Studio like - see [[https://github.com/sebastiencs/omnibox][here]] for mo
 ;; (global-set-key (kbd "M-x") 'omnibox-counsel-M-x)
 #+END_SRC
 
+***** undo-tree
+A better undo system. See the [[https://elpa.gnu.org/packages/undo-tree.html][official doc]] for more.
+
+#+BEGIN_SRC emacs-lisp
+;; install a better undo system
+(use-package undo-tree
+  :ensure t
+  :diminish
+  :config
+  (setq undo-tree-history-directory-alist
+        '(("." . "~/.emacs.d/undo")))
+  (global-undo-tree-mode))
+#+END_SRC
+
 **** Symbols
 
 #+begin_src emacs-lisp
