@@ -51,7 +51,7 @@ chemacs
 *** TODO LSP
 *** TODO doc (how to use chapter)
 
-* TODO the config [0/16]
+* TODO the config [0/13]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
@@ -306,7 +306,7 @@ But when capturing, I subsequently open smaller frames that shouldn’t be odd l
 ;;; early-init.el ends here
 #+END_SRC
 
-** TODO config [0/15]
+** TODO config [0/12]
 *** init.el header
 
 #+begin_src emacs-lisp
@@ -403,8 +403,7 @@ Let's also setup the ``use-package`` macro.
 (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror)))
 #+end_src
 
-
-*** TODO emacs defaults
+*** emacs defaults
 
 #+begin_src emacs-lisp
 ;;Note this will cause evaluate the declaration immediately. It is not deferred.
@@ -704,7 +703,6 @@ Which key for helpful emacs
 )
 #+END_SRC
 
-
 **** marginalia
 
 The [[https://github.com/minad/marginalia][marginalia]] package gives a preview of M-x functions with a one line description,
@@ -724,9 +722,11 @@ extra information when selecting files, etc. Nice enhancement without learning a
 
 *** completion
 
-Generic auto-complete with boosted Ivy
+Generic auto-complete with boosted Ivy.
 
 **** ivy
+
+See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
 
 #+begin_src emacs-lisp
 ;; Use 'ivy' instead of 'helm' (default).
@@ -795,7 +795,7 @@ Generic auto-complete with boosted Ivy
 
 **** counsel
 
-Enhance common Emacs meta commands (counsel)
+Spread ivy to M-x with [[https://github.com/abo-abo/swiper#counsel][counsel (ivy#counsel)]].
 
 #+begin_src  emacs-lisp
 (use-package counsel
@@ -822,7 +822,7 @@ Enhance common Emacs meta commands (counsel)
 
 **** swiper
 
-Enhance Ivy with swiper.
+Enhance Ivy with [[https://github.com/abo-abo/swiper][swiper]].
 
 #+begin_src emacs-lisp
 (use-package swiper
@@ -830,7 +830,6 @@ Enhance Ivy with swiper.
   ;; TODO: add which key
   (global-set-key (kbd "C-s") 'swiper-isearch))
 #+end_src
-
 
 **** smex
 
@@ -1846,8 +1845,27 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
 *** TODO IDE
 
 **** TODO flycheck / flymake / flyspell & others
-**** TODO LSP
 **** TODO magit
+**** TODO claude.el
+**** TODO LSP
+
+
+**** treesitter
+
+Auto install treesitter sources if they’re not present
+
+#+begin_src emacs-lisp
+(use-package treesit-auto
+  :ensure (:wait t)
+  :demand t
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  (setq treesit-auto-langs '(javascript typescript tsx css html))
+  (treesit-auto-add-to-auto-mode-alist '(javascript typescript tsx css html))
+  (global-treesit-auto-mode))
+#+end_src
+
 **** projectile
 
 #+BEGIN_SRC emacs-lisp
