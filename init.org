@@ -728,7 +728,9 @@ Enable visual bells
                 term-mode-hook
                 dashboard-mode-hook
                 eshell-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode 0))))
+  (add-hook mode (lambda ()
+                   (display-line-numbers-mode 0)
+                   )))
 #+END_SRC
 
 Native to emacs 27.1+. Set indicator to 80 columns.
@@ -738,6 +740,14 @@ Native to emacs 27.1+. Set indicator to 80 columns.
 (setq
  display-fill-column-indicator-column 80
  fill-column 80)
+
+;; selectivly enable visual column limit for some mode.
+(dolist (mode '(org-mode-hook
+                prog-mode-hook))
+  (add-hook mode
+            (lambda ()
+              (display-fill-column-indicator-mode t)
+              )))
 #+END_SRC
 
 Highlight text that extends beyond a certain column. See
