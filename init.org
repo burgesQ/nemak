@@ -16,7 +16,7 @@ Thanks
 - [[https://www.rahuljuliato.com/posts/emacs-tab-bar-groups][better native tab-bar]]
 - [[https://howardabrams.com/hamacs/][monster config]]
 - [[https://github.com/jeremygooch/jeremacs][less monstruous but still huge]]
-- [[https://www.patrickdelliott.com/emacs.d/]][nicely assembled config]]
+- [[https://www.patrickdelliott.com/emacs.d/][nicely assembled config]]
 
 * TODO how to use [0/3]
 
@@ -33,16 +33,21 @@ chemacs
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
-** TODO v1 [10/13] [76%]
+** TODO v1 [10/14] [71%]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
-*** DONE early init
-*** DONE elpa management
-*** DONE key describe (helpful)
+*** TODO claude-el
+*** TODO LSP
+
 *** WIP keybinding
 - [ ] migrate global-set-key to :map
 - [ ] migrate from :map to :general (+ which key)
+*** IDEA treesitter (another attempt)
+
+*** DONE early init
+*** DONE elpa management
+*** DONE key describe (helpful)
 *** DONE UI [3/3]
 **** DONE dashboard
 **** DONE fonts / faces / emojies / ligatures
@@ -50,11 +55,6 @@ chemacs
 *** DONE [fly/spell/*]check
 *** DONE magit
 *** DONE org
-*** TODO claude-el
-*** TODO LSP
-
-*** treesitter (another attempt)
-
 * TODO the config [0/5]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
@@ -2326,6 +2326,46 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
 #+end_src
 *** TODO IDE
 
+**** IDEA treesitter
+
+#+begin_src emacs-lisp
+;; (use-package treesit-auto
+;;   :ensure (:wait t)
+;;   :demand t
+;;   :custom
+;;   (treesit-auto-install 'prompt)
+;;   :config
+;;   (setq treesit-auto-langs '(javascript typescript tsx css html))
+;;   (treesit-auto-add-to-auto-mode-alist '(javascript typescript tsx css html))
+;;   (global-treesit-auto-mode))
+#+end_src
+**** TODO claude.el
+
+Let's setup 'claude.el'
+
+#+begin_src emacs-lisp
+
+;;
+;; claude.el stuffs
+;;
+
+#+end_src
+
+**** TODO LSP
+
+Let's setup LSP + LSP-docker ?
+
+#+begin_src emacs-lisp
+
+;;
+;; LSP stuffs
+;;
+
+#+end_src
+
+***** languages
+
+
 **** on the fly checkers
 
 Various kind of on the flt error reporters.
@@ -2495,32 +2535,6 @@ All credit to the [[https://www.emacswiki.org/emacs/FlySpell][emacswiki]].
 
 #+end_src
 
-**** TODO claude.el
-
-Let's setup 'claude.el'
-
-#+begin_src emacs-lisp
-
-;;
-;; claude.el stuffs
-;;
-
-#+end_src
-
-**** TODO LSP
-
-Let's setup LSP + LSP-docker ?
-
-#+begin_src emacs-lisp
-
-;;
-;; LSP stuffs
-;;
-
-#+end_src
-
-***** languages
-
 **** magit
 
 
@@ -2636,16 +2650,3 @@ machine gitlab.com/api/v4 login [username]^forge password [token]
                                   :test-suffix "_test.go")
 
 #+END_SRC
-**** TODO treesitter
-
-#+begin_src emacs-lisp
-;; (use-package treesit-auto
-;;   :ensure (:wait t)
-;;   :demand t
-;;   :custom
-;;   (treesit-auto-install 'prompt)
-;;   :config
-;;   (setq treesit-auto-langs '(javascript typescript tsx css html))
-;;   (treesit-auto-add-to-auto-mode-alist '(javascript typescript tsx css html))
-;;   (global-treesit-auto-mode))
-#+end_src
