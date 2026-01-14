@@ -10,10 +10,12 @@ Thanks
 - [[https://github.com/syl20bnr/spacemacs][spcemacs]] of course
 - [[https://github.com/doomemacs/doomemacs][doomecas]] also
 - stackoverflow
-- DT' youtube
+- DT' youtube videos
 - [[https://ianyepan.github.io/posts/emacs-emojis/][nice tuto about emojis]]
 - [[https://github.com/mickeynp/ligature.el/wiki#cascadia--fira-code][ligatures official doc]]
 - [[https://www.rahuljuliato.com/posts/emacs-tab-bar-groups][better native tab-bar]]
+- [[https://howardabrams.com/hamacs/][monster config]]
+- [[https://github.com/jeremygooch/jeremacs][less monstruous but still huge]]
 
 
 
@@ -136,8 +138,7 @@ The following is a table shows values from popular Emacs configurations.
 ;; enable gbc msg
 (setq garbage-collection-messages t)
 
-;; FIXME: doesn't work - manually called at the end ...
-;; (add-hook 'after-init-hook #'+nemacs/better-init-values)
+(add-hook 'emacs-startup-hook #'+nemacs/better-init-values)
 #+END_SRC
 
 *** UI tweaks
@@ -503,37 +504,6 @@ And a few keybindings that doesn't belong to any groups
 (global-set-key [escape] 'keyboard-escape-quit)
 #+end_src
 
-**** which key
-
-Which key for helpful emacs
-
-#+BEGIN_SRC emacs-lisp
-  ;; install which-key
-  (use-package which-key
-    :ensure (:wait t)
-    :demand t
-    :init (which-key-mode 1) ;;; init is run every time at pre-config aka set var, invoke mode
-    ;; :diminish
-    :config                ;;; config is run after the mode' loaded (via hook ?)
-    (setq which-key-side-window-location 'bottom
-          which-key-sort-order #'which-key-key-order
-          which-key-allow-imprecise-window-fit nil
-          which-key-sort-uppercase-first nil
-          which-key-add-column-padding 1
-          which-key-max-display-columns nil
-          which-key-min-display-lines 6
-          which-key-side-window-slot -10
-          which-key-side-window-max-height 0.25
-          which-key-idle-delay 0.3
-          which-key-max-description-length 25
-          which-key-allow-imprecise-window-fit nil
-          which-key-separator " → " ))
-
-  ;; document un-documented commonnly used shortcuts
-  (which-key-add-key-based-replacements
-    "C-x t" "Tabs mgmt")
-#+END_SRC
-
 **** helpful
 
 For contextual information
@@ -557,6 +527,39 @@ For contextual information
     ([remap describe-command] . helpful-command)
     ([remap describe-variable] . helpful-variable)
     ([remap describe-key] . helpful-key))
+#+END_SRC
+
+**** which-key
+
+Which key for helpful emacs
+
+#+BEGIN_SRC emacs-lisp
+;; install which-key
+(use-package which-key
+  :ensure (:wait t)
+  :demand t
+  :init
+  (setq which-key-enable-extended-define-key t)
+  (which-key-mode 1) ;;; init is run every time at pre-config aka set var, invoke mode
+  ;; :diminish
+  :config                ;;; config is run after the mode' loaded (via hook ?)
+  (setq which-key-side-window-location 'bottom
+        which-key-sort-order #'which-key-key-order
+        which-key-allow-imprecise-window-fit nil
+        which-key-sort-uppercase-first nil
+        which-key-add-column-padding 1
+        which-key-max-display-columns nil
+        which-key-min-display-lines 6
+        which-key-side-window-slot -10
+        which-key-side-window-max-height 0.25
+        which-key-idle-delay 0.3
+        which-key-max-description-length 25
+        which-key-allow-imprecise-window-fit nil
+        which-key-separator " → " ))
+
+;; document un-documented commonnly used shortcuts
+(which-key-add-key-based-replacements
+  "C-x t" "Tabs mgmt")
 #+END_SRC
 
 
@@ -838,7 +841,7 @@ modeline.
 
 
 **** TODO tabs
-**** TODO transparency 
+**** TODO transparency
 **** TODO clean up
 **** TODO line/col
 **** TODO buffers
@@ -878,12 +881,3 @@ modeline.
 #+END_SRC
 
 **** TODO LSP
-
-*** restore gc
-
-#+BEGIN_SRC emacs-lisp
-
-(add-hook 'emacs-startup-hook #'+nemacs/better-init-values)
-
-;; (+nemacs/better-init-values)
-#+END_SRC
