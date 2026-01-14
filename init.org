@@ -1182,20 +1182,31 @@ We're asking emacs to render symbol w/ apple ttf emoji.
 
 #+BEGIN_SRC emacs-lisp
 (use-package doom-modeline
-  ;; :ensure(:wait t)
+  :ensure(:wait t)
   ;; :demand t
-  :defer 2
-  ;; :init (doom-modeline-mode 1)
+  ;; :defer 2
+  :init
+  (setq
+   doom-modeline-minor-modes nil
+   doom-modeline-buffer-encoding nil
+   doom-modeline-major-mode-color-icon t
+   doom-modeline-buffer-state-icon t
+   doom-modeline-buffer-modification-icon t
+   doom-modeline-lsp-icon t
+   ;; Set VCS info max length
+   doom-modeline-vcs-max-length 12
+   ;; Enable word count
+   doom-modeline-enable-word-count t
+   ;; Disable time
+   doom-modeline-time-icon nil
+   ;; Show position %
+   doom-modeline-percent-position t)
+  (doom-modeline-mode 1)
   :config
   (column-number-mode 1)
-  (doom-modeline-mode 1)
   (display-battery-mode)
   :custom
   (doom-modeline-project-detection 'projectile "Use projectile to fetch the project")
-  (doom-modeline-time-icon nil "Disable time")
-  (doom-modeline-enable-word-count t "Enable word count")
-  ;; (setq doom-modeline-vcs-max-length 12)
-                                        ; (doom-modeline-minor-modes t "Enable minor mode display")
   )
 
 ;; install nicer theme
@@ -1224,6 +1235,20 @@ We're asking emacs to render symbol w/ apple ttf emoji.
   (doom-themes-org-config))
 #+END_SRC
 
+**** window dimmer
+#+begin_src emacs-lisp
+(use-package dimmer
+  :ensure(:wait t)
+  :demand t
+  :custom
+  (dimmer-adjustment-mode :foreground)
+  :config
+  (dimmer-configure-which-key)    ; Do not dim these special windows
+  (dimmer-configure-hydra)
+  (dimmer-configure-magit)
+
+  (dimmer-mode t))
+#+end_src
 **** diminish
 
 This package implements hiding or abbreviation of the modeline displays
@@ -1597,6 +1622,37 @@ as well as org-mode, which is why rainbow works in this document.
   :hook
   ((prog-mode org-mode) . rainbow-mode))
 #+END_SRC
+
+
+**** find the bloody cursor
+
+Large screen, lots of windows, so where is the cursor? While I used to use hl-line+,
+I found that the prolific Protesilaos Stavrou introduced his Pulsar project is just what I need.
+Specifically, I might loose the cursor and need to have it highlighted (using F8),
+but also, this automatically highlights the cursor line with specific actions , like changing windows.
+
+I can’t find the cursor, and don’t want to move it to see it, I can hit a key:
+
+#+begin_src emacs-lisp
+(use-package pulsar
+  :ensure(:wait t)
+  :demand t
+  :bind ("<f8>" . pulsar-pulse-line)
+  :custom
+  (pulsar-face 'pulsar-generic)
+  (pulsar-delay 0.15)
+  :config
+  (dolist (built-in-function '(recenter-top-bottom move-to-window-line-top-bottom reposition-window
+                               bookmark-jump other-window delete-window delete-other-windows
+                               forward-page backward-page scroll-up-command scroll-down-command
+                               tab-new tab-close tab-next org-next-visible-heading
+                               org-previous-visible-heading org-forward-heading-same-level
+                               org-backward-heading-same-level outline-backward-same-level
+                               outline-forward-same-level outline-next-visible-heading
+                               outline-previous-visible-heading outline-up-heading))
+    (add-to-list 'pulsar-pulse-functions built-in-function))
+(pulsar-global-mode 1))
+#+end_src
 
 *** TODO IDE
 
