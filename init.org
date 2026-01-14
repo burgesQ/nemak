@@ -507,6 +507,7 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     :prefix "M-m" ;; Set leader.
     :global-prefix "M-m") ;; Access leader in insert mode.
 
+  ;; Bugger management
   (nemacs/leader-keys
     "b" '(:ignore t :wk "Buffer")
     "b d"  '(nemacs--kill-current-buffer :wk "Kill current buffer")
@@ -520,6 +521,8 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     "b r" '(revert-buffer :wk "Reload buffer")
     "b s"  '(scratch-buffer :wk "Scratch buffer"))
 
+  ;; Config management.
+  ;; namespace mostly used by 'flycheck' and 'f.el'
   (nemacs/leader-keys
     "c" '(:ignore t :wk "Config")
     "c r" '((lambda () (interactive)
@@ -531,39 +534,38 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     "c o" '((lambda () (interactive) (find-file "~/repo/perso/nemacs_2/init.org"))
             :wk "Open emacs config"))
 
-(nemacs/leader-keys
-   "e" '(:ignore t :wk "Evaluate")
-   "e b" '(eval-buffer :wk "Evaluate elisp in buffer")
-   "e d" '(eval-defun :wk "Evaluate defun containing or after point")
-   "e e" '(eval-expression :wk "Evaluate and elisp expression")
-   "e l" '(eval-last-sexp :wk "Evaluate elisp expression before point")
-   "e r" '(eval-region :wk "Evaluate elisp in region"))
 
+  ;; Error management.
+  ;; namespace mostly used by 'flycheck' and 'f.el'
   (nemacs/leader-keys
-    "E" '(:ignore t :wk "Error")
-    "E b" '((lambda () (interactive) (setq compilations-scroll-output t)) :wk "Errror buffer to bottom")
-    "E f" '((lambda () (interactive) (setq compilations-scroll-output 'first-error)) :wk "Errror buffer first error")
-  ;;   "E l" '(flycheck-list-errors :wk "List flycheck error")
-  ;;   "E t" '(lsp-treemacs-errors-list :wk "List error tree")
-    )
+  "e" '(:ignore t :wk "Error")
+  "e b" '((lambda () (interactive) (setq compilations-scroll-output t)) :wk "Errror buffer to bottom")
+  "e f" '((lambda () (interactive) (setq compilations-scroll-output 'first-error)) :wk "Errror buffer first error"))
+
+  ;; LISP evaluation.
+  ;; namespace mostly used by 'sudo-edit' and 'f.el'
+  (nemacs/leader-keys
+   "E" '(:ignore t :wk "Evaluate")
+   "E b" '(eval-buffer :wk "Evaluate elisp in buffer")
+   "E d" '(eval-defun :wk "Evaluate defun containing or after point")
+   "E e" '(eval-expression :wk "Evaluate and elisp expression")
+   "E l" '(eval-last-sexp :wk "Evaluate elisp expression before point")
+   "E r" '(eval-region :wk "Evaluate elisp in region"))
 
   ;; file manipulation
   ;; namespace mostly used by 'sudo-edit' and 'f.el'
   (nemacs/leader-keys
-    "f" '(:ignore t :wk "Files")
-    )
+    "f" '(:ignore t :wk "Files"))
 
   ;; file manipulation
   ;; namespace mostly used by 'magit'
   (nemacs/leader-keys
-    "g" '(:ignore t :wk "Git")
-    )
+    "g" '(:ignore t :wk "Git"))
 
   ;; goto
   ;; namespace used 'consult-todo' & others
   (nemacs/leader-keys
-    "G" '(:ignore t :wk "GoTo")
-    )
+    "G" '(:ignore t :wk "GoTo"))
 
   ;; help
   ;; namespace mostly used by 'helpful'
@@ -571,13 +573,17 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     "h" '(:ignore t :wk "Help"))
 
   ;; lsp
+  ;; TODO
   (nemacs/leader-keys
     "l" '(:ignore t :wk "LSP"))
 
   ;; Major mode
+  ;; TODO
   (nemacs/leader-keys
     "m" '(:ignore t :wk "Major mode"))
 
+  ;; while org is the major mode
+  ;; TODO
   (nemacs/leader-keys org-mode-map
     "m" '(:ignore t :wk "Org")
   ;;   "m a" '(org-agenda :wk "Org agenda")
@@ -592,20 +598,32 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
   ;;   "m d t" '(org-time-stamp :wk "Org time stamp")
     )
 
-  ;; (nemacs/leader-keys
-  ;;   "p" '(projectile-command-map :wk "Projectile"))
+  ;; while go is the major mode
+  ;; TODO
+  ;; (nemacs/leader-keys go-mode-map)
 
+  ;; Spelling
+  ;; namespace mostly used by 'flyspell'
   (nemacs/leader-keys
     "s" '(:ignore t :wk "Spelling")
-  ;;   "s b" '(flyspell-buffer :wk "Check buffer")
-  ;;   "s d" '(nemacs/fd-switch-dictionary t :wk "Change dictionary")
-  ;; "s n" '(flyspell-goto-next-error :wk "Go to next error")
-  ;; "s p" '(flycheck-popup-auto-correct-mode :wk "Toggle popup")
-  ;;   "s r" '(flyspell-region :wk "Check region")
-  ;;   "s s" '(flyspell-correct-at-point :wk "Correct at point")
-  ;;   "s t" '(nemacs/flyspell-toggle t :wk "Toggle spell check")
+    "s d" '(nemacs/fd-switch-dictionary t :wk "Change dictionary")
+    "s t" '(nemacs/flyspell-toggle t :wk "Toggle spell check")
     )
 
+  ;; Toggling
+  (nemacs/leader-keys
+    "t" '(:ignore t :wk "Toggle")
+    "t e" '(flycheck-list-errors :wk "Toggle errors list")
+    ;; "t e" '(lsp-treemacs-errors-list :wk "Toggle errors list")
+    "t L" '(display-fill-column-indicator-mode :wk "Toggle long lines visual limit")
+    "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
+    "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
+    ;; "t s" '(nemacs/flyspell-toggle t :wk "Toggle spell check")
+    "t t" '(visual-line-mode :wk "Toggle truncated lines")
+    "t T" '(neotree-toggle :wk "Toggle neotree")
+    )
+
+  ;; Theming
   (nemacs/leader-keys
     "T" '(:ignore t :wk "Theme")
     "T l" '(load-theme :wk "Load theme")
@@ -613,21 +631,7 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     "T d" '((lambda () (interactive) (load-theme 'doom-one-light t)) :wk "Toggle day theme")
     )
 
-  (nemacs/leader-keys
-    "t" '(:ignore t :wk "Toggle")
-    ;; "t e" '(eshell-toggle :wk "Toggle eshell")
-    ;; "t e" '(flycheck-list-errors :wk "Toggle errors list")
-    ;;"t e" '(lsp-treemacs-errors-list :wk "Toggle errors list")
-    "t L" '(display-fill-column-indicator-mode :wk "Toggle long lines visual limit")
-    "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
-    ;; "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
-    ;; "t s" '(nemacs/flyspell-toggle t :wk "Toggle spell check")
-    "t t" '(visual-line-mode :wk "Toggle truncated lines")
-    "t T" '(neotree-toggle :wk "Toggle neotree")
-    ;; "t z" '(vterm-toggle :wk "Toggle zsh")
-    ;; "t z" '(eshell-toggle :wk "Toggle eshell")
-    )
-
+  ;; Windows
   (nemacs/leader-keys
     "w" '(:ignore t :wk "Windows")
     "w <left>" '(nemacs--buf-move-left :wk "Buffer move left")
@@ -2014,22 +2018,14 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
 #+END_SRC
 *** TODO IDE
 
-**** TODO flycheck / flymake / flyspell & others
+**** TODO on the fly checkers
 
-Various kind of error reporters.
-
-#+begin_src emacs-lisp
-
-;;
-;; claude.el stuffs
-;;
-
-#+end_src
-
+Various kind of on the flt error reporters.
 
 ***** flycheck
 
-Flycheck is a modern on-the-fly syntax checking extension for GNU Emacs, intended as replacement for the older Flymake extension which is part of GNU Emacs.
+Flycheck is a modern on-the-fly syntax checking extension for GNU Emacs,
+intended as replacement for the older Flymake extension which is part of GNU Emacs.
 
 https://www.flycheck.org/en/latest/
 
@@ -2037,16 +2033,160 @@ https://www.flycheck.org/en/latest/
 (use-package flycheck
   :ensure t
   :defer t
+  :after (general)
   :diminish
   :init
   (global-flycheck-mode)
   :commands (flycheck-mode)
-  :custom (flycheck-emacs-lisp-load-path 'inherit "necessary with alternatives to package.el")
-;; TODO: general
-;; (+general-global-error "l" 'flycheck-list-errors)
+  ;; :hook (lsp-mode . flycheck-mode)
+  :custom
+  (flycheck-emacs-lisp-load-path 'inherit "necessary with alternatives to package.el")
+  (flycheck-display-error-delay .3)
+  :general
+  (nemacs/leader-keys
+    "e n" '(flycheck-next-error     :repeat t :wk "next")
+    "e N" '(flycheck-next-error     :repeat t :wk "next")
+    "e p" '(flycheck-previous-error :repeat t :wk "previous")
+    "e P" '(flycheck-previous-error :repeat t :wk "previous")
+    ;; "e b" '("error buffer"     . flycheck-buffer)
+    "e c" '("clear"            . flycheck-clear)
+    "e l" '("list all"         . flycheck-list-errors)
+    "e g" '("goto error"       . counsel-flycheck)
+    "e y" '("copy errors"      . flycheck-copy-errors-as-kill)
+    "e s" '("select checker"   . flycheck-select-checker)
+    "e ?" '("describe checker" . flycheck-describe-checker)
+    "e h" '("display error"    . flycheck-display-error-at-point)
+    "e e" '("explain error"    . flycheck-explain-error-at-point)
+    "e H" '("help"             . flycheck-info)
+    "e i" '("manual"           . flycheck-manual)
+    "e V" '("verify-setup"     . flycheck-verify-setup)
+    "e v" '("version"          . flycheck-verify-checker)
+    "e E" '("enable checker"   . flycheck-enable-checker)
+    "e x" '("disable checker"  . flycheck-disable-checker)
+    "e t" '("toggle flycheck"  . flycheck-mode)
+    "e T" '(lsp-treemacs-errors-list :wk "List error tree")
+    )
   )
+#+end_src
+
+***** flycheck-package
+
+`package-lint` integration for flycheck.
+
+#+begin_src emacs-lisp
+(use-package flycheck-package
+  :ensure t
+  :defer t
+  :after (flychceck)
+  :config (flycheck-package-setup)
+  (add-to-list 'display-buffer-alist
+               '("\\*Flycheck errors\\*"  display-buffer-below-selected (window-height . 0.15))))
 
 #+end_src
+
+***** flyspell
+
+The `flyspell-prog-mode` checks for misspellings in comments.
+
+#+begin_src emacs-lisp
+(use-feature flyspell
+  :hook
+  (prog-mode . flyspell-prog-mode)
+  (git-commit-mode . flyspell-prog-mode)
+  (text-mode . flyspell-prog-mode)
+  :general
+  (nemacs/leader-keys
+    "s b" '(flyspell-buffer :wk "Check buffer")
+    "s n" '(flyspell-goto-next-error :wk "Go to next error")
+    "s p" '(flycheck-popup-auto-correct-mode :wk "Toggle popup")
+    "s r" '(flyspell-region :wk "Check region")
+    "s s" '(flyspell-correct-at-point :wk "Correct at point")
+    )
+  )
+#+end_src
+
+Let's also set up flyspell pop-up for easier fixing
+
+#+begin_src emacs-lisp
+(use-package flyspell-correct-popup
+  :ensure t
+  :defer t
+  :commands (flyspell-correct-popup)
+  :init
+  (setq flyspell-correct-interface #'flyspell-correct-popup))
+
+;; auto load flyspell per buffer
+(add-hook 'after-change-major-mode-hook 'nemacs/flyspell-on-for-buffer-type)
+
+;; skip code block check
+(add-to-list 'ispell-skip-region-alist '("^#+BEGIN_SRC emacs-lisp" . "^#+END_SRC"))
+
+;; don't log message for each word
+(setq flyspell-issue-message-flag nil)
+(setq flyspell-popup-correct-delay 0.5)
+#+end_src
+
+And let's try that one
+
+#+begin_src emacs-lisp
+(use-package flyspell-correct
+  :ensure t
+  :defer t
+  :after (flyspell general)
+  :general
+  (nemacs/leader-keys
+    "s B" '(flyspell-correct-wrapper :wk "Correct wrapper")
+    "s P" '(flyspell-correct-at-point :wk "Correct at point")
+    )
+  )
+#+end_src
+
+And now let's define a few helpful functions.
+All credit to the [[https://www.emacswiki.org/emacs/FlySpell][emacswiki]].
+
+#+begin_src emacs-lisp
+;; stollen from https://www.emacswiki.org/emacs/FlySpell, sorry mom
+(defun nemacs/flyspell-on-for-buffer-type ()
+  "Enable Flyspell appropriately for the major mode of the current buffer.  Uses `flyspell-prog-mode' for modes derived from `prog-mode', so only strings and comments get checked.  All other text-buffers get `flyspell-mode' to check all text.  If flyspell is already enabled, does nothing."
+  (interactive)
+  (if (not (symbol-value flyspell-mode)) ; if not already on
+      (progn
+        (if (derived-mode-p 'prog-mode)
+            (progn
+              (message "Flyspell on (code)")
+              (flyspell-prog-mode)
+              ;; (flyspell-popup-auto-correct-mode)
+              )
+          (if (derived-mode-p 'text-mode)
+              ;; else
+              (progn
+                (message "Flyspell on (text)")
+                (flyspell-mode 1)
+                ;; (flyspell-popup-auto-correct-mode 1)
+                )))
+        )))
+
+(defun nemacs/flyspell-toggle ()
+  "Turn Flyspell on if it is off, or off if it is on.  When turning on, it uses `flyspell-on-for-buffer-type' so code-vs-text is handled appropriately."
+  (interactive)
+  (if (symbol-value flyspell-mode)
+      (progn ; flyspell is on, turn it off
+        (message "Flyspell off")
+        (flyspell-mode -1))
+                                        ; else - flyspell is off, turn it on
+    (nemacs/flyspell-on-for-buffer-type)))
+
+(defun nemacs/fd-switch-dictionary()
+  (interactive)
+  (let* ((dic ispell-current-dictionary)
+         (change (if (string= dic "francais") "english" "francais")))
+    (ispell-change-dictionary change)
+    (message "Dictionary switched from %s to %s" dic change)
+    ))
+#+END_SRC
+
+#+end_src
+
 
 **** TODO claude.el
 
@@ -2165,6 +2305,9 @@ machine gitlab.com/api/v4 login [username]^forge password [token]
   :demand t
   :after (general)
   :diminish
+  :general
+  (nemacs/leader-keys
+    "p" '(projectile-command-map :wk "Projectile"))
   :config (add-to-list 'projectile-globally-ignored-directories "*node_modules")
   (add-to-list 'projectile-globally-ignored-directories "*vendor")
   (projectile-mode 1)
