@@ -28,11 +28,11 @@ $ emacs -q -l ~/repo/perso/nemacs_2/emacs-init.el --init-directory=~/repo/perso/
 ** TODO misc
 chemacs
 
-* TODO TODOs
+* WIP TODOs
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
-** TODO v1 [7/12] [58%]
+** TODO v1 [7/13] [53%]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
@@ -46,15 +46,14 @@ chemacs
 **** DONE dashboard
 **** DONE fonts / faces / emojies / ligatures
 **** DONE other stuffs (windows, box)
-*** WIP utils [1/2]
-- [X] magit
-- [ ] org
+*** WIP magit
+*** TODO org
 *** TODO claude-el
 *** TODO LSP
-*** TODO doc (how to use chapter)
 
+*** TODO [fly/spell/*]check
 
-* TODO the config [0/12]
+* TODO the config [0/9]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
@@ -309,7 +308,7 @@ But when capturing, I subsequently open smaller frames that shouldn’t be odd l
 ;;; early-init.el ends here
 #+END_SRC
 
-** TODO config [0/11]
+** TODO config [0/8]
 *** init.el header
 
 #+begin_src emacs-lisp
@@ -473,6 +472,14 @@ And the use-feature one
 *** TODO org
 
 Let's pimp 'org'
+
+#+begin_src emacs-lisp
+
+;;
+;; org stuffs
+;;
+
+#+end_src
 
 *** WIP keybinding
 
@@ -725,9 +732,51 @@ Which key for helpful emacs
 )
 #+END_SRC
 
-*** TODO completion
+*** completion
 
-Generic auto-complete with boosted Ivy.
+Generic auto-complete with boosted Ivy + company.
+
+**** company
+
+On-The-Fly typing completion + box
+
+#+BEGIN_SRC emacs-lisp
+(use-package company
+  :ensure (:wait t)
+  :demand t
+  :defer t
+  ;; :after lsp-mode
+  :diminish
+  :config
+  (setq
+   ;; don't add any delay before trying to complete thing being typed
+   ;; the call/response to gopls is asynchronous so this should have little
+   ;; to no affect on edit latency
+   company-idle-delay .1
+   ;; start completing after a single character instead of 3
+   company-minimum-prefix-length 2
+   ;; show number
+   company-show-numbers t
+   ;; align fields in completions
+   company-tooltip-align-annotations t)
+  :hook
+  ;; (lsp-mode . company-mode)
+  ;; lang
+  (prog-mode . company-mode)
+  ;; org, markdown & co
+  (text-mode . company-mode))
+
+(global-set-key (kbd "TAB")
+                #'company-indent-or-complete-common)
+
+(use-package company-box
+  :ensure (:wait t)
+  :demand t
+  :defer t
+  :after company
+  :diminish
+  :hook (company-mode . company-box-mode))
+#+END_SRC
 
 **** counsel
 
@@ -738,6 +787,7 @@ Spread ivy to M-x with [[https://github.com/abo-abo/swiper#counsel][counsel (ivy
   :ensure (:wait t)
   :demand t
   :diminish
+  :after general
   :config (counsel-mode)
   :general
   (general-define-key
@@ -1965,8 +2015,65 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
 *** TODO IDE
 
 **** TODO flycheck / flymake / flyspell & others
+
+Various kind of error reporters.
+
+#+begin_src emacs-lisp
+
+;;
+;; claude.el stuffs
+;;
+
+#+end_src
+
+
+***** flycheck
+
+Flycheck is a modern on-the-fly syntax checking extension for GNU Emacs, intended as replacement for the older Flymake extension which is part of GNU Emacs.
+
+https://www.flycheck.org/en/latest/
+
+#+begin_src emacs-lisp
+(use-package flycheck
+  :ensure t
+  :defer t
+  :diminish
+  :init
+  (global-flycheck-mode)
+  :commands (flycheck-mode)
+  :custom (flycheck-emacs-lisp-load-path 'inherit "necessary with alternatives to package.el")
+;; TODO: general
+;; (+general-global-error "l" 'flycheck-list-errors)
+  )
+
+#+end_src
+
 **** TODO claude.el
+
+Let's setup 'claude.el'
+
+#+begin_src emacs-lisp
+
+;;
+;; claude.el stuffs
+;;
+
+#+end_src
+
+
 **** TODO LSP
+
+Let's setup LSP
+
+#+begin_src emacs-lisp
+
+;;
+;; LSP stuffs
+;;
+
+#+end_src
+
+***** languages
 
 
 **** magit
