@@ -41,7 +41,10 @@ chemacs
 *** TODO keybinding
 *** TODO key describe (helpful)
 *** TODO claude-el
-*** TODO UI
+*** TODO UI [1/2]
+**** WIP dashboard
+**** DONE fonts / faces / emojies / ligatures
+**** other stuffs (windows, box)
 *** TODO utils
 *** TODO LSP
 
@@ -398,7 +401,6 @@ Let's also setup the ``use-package`` macro.
 
 
 
-
 *** TODO emacs defaults
 
 #+begin_src emacs-lisp
@@ -414,7 +416,6 @@ Let's also setup the ``use-package`` macro.
 #+end_src
 
 **** org
-
 
 *** keybinding
 
@@ -654,20 +655,225 @@ Which key for helpful emacs
 
 *** TODO UI
 
+**** landing dashboard
+
+***** dad jokes ?
+
+Stolen from [[https://howardabrams.com/hamacs/ha-dashboard.html][here]] - I like the idea :nerd_face:.
+
+#+begin_src emacs-lisp
+(use-package request
+  :ensure(:wait t)
+  :demand t
+  :init
+  (defvar nemacs-dad-joke nil "Holds the latest dad joke.")
+
+  :config
+  (defun nemacs-dad-joke ()
+    "Display a random dad joke."
+    (interactive)
+    (message (nemacs--dad-joke)))
+
+  (defun nemacs--dad-joke ()
+    "Return string containing a dad joke from www.icanhazdadjoke.com."
+    (setq nemacs-dad-joke nil)  ; Clear out old joke
+    (nemacs--dad-joke-request)
+    (nemacs--dad-joke-wait))
+
+  (defun nemacs--dad-joke-wait ()
+    (while (not nemacs-dad-joke)
+      (sit-for 1))
+    (unless nemacs-dad-joke
+      (nemacs--dad-joke-wait))
+    nemacs-dad-joke)
+
+  (defun nemacs--dad-joke-request ()
+    (request "https://icanhazdadjoke.com"
+      :sync t
+      :complete (cl-function
+                 (lambda (&key data &allow-other-keys)
+                   (setq nemacs-dad-joke data))))))
+
+
+#+end_src
+
+***** emacs features
+
+I would appreciate seeing if my Emacs installation has the features that I expect:
+
+#+begin_src emacs-lisp
+(defun nemacs-features (&optional non-iconic)
+  "Simple display of features I'm most keen about.
+  If NON-ICONIC is non-nil, return a string of text only."
+  (interactive)
+
+  (defun feature-combo (container icon title)
+    (font-icons container icon :title title :height 1.3 :v-adjust -0.1))
+
+  (defun all-images ()
+    (s-join "·"
+            (-remove 'null
+                     (list
+                      (when (image-type-available-p 'gif)  "GIF")
+                      (when (image-type-available-p 'svg)  "SVG")
+                      (when (image-type-available-p 'jpeg) "JPG")
+                      (when (image-type-available-p 'tiff) "TIFF")
+                      (when (image-type-available-p 'webp) "WEBP")
+                      (when (image-type-available-p 'png)  "PNG")))))
+
+  (let* ((features
+          (list
+           ;; An either or ... at least for me:
+           (when (eq (window-system) 'ns)
+             (feature-combo  'faicon "apple"   "MacOS"))
+           (when (eq (window-system) 'pgtk)
+             (feature-combo  'faicon "xing"    "Gnome"))
+
+           ;; Important to know if I have it:
+           (when (and (fboundp 'native-comp-available-p)
+                      (native-comp-available-p))
+             (feature-combo  'faicon "cog"     "Native Compilation"))
+           (when (treesit-available-p)
+             (feature-combo  'faicon "tree"    "Tree Sitter"))
+           (when (sqlite-available-p)
+             (feature-combo  'faicon "database" "Sqlite"))
+           (when (gnutls-available-p)
+             (feature-combo  'faicon "expeditedssl" "TLS"))
+           ;; Did we build with mail utilities? Check the command line
+           ;; options we used to build Emacs:
+           (when (or (string-search "with-mailutils" system-configuration-options)
+                     (string-search "without-pop" system-configuration-options))
+             (feature-combo  'octicon "mail" "GNU Mail"))
+
+           (when (fboundp 'make-xwidget)
+             (feature-combo  'mdicon "widgets" "XWidgets"))
+
+           ;; This suffix of loadable module files will be nil if
+           ;; modules are not supported:
+           (when module-file-suffix  ; or (fboundp 'module-load)
+             (feature-combo 'faicon "th"       "Modules"))
+
+           (when (json-available-p)
+             (feature-combo  'codicon "json"   "JSON"))
+           (when (string-search "HARFBUZZ" system-configuration-features)
+             (feature-combo  'faicon "font"    "HARFBUZZ"))
+           (when (string-search "DBUS" system-configuration-features)
+             (feature-combo  'faicon "bus"     "DBUS"))
+           (feature-combo  'faicon "picture-o" (all-images))
+           (when (fboundp 'imagemagick-types)
+             (feature-combo  'faicon "magic"   "ImageMagick"))))
+         (results (s-join "  " (-remove 'null features))))
+
+    (if (called-interactively-p)
+        (message "Enabled features: %s" results)
+      results)))
+#+end_src
+
+***** dashboard
+
+Nice welcome screen. See the official
+[[https://github.com/emacs-dashboard/emacs-dashboard][repo]] for more info.
+
+#+BEGIN_SRC emacs-lisp
+(use-package page-break-lines
+  :ensure(:wait t)
+  :demand t
+)
+
+;; nicer welcome screen
+(use-package dashboard
+  :ensure(:wait t)
+  :demand t
+  :after (all-the-icons projectile page-break-lines)
+  :init      ; tweak dashboard config before loading it
+  (setq initial-buffer-choice 'dashboard-refresh-buffer)
+  (setq dashboard-projects-backend 'projectile)
+
+
+  ;; horizontally center content
+  (setq dashboard-center-content t)
+  ;; verically center content
+  (setq dashboard-vertically-center-content t)
+  ;; enable cycle navigation between each section
+  (setq dashboard-navigation-cycle t)
+
+  ;; add icons to the widget headings and their items
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+
+  (setq dashboard-set-navigator t)
+  ; close agenda buffers
+  (setq dashboard-agenda-release-buffers t)
+  (setq dashboard-set-init-info t) ; package & loadtime
+
+  ;; (setq dashboard-display-icons-p t) ;; use `all-the-icons' package
+  ;; (setq dashboard-icon-type 'nerd-icons) ;; use `all-the-icons' package
+  (setq dashboard-icon-type 'all-the-icons) ;; use `all-the-icons' package
+
+  (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name)
+
+  (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
+  (setq dashboard-startup-banner "/home/master/repo/perso/nemacs/logo/aum.xpm")
+  (setq dashboard-image-banner-max-width 500)
+  (setq dashboard-image-banner-max-height 500)
+  (setq dashboard-image-extra-props '(:mask heuristic))
+
+
+  (setq dashboard-items '((agenda . 15)
+                          (recents . 15)
+                          (projects . 15)
+                          ;; (bookmarks . 5)
+                          ;; (registers . 5)
+                          ))
+
+  (setq dashboard-item-shortcuts '((recents   . "r")
+                                 (bookmarks . "m")
+                                 (projects  . "p")
+                                 (agenda    . "a")
+                                 (registers . "e")
+                                 ))
+
+  (setq dashboard-item-names '(("Recent Files:"               . "Recently opened files:")
+                               ("Agenda for today:"           . "Today's agenda:")
+                               ("Agenda for the coming week:" . "Agenda:")
+                               ))
+
+  :when (not command-line-args-left)
+  :config
+  (dashboard-setup-startup-hook)
+  (dashboard-modify-heading-icons '((recents . "file-text"))
+
+
+                                  ;; Format: "(icon title help action face prefix suffix)"
+
+)
+)
+
+#+END_SRC
+
+
 **** faces
 
 #+BEGIN_SRC emacs-lisp
 ;; Set the default face
-(set-face-attribute 'default nil :font "Fira Code Retina" :height 120)
+(set-face-attribute 'default nil
+                    :font "Fira Code Retina"
+                    :height 120)
 
 ;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height 100)
+(set-face-attribute 'fixed-pitch nil
+                    :font "Fira Code Retina"
+                    :height 100)
 
 ;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Fira Code Retina" :height 295 :weight 'regular)
+(set-face-attribute 'variable-pitch nil
+                    :font "Fira Code Retina"
+                    :height 295 :weight 'regular)
 #+END_SRC
 
 ***** all-the-icons / dired
+
+Seems [[https://github.com/rainstormstudio/nerd-icons.el][nerd icons]] may be a nice alternative.
 
 #+BEGIN_SRC emacs-lisp
 ;; Please run M-x all-the-icons-install-fonts
@@ -703,6 +909,37 @@ Which key for helpful emacs
   :demand t
   :hook (dired-mode . dired-hide-dotfiles-mode))
 #+END_SRC
+
+The way we access the font icons has always been … odd; needing to specify the collection, etc. I would like to come up with a better mechanism, so the following function abstracts that as I figure out a better solution.
+
+#+begin_src emacs-lisp
+(defun font-icons (collection label &rest args)
+  "Abstraction over `all-the-icons' project.
+LABEL is the icon name as used by all-the-icons.
+COLLECTION identifies the icon set (e.g. 'octicon, 'faicon).
+
+ARGS is a plist passed directly to the all-the-icons function.
+
+Example:
+  (font-icons 'octicon \"git-branch\" :title \"Git\")
+
+Reformats:
+  (all-the-icons-octicon \"git-branch\")
+into:
+  (font-icons 'octicon \"git-branch\")"
+  (let* ((func (intern (format "all-the-icons-%s" collection)))
+         (title (plist-get args :title))
+         (space (plist-get args :space))
+         ;; remove our custom keys before passing args through
+         (icon-args (cl-loop for (k v) on args by #'cddr
+                             unless (memq k '(:title :space))
+                             append (list k v))))
+    (concat
+     (apply func label icon-args)
+     (cond
+      ((and title space) (concat (s-repeat space " ") title))
+      (title             (concat " " title))))))
+#+end_src
 
 ***** ligature
 
@@ -786,88 +1023,6 @@ emacs 27+ "nativly" support ligature. See the
   ;; per mode with `ligature-mode'.
   (global-ligature-mode t)
   )
-#+END_SRC
-
-**** dashboard
-
-Nice welcome screen. See the official
-[[https://github.com/emacs-dashboard/emacs-dashboard][repo]] for more info.
-
-#+BEGIN_SRC emacs-lisp
-(use-package page-break-lines
-  :ensure(:wait t)
-  :demand t
-)
-
-;; nicer welcome screen
-(use-package dashboard
-  :ensure(:wait t)
-  :demand t
-  :after (all-the-icons projectile page-break-lines)
-  :init      ; tweak dashboard config before loading it
-  (setq initial-buffer-choice 'dashboard-refresh-buffer)
-  (setq dashboard-projects-backend 'projectile)
-
-
-  ;; horizontally center content
-  (setq dashboard-center-content t)
-  ;; verically center content
-  (setq dashboard-vertically-center-content t)
-  ;; enable cycle navigation between each section
-  (setq dashboard-navigation-cycle t)
-
-  ;; add icons to the widget headings and their items
-  (setq dashboard-set-heading-icons t)
-  (setq dashboard-set-file-icons t)
-
-  (setq dashboard-set-navigator t)
-  ; close agenda buffers
-  (setq dashboard-agenda-release-buffers t)
-  (setq dashboard-set-init-info t) ; package & loadtime
-
-  ;; (setq dashboard-display-icons-p t) ;; use `all-the-icons' package
-  ;; (setq dashboard-icon-type 'nerd-icons) ;; use `all-the-icons' package
-  (setq dashboard-icon-type 'all-the-icons) ;; use `all-the-icons' package
-
-  (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name)
-
-  (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
-  (setq dashboard-startup-banner "/home/master/repo/perso/nemacs/logo/aum.xpm")
-  (setq dashboard-image-banner-max-width 500)
-  (setq dashboard-image-banner-max-height 500)
-  (setq dashboard-image-extra-props '(:mask heuristic))
-
-
-  (setq dashboard-items '((agenda . 15)
-                          (recents . 15)
-                          (projects . 15)
-                          ;; (bookmarks . 5)
-                          ;; (registers . 5)
-                          ))
-
-  (setq dashboard-item-shortcuts '((recents   . "r")
-                                 (bookmarks . "m")
-                                 (projects  . "p")
-                                 (agenda    . "a")
-                                 (registers . "e")
-                                 ))
-
-  (setq dashboard-item-names '(("Recent Files:"               . "Recently opened files:")
-                               ("Agenda for today:"           . "Today's agenda:")
-                               ("Agenda for the coming week:" . "Agenda:")
-                               ))
-
-  :when (not command-line-args-left)
-  :config
-  (dashboard-setup-startup-hook)
-  (dashboard-modify-heading-icons '((recents . "file-text"))
-
-
-                                  ;; Format: "(icon title help action face prefix suffix)"
-
-)
-)
-
 #+END_SRC
 
 **** doom
