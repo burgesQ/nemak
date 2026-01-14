@@ -18,14 +18,10 @@ Thanks
 - [[https://github.com/jeremygooch/jeremacs][less monstruous but still huge]]
 
 
-
 * TODO how to use [0/3]
 
-TODO: intro + usage
-To test the configuration, run
-
 #+begin_example console
-$ emacs -q -l ~/repo/perso/nemacs/emacs-init.el --init-directory=~/repo/perso/nemacs
+$ emacs -q -l ~/repo/perso/nemacs_2/emacs-init.el --init-directory=~/repo/perso/nemacs_2
 #+end_example
 
 ** TODO install as ~/.emacs
@@ -35,24 +31,30 @@ chemacs
 
 
 * TODO TODOs
-** TODO v1 [2/8] [25%]
+:PROPERTIES:
+:COOKIE_DATA: todo recursive
+:END:
+** TODO v1 [5/11] [45%]
+:PROPERTIES:
+:COOKIE_DATA: todo recursive
+:END:
 *** DONE early init
 *** DONE elpa management
+*** DONE key describe (helpful)
 *** TODO keybinding
-*** TODO key describe (helpful)
-*** TODO claude-el
-*** TODO UI [1/2]
-**** WIP dashboard
+*** TODO UI [2/3]
+**** DONE dashboard
 **** DONE fonts / faces / emojies / ligatures
-**** other stuffs (windows, box)
+**** WIP other stuffs (windows, box)
 *** TODO utils
+*** TODO claude-el
 *** TODO LSP
-
 *** doc (how to use chapter)
 
-
-* the config
-
+* TODO the config [0/16]
+:PROPERTIES:
+:COOKIE_DATA: todo recursive
+:END:
 ** early-init
 
 emacs 27+ offer the ealy-init, allowing us to speed thing up at start time.
@@ -91,7 +93,7 @@ We configure elpaca to download packages per emacs version
 #+BEGIN_SRC emacs-lisp
 ;; Skip default.el loading.
 (setq inhibit-default-init nil)
-;; Report native comp async warnings as errors.
+;; Do not report native comp async warnings as errors.
 (setq native-comp-async-report-warnings-errors nil)
 #+END_SRC
 
@@ -230,6 +232,12 @@ Lets tune the UI to something more minimal.
 (tool-bar-mode -1)
 ;; disables scrollbar
 (scroll-bar-mode -1)
+;; Disable tooltips
+(tooltip-mode -1)
+;; Give some breathing room
+(set-fringe-mode 10)
+;; Set up the visible bell
+
 
 (setq
  ;; no thanks
@@ -241,7 +249,8 @@ Lets tune the UI to something more minimal.
  ;; don't show tab close button
  tab-bar-close-button-show nil
  ;; don't show tab close button
- tab-line-close-button-show nil)
+ tab-line-close-button-show nil
+)
 #+END_SRC
 
 Let's tune the system windows.
@@ -412,14 +421,52 @@ Let's also setup the ``use-package`` macro.
   :config
   ;;Turns off elpaca-use-package-mode current declaration
   (setq ring-bell-function #'ignore)
+  ;; Open symlink w/o  confirmation prompt.
+  (setq vc-follow-symlinks t)
+  ;; Load zsh alias
+  (setq shell-command-switch "-ic")
+  ;; set tab to 4 spaces width
+  (setq-default tab-width 4)
+  ;; always insert space
+  (setq-default indent-tabs-mode nil)
+
+  ;; Backup (aka ~/.#)
+  ;; Delete excess backup versions silently
+  (setq delete-old-versions -1)
+  ;; make backups file even when in version controlled dir
+  (setq vc-make-backup-files t)
+  ;; which directory to put backups file
+  (setq backup-directory-alist `(("." . "~/.emacs.d/backups")) )
+  ;; transform backups file name
+  (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)) )
+
+  ;; use utf-8 by default
+  (setq coding-system-for-read 'utf-8 )
+  (setq coding-system-for-write 'utf-8 )
+  ;; sentence SHOULD end with only a point.
+  (setq sentence-end-double-space nil)
+
+  (setq create-lockfiles nil) ;; no need to create lockfiles
+  (setq enable-recursive-minibuffers t)
+  (setq sentence-end-double-space nil)
+  (defalias 'yes-or-no-p 'y-or-n-p) ;; life is too shor
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit) ;; escape quits everything
+
+  ;; less noise when compiling elisp
+  (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
+  (setq load-prefer-newer t)
+
+  ;; Hide commands in M-x which don't work in the current mode
+  (setq read-extended-command-predicate #'command-completion-default-include-p)
+
 )
 #+end_src
 
-**** org
+**** TODO org
 
 *** keybinding
 
-**** general
+**** WIP general
 
 Better key-bindings management.
 See the [[https://github.com/noctuid/general.el][repo]] for more info.
@@ -655,6 +702,56 @@ Which key for helpful emacs
 
 *** TODO UI
 
+**** bell
+
+Enable visual bells
+
+#+begin_src emacs-lisp
+(setq visible-bell t)
+#+end_src
+
+**** lines/columns
+
+#+BEGIN_SRC emacs-lisp
+;; lines numbers & hooks
+(column-number-mode)
+(global-display-line-numbers-mode t)
+;; selectivly disable line numbers for some mode
+(dolist (mode '(text-mode-hook
+                org-mode-hook
+				;; treemacs-mode-hook
+                ;; neotree-mode-hook
+                term-mode-hook
+                dashboard-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
+#+END_SRC
+
+Native to emacs 27.1+. Set indicator to 80 columns.
+
+#+BEGIN_SRC emacs-lisp
+;; set 100 col indicator
+(setq
+ display-fill-column-indicator-column 80
+ fill-column 80)
+#+END_SRC
+
+Highlight text that extends beyond a certain column. See
+[[https://github.com/jordonbiondo/column-enforce-mode][here]] for more info.
+
+#+BEGIN_SRC emacs-lisp
+(use-package column-enforce-mode
+  :ensure(:wait t)
+  :diminish
+  :hook
+  (prog-mode . column-enforce-mode) ;; bind to prog-mode
+  (text-mode . column-enforce-mode) ;; bind to text-mode
+  :config
+  (setq column-enforce-column 100     ;; set highlight past 80 columns
+        column-enforce-comments nil) ;; don't highlights comments
+  )
+#+END_SRC
+
 **** landing dashboard
 
 ***** dad jokes
@@ -784,40 +881,23 @@ Nice welcome screen. See the official
   :ensure(:wait t)
   :demand t
   :after (all-the-icons projectile page-break-lines)
-  :init      ; tweak dashboard config before loading it
+  :init
   (defun nemacs-dashboard-version ()
     (let ((smaller-version (replace-regexp-in-string
                             (rx " (" (zero-or-more any) eol) "" (emacs-version))))
       (string-replace "\n" "" smaller-version)))
 
+  ;; Tweak banner logo and title.
   (setq dashboard-banner-logo-title
         (format "Emacs with %s — %s"
                 (if (and (fboundp 'native-comp-available-p)
                          (native-comp-available-p))
                     "with Native Compilation" "")
-                (nemacs-dashboard-version))
-
-        ;; Choose a random image from my collection of startup images:
-        ;; dashboard-startup-banner (thread-first "~/src/hamacs/support/dashboard"
-        ;;                                        (directory-files t (rx ".png"))
-        ;;                                        (seq-random-elt))
-        ;; dashboard-center-content t
-        ;; dashboard-set-init-info t
-        ;; dashboard-projects-switch-function 'project-switch-project
-        ;; dashboard-items '(;; (projects . 5)
-        ;;                   ;; (agenda . 5)
-        ;;                   ;; (bookmarks . 5)
-        ;;                  )
-        ;; dashboard-set-heading-icons t
-        dashboard-footer-messages (list (nemacs--dad-joke)))
-
-
-
-  ;; (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
-
-
+                (nemacs-dashboard-version)))
+  ;; Disaply a random "dad joke" as footer message.
+  (setq dashboard-footer-messages (list (nemacs--dad-joke)))
+  ;; Set dashboard as initial buffer.
   (setq initial-buffer-choice 'dashboard-refresh-buffer)
-  (setq dashboard-projects-backend 'projectile)
 
   ;; horizontally center content
   (setq dashboard-center-content t)
@@ -829,18 +909,18 @@ Nice welcome screen. See the official
   ;; add icons to the widget headings and their items
   (setq dashboard-set-heading-icons t)
   (setq dashboard-set-file-icons t)
-
   (setq dashboard-set-navigator t)
   ;; close agenda buffers
   (setq dashboard-agenda-release-buffers t)
-  ;; package & loadtime
+  ;; Disaply package & loadtime metrics.
   (setq dashboard-set-init-info t)
+  ;; Set projcetile as project backend.
+  (setq dashboard-projects-backend 'projectile)
 
   (setq dashboard-display-icons-p t) ;; use `all-the-icons' package
   (setq dashboard-icon-type 'all-the-icons) ;; use `all-the-icons' package
 
-  (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name)
-
+  ;; FIXME: need counsel (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name)
 
   (setq dashboard-startup-banner "/home/master/repo/perso/nemacs/logo/aum.xpm")
   (setq dashboard-image-banner-max-width 500)
@@ -856,15 +936,15 @@ Nice welcome screen. See the official
                           ))
 
   (setq dashboard-item-shortcuts '(
-                                   (recents   . "r")
-                                   ;; (bookmarks . "m")
-                                   (projects  . "p")
                                    ;; (agenda    . "a")
+                                   (recents   . "r")
+                                   (projects  . "p")
+                                   ;; (bookmarks . "m")
                                    ;; (registers . "e")
                                    ))
 
   (setq dashboard-item-names '(("Recent Files:"               . "Recently opened files:")
-                               ("Agenda for today:"           . "Today's agenda:")
+                               ;; ("Agenda for today:"           . "Today's agenda:")
                                ;; ("Agenda for the coming week:" . "Agenda:")
                                ))
 
@@ -1069,6 +1149,35 @@ emacs 27+ "nativly" support ligature. See the
   )
 #+END_SRC
 
+***** emojify
+
+Thanks to that nice [[https://ianyepan.github.io/posts/emacs-emojis/][tuto]].
+
+We've installed apple emoji following that [[https://github.com/samuelngs/apple-emoji-linux][repo]].
+
+We're asking emacs to render symbol w/ apple ttf emoji.
+#+begin_src emacs-lisp
+(use-package emojify
+  :ensure(:wait t)
+  :hook
+  (text-mode . emojify-mode) ;; bind to text-mode
+  :config
+  (when (member "Apple Color Emoji" (font-family-list))
+    (set-fontset-font
+     t 'symbol (font-spec :family "Apple Color Emoji") nil 'prepend))
+
+  (setq
+   ;; we want all emoji style
+   emojify-display-style 'unicode
+   emojify-prog-contexts  'both
+   emojify-emoji-styles '(unicode github))
+  ;; TODO: bind w/ general
+  ;; ; override binding in any mode
+  ;; (bind-key* (kbd "C-c .") #'emojify-insert-emoji))
+)
+
+#+end_src
+
 **** doom
 
 #+BEGIN_SRC emacs-lisp
@@ -1134,12 +1243,15 @@ modeline.
 )
 #+END_SRC
 
+**** transparency
+
+Native to emacs29+
+
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'default-frame-alist '(alpha-background . 90))
+#+END_SRC
 
 **** TODO tabs
-**** TODO transparency
-**** TODO clean up
-**** TODO line/col
-**** TODO buffers
 
 *** TODO QoL
 
@@ -1149,9 +1261,10 @@ I prefer emacs to just ask y/n not yes/no
 
 #+begin_src emacs-lisp
 (fset 'yes-or-no-p 'y-or-n-p)
+(setopt use-short-answers t)
 #+end_src
 
-**** shells
+**** Shells
 
 Prevent async shell command buffers from popping-up:
 
@@ -1160,7 +1273,7 @@ Prevent async shell command buffers from popping-up:
   '("\\*Async Shell Command\\*.*" display-buffer-no-window))
 #+end_src
 
-**** regex
+**** Regex
 
 Fix emacs regex
 
@@ -1168,8 +1281,7 @@ Fix emacs regex
 (setq-default pcre-mode t)
 #+end_src
 
-
-**** buffer
+**** TODO Buffer
 
 Remember where I left off after killing a file
 
@@ -1195,6 +1307,47 @@ When a file changes on disk, automatically reload its buffer silently
 (setq auto-revert-verbose nil)
 #+end_src
 
+***** TODO auto-scroll *Compilation* buffer
+
+NOTE:  bind those toggle via `M-m E(rror) f(irst)` and `M-m E b(ottom)`.
+#+begin_src emacs-lisp
+;; scroll compilation buffer to first error
+;; (setq compilation-scroll-output 'first-error)
+
+;; scroll compilation buffer to end
+(setq compilation-scroll-output t)
+#+end_src
+
+***** colored *Compilation* buffer.
+
+#+BEGIN_SRC emacs-lisp
+;; color compilation output
+(require 'ansi-color)
+(defun colorize-compilation-buffer ()
+  "Colorize the *compilation* buffer output"
+  (ansi-color-apply-on-region compilation-filter-start (point)))
+(add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+#+END_SRC
+
+***** smooth scrolling
+
+#+begin_src emacs-lisp
+;; value greater than 100 gets rid of half page jumping
+(setq scroll-conservatively 101)
+;; how many lines at a time
+(setq mouse-wheel-scroll-amount '(3 ((shift) . 3)))
+;; accelerate scrolling
+(setq mouse-wheel-progressive-speed t)
+;; scroll window under mouse
+(setq mouse-wheel-follow-mouse 't)
+#+end_src
+
+***** TODO popwin
+***** TODO ominobox
+***** TODO buffer move
+***** TODO buffer maximize
+
+
 **** Symbols
 
 #+begin_src emacs-lisp
@@ -1202,7 +1355,7 @@ When a file changes on disk, automatically reload its buffer silently
 #+end_src
 
 
-**** install boosted string manipulation functions
+**** Boosted string n file manipulation functions
 
 The [[https://github.com/magnars/s.el][s.el]] project is a simpler string manipulation library that I (and other projects) use.
 
@@ -1213,7 +1366,7 @@ Manipulate file paths with the [[https://github.com/rejeep/f.el][f.el]] project.
 (use-package f)
 #+end_src
 
-*** IDE
+*** TODO IDE
 
 **** projectile
 
