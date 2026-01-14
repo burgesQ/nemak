@@ -51,7 +51,7 @@ chemacs
 *** TODO LSP
 *** TODO doc (how to use chapter)
 
-* TODO the config [0/13]
+* TODO the config [0/14]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
@@ -306,7 +306,7 @@ But when capturing, I subsequently open smaller frames that shouldn’t be odd l
 ;;; early-init.el ends here
 #+END_SRC
 
-** TODO config [0/12]
+** TODO config [0/13]
 *** init.el header
 
 #+begin_src emacs-lisp
@@ -401,6 +401,18 @@ Let's also setup the ``use-package`` macro.
 
 (setq custom-file (expand-file-name "init.el" user-emacs-directory))
 (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror)))
+#+end_src
+
+And the use-feature one
+
+#+begin_src emacs-lisp
+(defmacro use-feature (name &rest args)
+  "`use-package' for packages which do not require installation.
+  See `use-package' for NAME and ARGS."
+  (declare (indent defun))
+  `(use-package ,name
+     :ensure nil
+     ,@args))
 #+end_src
 
 *** emacs defaults
@@ -611,6 +623,7 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     ;; "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
     ;; "t s" '(nemacs/flyspell-toggle t :wk "Toggle spell check")
     "t t" '(visual-line-mode :wk "Toggle truncated lines")
+    "t T" '(neotree-toggle :wk "Toggle neotree")
     ;; "t z" '(vterm-toggle :wk "Toggle zsh")
     ;; "t z" '(eshell-toggle :wk "Toggle eshell")
     )
@@ -720,9 +733,11 @@ extra information when selecting files, etc. Nice enhancement without learning a
   (marginalia-mode))
 #+end_src
 
-*** completion
+*** TODO completion
 
 Generic auto-complete with boosted Ivy.
+
+**** TODO company
 
 **** ivy
 
@@ -1415,13 +1430,63 @@ Native to emacs29+
 (add-to-list 'default-frame-alist '(alpha-background . 90))
 #+END_SRC
 
-**** TODO tree
+**** tree
 
 Treemacs again ? Smth else ?
+
+
+Let's use neotree, nicer than treemacs
+
+#+begin_src emacs-lisp
+(use-package neotree
+  :ensure (:wait t)
+  :demand t
+  :config
+  (setq neo-smart-open t
+        neo-show-hidden-files t
+        neo-window-width 25
+        neo-window-fixed-size nil
+        inhibit-compacting-font-caches t
+        projectile-switch-project-action 'neotree-projectile-action)
+  ;; truncate long file names in neotree
+  (add-hook 'neo-after-create-hook
+            #'(lambda (_)
+                (with-current-buffer (get-buffer neo-buffer-name)
+                  (setq truncate-lines t)
+                  (setq word-wrap nil)
+                  (make-local-variable 'auto-hscroll-mode)
+                  (setq auto-hscroll-mode nil)))))
+#+end_src
 
 **** TODO tabs
 
 Native tab ? Or smth better ?
+
+#+begin_src emacs-lisp
+(use-feature tab-bar
+  :custom
+  (tab-bar-close-button-show nil "Dont' show the x button on tabs")
+  (tab-bar-new-button-show   nil)
+  (tab-bar-show  nil "hide the tab bar. Use commands to access tabs.")
+  :general
+  (general-define-key
+    "C-x t b" '(tab-bar-history-back :wk "Backward history tab")
+    "C-x t d" '(tab-bar-close-tab :wk "Close tab")
+    "C-x t f" '(tab-bar-history-forward :wk "Forward history tab")
+    "C-x t N" '(tab-bar-new-tab :wk "New tab")
+    "C-x t n" '(tab-bar-switch-to-next-tab :wk "Next tab")
+    "C-x t p" '(tab-bar-switch-to-prev-tab :wk "Prev tab")
+    "C-x t L" '((lambda (arg) (interactive "p") (tab-bar-move-tab arg)) :wk "Move tab right")
+    "C-x t l" '(tab-bar-switch-to-next-tab :wk "Switch to next tab")
+    "C-x t H" '((lambda (arg) (interactive "p") (tab-bar-move-tab (- arg))) :wk "Move tab left")
+    "C-x t h" '(tab-bar-switch-to-prev-tab :wk "Switch to previous tab")
+    "C-x t r" '(tab-bar-rename-tab :wk "Rename tab")
+    "C-x t t" '(tab-bar-switch-to-tab :wk "Switch to tab")
+    "C-x t u" '(tab-bar-undo-close-tab :wk "Undo close tab")
+    "C-x t O" '(tab-bar-close-other-tabs :wk "Close Other tabs")
+    "C-x t w" '(tab-bar-move-tab-to-frame :wk "Move tab to frame"))
+  )
+#+end_src
 
 **** window dimmer
 #+begin_src emacs-lisp
