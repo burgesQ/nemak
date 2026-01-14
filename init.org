@@ -1143,6 +1143,65 @@ modeline.
 
 *** TODO QoL
 
+**** Prompts
+
+I prefer emacs to just ask y/n not yes/no
+
+#+begin_src emacs-lisp
+(fset 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+**** shells
+
+Prevent async shell command buffers from popping-up:
+
+#+begin_src emacs-lisp
+(add-to-list 'display-buffer-alist
+  '("\\*Async Shell Command\\*.*" display-buffer-no-window))
+#+end_src
+
+**** regex
+
+Fix emacs regex
+
+#+begin_src emacs-lisp
+(setq-default pcre-mode t)
+#+end_src
+
+
+**** buffer
+
+Remember where I left off after killing a file
+
+#+begin_src emacs-lisp
+(save-place-mode 1)
+#+end_src
+
+When killing a buffer always pick the current buffer by default
+
+#+begin_src emacs-lisp
+(defun kill-current-buffer ()
+  "Kills the current buffer."
+  (interactive)
+  (kill-buffer (current-buffer)))
+(global-set-key (kbd "C-x k") 'kill-current-buffer)
+#+end_src
+
+When a file changes on disk, automatically reload its buffer silently
+
+#+begin_src emacs-lisp
+(global-auto-revert-mode 1)
+(setq global-auto-revert-non-file-buffers t)
+(setq auto-revert-verbose nil)
+#+end_src
+
+**** Symbols
+
+#+begin_src emacs-lisp
+(global-prettify-symbols-mode 1)
+#+end_src
+
+
 **** install boosted string manipulation functions
 
 The [[https://github.com/magnars/s.el][s.el]] project is a simpler string manipulation library that I (and other projects) use.
