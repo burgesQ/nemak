@@ -32,24 +32,24 @@ chemacs
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
-** TODO v1 [5/11] [45%]
+** TODO v1 [7/12] [58%]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
 *** DONE early init
 *** DONE elpa management
 *** DONE key describe (helpful)
-*** TODO keybinding
-*** TODO UI [2/3]
+*** WIP keybinding
+*** DONE UI [3/3]
 **** DONE dashboard
 **** DONE fonts / faces / emojies / ligatures
-**** WIP other stuffs (windows, box)
+**** DONE other stuffs (windows, box)
 *** TODO utils
 *** TODO claude-el
 *** TODO LSP
-*** doc (how to use chapter)
+*** TODO doc (how to use chapter)
 
-* TODO the config [0/15]
+* TODO the config [0/16]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
@@ -304,7 +304,7 @@ But when capturing, I subsequently open smaller frames that shouldn’t be odd l
 ;;; early-init.el ends here
 #+END_SRC
 
-** TODO config [0/14]
+** TODO config [0/15]
 *** init.el header
 
 #+begin_src emacs-lisp
@@ -454,7 +454,9 @@ Let's also setup the ``use-package`` macro.
 )
 #+end_src
 
-**** TODO org
+*** TODO org
+
+Let's pimp 'org'
 
 *** WIP keybinding
 
@@ -700,6 +702,24 @@ Which key for helpful emacs
 )
 #+END_SRC
 
+
+**** marginalia
+
+The [[https://github.com/minad/marginalia][marginalia]] package gives a preview of M-x functions with a one line description,
+extra information when selecting files, etc. Nice enhancement without learning any new keybindings.
+
+#+begin_src emacs-lisp
+(use-package marginalia
+  :ensure (:wait t)
+  :demand t
+  :init
+  (setq marginalia-annotators-heavy t)
+  :config
+  (add-to-list 'marginalia-command-categories '(project-find-file . file))
+  (add-to-list 'marginalia-command-categories '(projectile-find-file . file))
+  (marginalia-mode))
+#+end_src
+
 *** TODO completion
 **** TODO counsel
 **** TODO ivy
@@ -712,6 +732,299 @@ Enable visual bells
 
 #+begin_src emacs-lisp
 (setq visible-bell t)
+#+end_src
+
+**** doom
+
+#+BEGIN_SRC emacs-lisp
+(use-package doom-modeline
+  :ensure (:wait t)
+  ;; :demand t
+  ;; :defer 2
+  :init
+  (setq
+   doom-modeline-minor-modes nil
+   doom-modeline-buffer-encoding nil
+   doom-modeline-major-mode-color-icon t
+   doom-modeline-buffer-state-icon t
+   doom-modeline-buffer-modification-icon t
+   doom-modeline-lsp-icon t
+   ;; Set VCS info max length
+   doom-modeline-vcs-max-length 12
+   ;; Enable word count
+   doom-modeline-enable-word-count t
+   ;; Disable time
+   doom-modeline-time-icon nil
+   ;; Show position %
+   doom-modeline-percent-position t)
+  (doom-modeline-mode 1)
+  :config
+  (column-number-mode 1)
+  (display-battery-mode)
+  :custom
+  (doom-modeline-project-detection 'projectile "Use projectile to fetch the project")
+  )
+
+;; install nicer theme
+;; need to run M-x nerd-icons-install-fonts
+(use-package doom-themes
+  :ensure (:wait t)
+  :demand t
+  :config
+  ;; Global settings (defaults)
+  (setq
+   ;; if nil, bold is universally disabled
+   doom-themes-enable-bold t
+   ;; if nil, italics is universally disabled
+   doom-themes-enable-italic t)
+
+  (load-theme 'doom-one t)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  ;; (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+  ;; (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
+#+END_SRC
+
+**** diminish
+
+This package implements hiding or abbreviation of the modeline displays
+(lighters) of minor-modes.  With this package installed, you can add
+':diminish' to any use-package block to hide that particular mode in the
+modeline.
+
+#+BEGIN_SRC emacs-lisp
+(use-package diminish
+  :ensure (:wait t)
+  :demand t
+  :config
+  (diminish 'whitespace-mode)
+  (diminish 'eldoc-mode)
+  (diminish 'abbrev-mode)
+  (diminish 'auto-revert-mode)
+)
+#+END_SRC
+
+**** faces
+
+#+BEGIN_SRC emacs-lisp
+;; Set the default face
+(set-face-attribute 'default nil
+                    :font "Fira Code Retina"
+                    :height 120)
+
+;; Set the fixed pitch face
+(set-face-attribute 'fixed-pitch nil
+                    :font "Fira Code Retina"
+                    :height 100)
+
+;; Set the variable pitch face
+(set-face-attribute 'variable-pitch nil
+                    :font "Fira Code Retina"
+                    :height 295 :weight 'regular)
+#+END_SRC
+
+***** all-the-icons / dired
+
+Seems [[https://github.com/rainstormstudio/nerd-icons.el][nerd icons]] may be a nice alternative.
+
+#+BEGIN_SRC emacs-lisp
+;; Please run M-x all-the-icons-install-fonts
+(use-package all-the-icons
+  :ensure (:wait t)
+  :demand t
+  :if (display-graphic-p))
+
+;; (use-package dired-single) --> not found starting 30.0 ?
+
+(use-package all-the-icons-dired
+  :ensure (:wait t)
+  :demand t
+  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+
+(use-package all-the-icons-completion
+  :ensure (:wait t)
+  :demand t
+  :after (all-the-icons)
+  :init (all-the-icons-completion-mode))
+
+(use-package dired-open
+  :ensure (:wait t)
+  :demand t
+  :config
+  ;; Doesn't work as expected!
+  ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
+  (setq dired-open-extensions '(("png" . "feh")
+                                ("mkv" . "mpv"))))
+
+(use-package dired-hide-dotfiles
+  :ensure (:wait t)
+  :demand t
+  :hook (dired-mode . dired-hide-dotfiles-mode))
+#+END_SRC
+
+The way we access the font icons has always been … odd; needing to specify the collection, etc. I would like to come up with a better mechanism, so the following function abstracts that as I figure out a better solution.
+
+***** nerd-icons
+
+Used by the `nemacs-features` function ATM.
+
+#+begin_src emacs-lisp
+(use-package nerd-icons)
+
+(defun nemacs--font-icons (collection label &rest args)
+  "Abstraction over `nerd-icons' project.
+LABEL is a short icon description merged with COLLECTION to
+identify an icon to use. For instance, 'faicon or 'octicon.
+
+ARGS, a plist, contain the title, sizing and other information.
+
+For instance:
+  (font-icons 'faicon \"file\" :title \"File Management\")
+
+The goal is to take:
+  (all-the-icons-octicon \"git-branch\")
+And reformat to:
+  (font-icons 'octicon \"git-branch\")"
+  (let* ((func (intern (format "nerd-icons-%s" collection)))
+         (short (cl-case collection
+                  (octicon "oct")
+                  (faicon "fa")
+                  (mdicon "md")
+                  (codicon "cod")
+                  (sucicon "custom")
+                  (devicon "dev")
+                  (t collection)))
+         (title (plist-get args :title))
+         (space (plist-get args :space))
+         (icon (format "nf-%s-%s" short
+                       (string-replace "-" "_" label))))
+
+    ;; With the appropriate nerd-icons function name,
+    ;; an expanded icon name, we get the icon string:
+    (concat (apply func (cons icon args))
+            (cond
+             ((and title space) (concat (s-repeat space " ") title))
+             (title             (concat " " title))))))
+
+#+end_src
+
+***** ligature
+
+emacs 27+ "nativly" support ligature. See the
+[[https://github.com/mickeynp/ligature.el/wiki#cascadia--fira-code][official doc]] for more info.
+
+#+BEGIN_SRC emacs-lisp
+;;;;;;;;;;;;;;;;;;;;;;
+;; Ligature support ;;
+;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package ligature
+  :ensure (:wait t)
+  :demand t
+  :config
+  ;; Enable the "www" ligature in every possible major mode
+  (ligature-set-ligatures 't '("www"))
+  ;; Enable traditional ligature support in eww-mode, if the
+  ;; `variable-pitch' face supports it
+  (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
+  ;; Enable all Cascadia and Fira Code ligatures in programming modes
+  (ligature-set-ligatures 'prog-mode
+                          '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
+                            ;; =:= =!=
+                            ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
+                            ;; ;; ;;;
+                            (";" (rx (+ ";")))
+                            ;; && &&&
+                            ("&" (rx (+ "&")))
+                            ;; !! !!! !. !: !!. != !== !~
+                            ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
+                            ;; ?? ??? ?:  ?=  ?.
+                            ("?" (rx (or ":" "=" "\." (+ "?"))))
+                            ;; %% %%%
+                            ("%" (rx (+ "%")))
+                            ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
+                            ;; |->>-||-<<-| |- |== ||=||
+                            ;; |==>>==<<==<=>==//==/=!==:===>
+                            ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
+                                            "-" "=" ))))
+                            ;; \\ \\\ \/
+                            ("\\" (rx (or "/" (+ "\\"))))
+                            ;; ++ +++ ++++ +>
+                            ("+" (rx (or ">" (+ "+"))))
+                            ;; :: ::: :::: :> :< := :// ::=
+                            (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
+                            ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
+                            ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
+                                            "="))))
+                            ;; .. ... .... .= .- .? ..= ..<
+                            ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
+                            ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
+                            ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
+                            ;; *> */ *)  ** *** ****
+                            ("*" (rx (or ">" "/" ")" (+ "*"))))
+                            ;; www wwww
+                            ("w" (rx (+ "w")))
+                            ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
+                            ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
+                            ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
+                            ;; << <<< <<<<
+                            ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
+                                            "-"  "/" "|" "="))))
+                            ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
+                            ;; >> >>> >>>>
+                            (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
+                            ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
+                            ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
+                                         (+ "#"))))
+                            ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
+                            ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
+                            ;; __ ___ ____ _|_ __|____|_
+                            ("_" (rx (+ (or "_" "|"))))
+                            ;; Fira code: 0xFF 0x12
+                            ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
+                            ;; Fira code:
+                            "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
+                            ;; The few not covered by the regexps.
+                            "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
+  ;; Enables ligature checks globally in all buffers. You can also do it
+  ;; per mode with `ligature-mode'.
+  (global-ligature-mode t)
+  )
+#+END_SRC
+
+***** emojify
+
+Thanks to that nice [[https://ianyepan.github.io/posts/emacs-emojis/][tuto]].
+
+We've installed apple emoji following that [[https://github.com/samuelngs/apple-emoji-linux][repo]].
+
+We're asking emacs to render symbol w/ apple ttf emoji.
+#+begin_src emacs-lisp
+(use-package emojify
+  :ensure (:wait t)
+  :hook
+  (text-mode . emojify-mode) ;; bind to text-mode
+  :config
+  (when (member "Apple Color Emoji" (font-family-list))
+    (set-fontset-font
+     t 'symbol (font-spec :family "Apple Color Emoji") nil 'prepend))
+
+  (setq
+   ;; we want all emoji style
+   emojify-display-style 'unicode
+   emojify-prog-contexts  'both
+   emojify-emoji-styles '(unicode github))
+  ;; TODO: bind w/ general
+  ;; ; override binding in any mode
+  ;; (bind-key* (kbd "C-c .") #'emojify-insert-emoji))
+)
+
 #+end_src
 
 **** lines/columns
@@ -894,7 +1207,7 @@ Nice welcome screen. See the official
 (use-package dashboard
   :ensure (:wait t)
   :demand t
-  :after (all-the-icons projectile page-break-lines)
+  :after (all-the-icons nerd-icons projectile page-break-lines)
   :init
   (defun nemacs-dashboard-version ()
     (let ((smaller-version (replace-regexp-in-string
@@ -973,281 +1286,21 @@ Nice welcome screen. See the official
               (message "opt-in compilation features: %s" (nemacs-features))))
 #+END_SRC
 
-**** faces
+**** transparency
+
+Native to emacs29+
 
 #+BEGIN_SRC emacs-lisp
-;; Set the default face
-(set-face-attribute 'default nil
-                    :font "Fira Code Retina"
-                    :height 120)
-
-;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil
-                    :font "Fira Code Retina"
-                    :height 100)
-
-;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil
-                    :font "Fira Code Retina"
-                    :height 295 :weight 'regular)
+(add-to-list 'default-frame-alist '(alpha-background . 90))
 #+END_SRC
 
-***** all-the-icons / dired
+**** TODO tree
 
-Seems [[https://github.com/rainstormstudio/nerd-icons.el][nerd icons]] may be a nice alternative.
+Treemacs again ? Smth else ?
 
-#+BEGIN_SRC emacs-lisp
-;; Please run M-x all-the-icons-install-fonts
-(use-package all-the-icons
-  :ensure (:wait t)
-  :demand t
-  :if (display-graphic-p))
+**** TODO tabs
 
-;; (use-package dired-single) --> not found starting 30.0 ?
-
-(use-package all-the-icons-dired
-  :ensure (:wait t)
-  :demand t
-  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
-
-(use-package all-the-icons-completion
-  :ensure (:wait t)
-  :demand t
-  :after (all-the-icons)
-  :init (all-the-icons-completion-mode))
-
-(use-package dired-open
-  :ensure (:wait t)
-  :demand t
-  :config
-  ;; Doesn't work as expected!
-  ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
-  (setq dired-open-extensions '(("png" . "feh")
-                                ("mkv" . "mpv"))))
-
-(use-package dired-hide-dotfiles
-  :ensure (:wait t)
-  :demand t
-  :hook (dired-mode . dired-hide-dotfiles-mode))
-#+END_SRC
-
-The way we access the font icons has always been … odd; needing to specify the collection, etc. I would like to come up with a better mechanism, so the following function abstracts that as I figure out a better solution.
-
-***** nerd-icons
-
-Used by the `nemacs-features` function ATM.
-
-#+begin_src emacs-lisp
-(use-package nerd-icons
-  :ensure (:wait t)
-  :demand t)
-
-(defun nemacs--font-icons (collection label &rest args)
-  "Abstraction over `nerd-icons' project.
-LABEL is a short icon description merged with COLLECTION to
-identify an icon to use. For instance, 'faicon or 'octicon.
-
-ARGS, a plist, contain the title, sizing and other information.
-
-For instance:
-  (font-icons 'faicon \"file\" :title \"File Management\")
-
-The goal is to take:
-  (all-the-icons-octicon \"git-branch\")
-And reformat to:
-  (font-icons 'octicon \"git-branch\")"
-  (let* ((func (intern (format "nerd-icons-%s" collection)))
-         (short (cl-case collection
-                  (octicon "oct")
-                  (faicon "fa")
-                  (mdicon "md")
-                  (codicon "cod")
-                  (sucicon "custom")
-                  (devicon "dev")
-                  (t collection)))
-         (title (plist-get args :title))
-         (space (plist-get args :space))
-         (icon (format "nf-%s-%s" short
-                       (string-replace "-" "_" label))))
-
-    ;; With the appropriate nerd-icons function name,
-    ;; an expanded icon name, we get the icon string:
-    (concat (apply func (cons icon args))
-            (cond
-             ((and title space) (concat (s-repeat space " ") title))
-             (title             (concat " " title))))))
-
-#+end_src
-
-***** ligature
-
-emacs 27+ "nativly" support ligature. See the
-[[https://github.com/mickeynp/ligature.el/wiki#cascadia--fira-code][official doc]] for more info.
-
-#+BEGIN_SRC emacs-lisp
-;;;;;;;;;;;;;;;;;;;;;;
-;; Ligature support ;;
-;;;;;;;;;;;;;;;;;;;;;;
-
-(use-package ligature
-  :ensure (:wait t)
-  :demand t
-  :config
-  ;; Enable the "www" ligature in every possible major mode
-  (ligature-set-ligatures 't '("www"))
-  ;; Enable traditional ligature support in eww-mode, if the
-  ;; `variable-pitch' face supports it
-  (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
-  ;; Enable all Cascadia and Fira Code ligatures in programming modes
-  (ligature-set-ligatures 'prog-mode
-                          '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
-                            ;; =:= =!=
-                            ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
-                            ;; ;; ;;;
-                            (";" (rx (+ ";")))
-                            ;; && &&&
-                            ("&" (rx (+ "&")))
-                            ;; !! !!! !. !: !!. != !== !~
-                            ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
-                            ;; ?? ??? ?:  ?=  ?.
-                            ("?" (rx (or ":" "=" "\." (+ "?"))))
-                            ;; %% %%%
-                            ("%" (rx (+ "%")))
-                            ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
-                            ;; |->>-||-<<-| |- |== ||=||
-                            ;; |==>>==<<==<=>==//==/=!==:===>
-                            ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
-                                            "-" "=" ))))
-                            ;; \\ \\\ \/
-                            ("\\" (rx (or "/" (+ "\\"))))
-                            ;; ++ +++ ++++ +>
-                            ("+" (rx (or ">" (+ "+"))))
-                            ;; :: ::: :::: :> :< := :// ::=
-                            (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
-                            ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
-                            ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
-                                            "="))))
-                            ;; .. ... .... .= .- .? ..= ..<
-                            ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
-                            ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
-                            ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
-                            ;; *> */ *)  ** *** ****
-                            ("*" (rx (or ">" "/" ")" (+ "*"))))
-                            ;; www wwww
-                            ("w" (rx (+ "w")))
-                            ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
-                            ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
-                            ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
-                            ;; << <<< <<<<
-                            ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
-                                            "-"  "/" "|" "="))))
-                            ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
-                            ;; >> >>> >>>>
-                            (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
-                            ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
-                            ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
-                                         (+ "#"))))
-                            ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
-                            ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
-                            ;; __ ___ ____ _|_ __|____|_
-                            ("_" (rx (+ (or "_" "|"))))
-                            ;; Fira code: 0xFF 0x12
-                            ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
-                            ;; Fira code:
-                            "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
-                            ;; The few not covered by the regexps.
-                            "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
-  ;; Enables ligature checks globally in all buffers. You can also do it
-  ;; per mode with `ligature-mode'.
-  (global-ligature-mode t)
-  )
-#+END_SRC
-
-***** emojify
-
-Thanks to that nice [[https://ianyepan.github.io/posts/emacs-emojis/][tuto]].
-
-We've installed apple emoji following that [[https://github.com/samuelngs/apple-emoji-linux][repo]].
-
-We're asking emacs to render symbol w/ apple ttf emoji.
-#+begin_src emacs-lisp
-(use-package emojify
-  :ensure (:wait t)
-  :hook
-  (text-mode . emojify-mode) ;; bind to text-mode
-  :config
-  (when (member "Apple Color Emoji" (font-family-list))
-    (set-fontset-font
-     t 'symbol (font-spec :family "Apple Color Emoji") nil 'prepend))
-
-  (setq
-   ;; we want all emoji style
-   emojify-display-style 'unicode
-   emojify-prog-contexts  'both
-   emojify-emoji-styles '(unicode github))
-  ;; TODO: bind w/ general
-  ;; ; override binding in any mode
-  ;; (bind-key* (kbd "C-c .") #'emojify-insert-emoji))
-)
-
-#+end_src
-
-**** doom
-
-#+BEGIN_SRC emacs-lisp
-(use-package doom-modeline
-  :ensure (:wait t)
-  ;; :demand t
-  ;; :defer 2
-  :init
-  (setq
-   doom-modeline-minor-modes nil
-   doom-modeline-buffer-encoding nil
-   doom-modeline-major-mode-color-icon t
-   doom-modeline-buffer-state-icon t
-   doom-modeline-buffer-modification-icon t
-   doom-modeline-lsp-icon t
-   ;; Set VCS info max length
-   doom-modeline-vcs-max-length 12
-   ;; Enable word count
-   doom-modeline-enable-word-count t
-   ;; Disable time
-   doom-modeline-time-icon nil
-   ;; Show position %
-   doom-modeline-percent-position t)
-  (doom-modeline-mode 1)
-  :config
-  (column-number-mode 1)
-  (display-battery-mode)
-  :custom
-  (doom-modeline-project-detection 'projectile "Use projectile to fetch the project")
-  )
-
-;; install nicer theme
-;; need to run M-x nerd-icons-install-fonts
-(use-package doom-themes
-  :ensure (:wait t)
-  :demand t
-  :config
-  ;; Global settings (defaults)
-  (setq
-   ;; if nil, bold is universally disabled
-   doom-themes-enable-bold t
-   ;; if nil, italics is universally disabled
-   doom-themes-enable-italic t)
-
-  (load-theme 'doom-one t)
-
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Enable custom neotree theme (all-the-icons must be installed!)
-  ;; (doom-themes-neotree-config)
-  ;; or for treemacs users
-  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-  ;; (doom-themes-treemacs-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
-#+END_SRC
+Native tab ? Or smth better ?
 
 **** window dimmer
 #+begin_src emacs-lisp
@@ -1263,35 +1316,6 @@ We're asking emacs to render symbol w/ apple ttf emoji.
 
   (dimmer-mode t))
 #+end_src
-**** diminish
-
-This package implements hiding or abbreviation of the modeline displays
-(lighters) of minor-modes.  With this package installed, you can add
-':diminish' to any use-package block to hide that particular mode in the
-modeline.
-
-#+BEGIN_SRC emacs-lisp
-(use-package diminish
-  :ensure (:wait t)
-  :demand t
-  :config
-  (diminish 'whitespace-mode)
-  (diminish 'eldoc-mode)
-  (diminish 'abbrev-mode)
-  (diminish 'auto-revert-mode)
-)
-#+END_SRC
-
-**** transparency
-
-Native to emacs29+
-
-#+BEGIN_SRC emacs-lisp
-(add-to-list 'default-frame-alist '(alpha-background . 90))
-#+END_SRC
-
-**** TODO tabs
-
 *** QoL
 
 **** Prompts
@@ -1504,8 +1528,10 @@ Visual Studio like - see [[https://github.com/sebastiencs/omnibox][here]] for mo
 (use-package omnibox
   :ensure t
   :config
-  (global-set-key (kbd "M-x") 'omnibox-M-x)
-  (omnibox-setup))
+  ;; Disable omnibox-M-x as marginela offer nice completion out of the box.
+  ;; (global-set-key (kbd "M-x") 'omnibox-M-x)
+  ;; (omnibox-setup)
+  )
 
 ;; better projectile switch via omnibox UI
 (defun omnibox-projectile-switch-project nil
@@ -1530,7 +1556,7 @@ Visual Studio like - see [[https://github.com/sebastiencs/omnibox][here]] for mo
      :title "Open File: ")))
 
 ;; bind default projectile-find-file to omnibox one
-(setq projectile-switch-project-action 'omnibox-projectile-find-file)
+;; (setq projectile-switch-project-action 'omnibox-projectile-find-file)
 
 ;; counsel--M-x candidates sourced from source code
 ;; see https://github.com/abo-abo/swiper/blob/595d44264420d989e420351ea25b3c99528547c0/counsel.el#L856
@@ -1683,6 +1709,8 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
 #+END_SRC
 *** TODO IDE
 
+**** TODO flycheck / flymake / flyspell & others
+**** TODO LSP
 **** TODO magit
 **** projectile
 
@@ -1716,6 +1744,3 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
                                   :test-suffix "_test.go")
 
 #+END_SRC
-
-**** flycheck / flymake / flyspell & others
-**** TODO LSP
