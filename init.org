@@ -368,7 +368,6 @@ Let's also setup the ``use-package`` macro.
 #+begin_src emacs-lisp
 ;; Install a package via the elpaca macro
 ;; See the "recipes" section of the manual for more details.
-
 ;; (elpaca example-package)
 
 ;; Install use-package support
@@ -396,12 +395,11 @@ Let's also setup the ``use-package`` macro.
 ;; NOTE: current config tell elpaca to load package **after** emacs init.
 ;; the following will "lazy-load" a package installation
 ;; (use-package s :ensure (:wait t))
-;; will  adding :demand t will enfore it's installation
+;; while  adding :demand t will enfore it's installation
 
 (setq custom-file (expand-file-name "init.el" user-emacs-directory))
 (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror)))
 #+end_src
-
 
 
 *** TODO emacs defaults
@@ -472,7 +470,7 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
 
 ;; Install general to manage keybinding.
 (use-package general
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :config
   (general-auto-unbind-keys)
@@ -642,7 +640,7 @@ For contextual information
 #+BEGIN_SRC emacs-lisp
 ;; install an enriched help screen
 (use-package helpful
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   ;; :custom   ;; set some custom-var
   ;; (counsel-describe-function-function #'helpful-callable)
@@ -667,7 +665,7 @@ Which key for helpful emacs
 #+BEGIN_SRC emacs-lisp
 ;; install which-key
 (use-package which-key
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :init
   (setq which-key-enable-extended-define-key t)
@@ -741,7 +739,7 @@ Highlight text that extends beyond a certain column. See
 
 #+BEGIN_SRC emacs-lisp
 (use-package column-enforce-mode
-  :ensure(:wait t)
+  :ensure (:wait t)
   :diminish
   :hook
   (prog-mode . column-enforce-mode) ;; bind to prog-mode
@@ -759,7 +757,7 @@ Stolen from [[https://howardabrams.com/hamacs/ha-dashboard.html][here]] - I like
 
 #+begin_src emacs-lisp
 (use-package request
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :init
   (defvar nemacs-dad-joke nil "Holds the latest dad joke.")
@@ -872,13 +870,13 @@ Nice welcome screen. See the official
 
 #+BEGIN_SRC emacs-lisp
 (use-package page-break-lines
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
 )
 
 ;; nicer welcome screen
 (use-package dashboard
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :after (all-the-icons projectile page-break-lines)
   :init
@@ -985,25 +983,25 @@ Seems [[https://github.com/rainstormstudio/nerd-icons.el][nerd icons]] may be a 
 #+BEGIN_SRC emacs-lisp
 ;; Please run M-x all-the-icons-install-fonts
 (use-package all-the-icons
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :if (display-graphic-p))
 
 ;; (use-package dired-single) --> not found starting 30.0 ?
 
 (use-package all-the-icons-dired
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
 
 (use-package all-the-icons-completion
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :after (all-the-icons)
   :init (all-the-icons-completion-mode))
 
 (use-package dired-open
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :config
   ;; Doesn't work as expected!
@@ -1012,7 +1010,7 @@ Seems [[https://github.com/rainstormstudio/nerd-icons.el][nerd icons]] may be a 
                                 ("mkv" . "mpv"))))
 
 (use-package dired-hide-dotfiles
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :hook (dired-mode . dired-hide-dotfiles-mode))
 #+END_SRC
@@ -1025,7 +1023,7 @@ Used by the `nemacs-features` function ATM.
 
 #+begin_src emacs-lisp
 (use-package nerd-icons
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t)
 
 (defun nemacs--font-icons (collection label &rest args)
@@ -1076,7 +1074,7 @@ emacs 27+ "nativly" support ligature. See the
 ;;;;;;;;;;;;;;;;;;;;;;
 
 (use-package ligature
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :config
   ;; Enable the "www" ligature in every possible major mode
@@ -1158,7 +1156,7 @@ We've installed apple emoji following that [[https://github.com/samuelngs/apple-
 We're asking emacs to render symbol w/ apple ttf emoji.
 #+begin_src emacs-lisp
 (use-package emojify
-  :ensure(:wait t)
+  :ensure (:wait t)
   :hook
   (text-mode . emojify-mode) ;; bind to text-mode
   :config
@@ -1182,7 +1180,7 @@ We're asking emacs to render symbol w/ apple ttf emoji.
 
 #+BEGIN_SRC emacs-lisp
 (use-package doom-modeline
-  :ensure(:wait t)
+  :ensure (:wait t)
   ;; :demand t
   ;; :defer 2
   :init
@@ -1212,7 +1210,7 @@ We're asking emacs to render symbol w/ apple ttf emoji.
 ;; install nicer theme
 ;; need to run M-x nerd-icons-install-fonts
 (use-package doom-themes
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :config
   ;; Global settings (defaults)
@@ -1238,7 +1236,7 @@ We're asking emacs to render symbol w/ apple ttf emoji.
 **** window dimmer
 #+begin_src emacs-lisp
 (use-package dimmer
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :custom
   (dimmer-adjustment-mode :foreground)
@@ -1258,7 +1256,7 @@ modeline.
 
 #+BEGIN_SRC emacs-lisp
 (use-package diminish
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :config
   (diminish 'whitespace-mode)
@@ -1465,7 +1463,7 @@ popwin is a popup window manager for Emacs which makes you free from the hell of
 #+BEGIN_SRC emacs-lisp
 ;; better buffer per name position mgmt
 (use-package popwin
-  :ensure(:wait t)
+  :ensure (:wait t)
   :config
   (popwin-mode 1)
   (setq popwin:special-display-config
@@ -1562,7 +1560,7 @@ Highlight in-code TODOs
 
 #+begin_src emacs-lisp
 (use-package hl-todo
-  :ensure(:wait t)
+  :ensure (:wait t)
   :hook ((org-mode . hl-todo-mode)
          (prog-mode . hl-todo-mode)
          ;; (yaml-mode . hl-todo-mode)
@@ -1584,7 +1582,7 @@ Suggests to bind some keys to hl-todo-next in order to jump from tag to tag, but
 #+begin_src emacs-lisp
 (use-package consult-todo
   ;; :straight (:host github :repo "liuyinz/consult-todo")
-  :ensure(:wait t)
+  :ensure (:wait t)
   ;; :after (general)
   :init
   (defconst consult-todo--narrow
@@ -1605,7 +1603,7 @@ Suggests to bind some keys to hl-todo-next in order to jump from tag to tag, but
 ;; install rainbow delimites
 ;; use M-x check-parens for parenthesis error
 (use-package rainbow-delimiters
-  :ensure(:wait t)
+  :ensure (:wait t)
   :diminish
   :hook (prog-mode . rainbow-delimiters-mode))
 #+END_SRC
@@ -1617,7 +1615,7 @@ as well as org-mode, which is why rainbow works in this document.
 
 #+BEGIN_SRC  emacs-lisp
 (use-package rainbow-mode
-  :ensure(:wait t)
+  :ensure (:wait t)
   :diminish
   :hook
   ((prog-mode org-mode) . rainbow-mode))
@@ -1635,7 +1633,7 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
 
 #+begin_src emacs-lisp
 (use-package pulsar
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :bind ("<f8>" . pulsar-pulse-line)
   :custom
@@ -1662,7 +1660,7 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
 #+BEGIN_SRC emacs-lisp
 ;; projects handler
 (use-package projectile
-  :ensure(:wait t)
+  :ensure (:wait t)
   :demand t
   :after (general)
   :diminish
