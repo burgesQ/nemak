@@ -657,8 +657,7 @@ Which key for helpful emacs
 
 **** landing dashboard
 
-***** dad jokes ?
-
+***** dad jokes
 Stolen from [[https://howardabrams.com/hamacs/ha-dashboard.html][here]] - I like the idea :nerd_face:.
 
 #+begin_src emacs-lisp
@@ -786,9 +785,39 @@ Nice welcome screen. See the official
   :demand t
   :after (all-the-icons projectile page-break-lines)
   :init      ; tweak dashboard config before loading it
+  (defun nemacs-dashboard-version ()
+    (let ((smaller-version (replace-regexp-in-string
+                            (rx " (" (zero-or-more any) eol) "" (emacs-version))))
+      (string-replace "\n" "" smaller-version)))
+
+  (setq dashboard-banner-logo-title
+        (format "Emacs with %s — %s"
+                (if (and (fboundp 'native-comp-available-p)
+                         (native-comp-available-p))
+                    "with Native Compilation" "")
+                (nemacs-dashboard-version))
+
+        ;; Choose a random image from my collection of startup images:
+        ;; dashboard-startup-banner (thread-first "~/src/hamacs/support/dashboard"
+        ;;                                        (directory-files t (rx ".png"))
+        ;;                                        (seq-random-elt))
+        ;; dashboard-center-content t
+        ;; dashboard-set-init-info t
+        ;; dashboard-projects-switch-function 'project-switch-project
+        ;; dashboard-items '(;; (projects . 5)
+        ;;                   ;; (agenda . 5)
+        ;;                   ;; (bookmarks . 5)
+        ;;                  )
+        ;; dashboard-set-heading-icons t
+        dashboard-footer-messages (list (nemacs--dad-joke)))
+
+
+
+  ;; (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
+
+
   (setq initial-buffer-choice 'dashboard-refresh-buffer)
   (setq dashboard-projects-backend 'projectile)
-
 
   ;; horizontally center content
   (setq dashboard-center-content t)
@@ -802,55 +831,53 @@ Nice welcome screen. See the official
   (setq dashboard-set-file-icons t)
 
   (setq dashboard-set-navigator t)
-  ; close agenda buffers
+  ;; close agenda buffers
   (setq dashboard-agenda-release-buffers t)
-  (setq dashboard-set-init-info t) ; package & loadtime
+  ;; package & loadtime
+  (setq dashboard-set-init-info t)
 
-  ;; (setq dashboard-display-icons-p t) ;; use `all-the-icons' package
-  ;; (setq dashboard-icon-type 'nerd-icons) ;; use `all-the-icons' package
+  (setq dashboard-display-icons-p t) ;; use `all-the-icons' package
   (setq dashboard-icon-type 'all-the-icons) ;; use `all-the-icons' package
 
   (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name)
 
-  (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
+
   (setq dashboard-startup-banner "/home/master/repo/perso/nemacs/logo/aum.xpm")
   (setq dashboard-image-banner-max-width 500)
   (setq dashboard-image-banner-max-height 500)
   (setq dashboard-image-extra-props '(:mask heuristic))
 
-
-  (setq dashboard-items '((agenda . 15)
+  (setq dashboard-items '(
+                          ;; (agenda . 15)
                           (recents . 15)
                           (projects . 15)
                           ;; (bookmarks . 5)
                           ;; (registers . 5)
                           ))
 
-  (setq dashboard-item-shortcuts '((recents   . "r")
-                                 (bookmarks . "m")
-                                 (projects  . "p")
-                                 (agenda    . "a")
-                                 (registers . "e")
-                                 ))
+  (setq dashboard-item-shortcuts '(
+                                   (recents   . "r")
+                                   ;; (bookmarks . "m")
+                                   (projects  . "p")
+                                   ;; (agenda    . "a")
+                                   ;; (registers . "e")
+                                   ))
 
   (setq dashboard-item-names '(("Recent Files:"               . "Recently opened files:")
                                ("Agenda for today:"           . "Today's agenda:")
-                               ("Agenda for the coming week:" . "Agenda:")
+                               ;; ("Agenda for the coming week:" . "Agenda:")
                                ))
 
   :when (not command-line-args-left)
   :config
   (dashboard-setup-startup-hook)
-  (dashboard-modify-heading-icons '((recents . "file-text"))
+  (dashboard-modify-heading-icons '((recents . "file-text")))
+  )
 
-
-                                  ;; Format: "(icon title help action face prefix suffix)"
-
-)
-)
-
+(add-hook 'dashboard-mode-hook
+            (lambda ()
+              (message "opt-in compilation features: %s" (nemacs-features))))
 #+END_SRC
-
 
 **** faces
 
@@ -912,33 +939,50 @@ Seems [[https://github.com/rainstormstudio/nerd-icons.el][nerd icons]] may be a 
 
 The way we access the font icons has always been … odd; needing to specify the collection, etc. I would like to come up with a better mechanism, so the following function abstracts that as I figure out a better solution.
 
+***** nerd-icons
+
+Used by the `nemacs-features` function ATM.
+
 #+begin_src emacs-lisp
+(use-package nerd-icons
+  :ensure(:wait t)
+  :demand t)
+
 (defun font-icons (collection label &rest args)
-  "Abstraction over `all-the-icons' project.
-LABEL is the icon name as used by all-the-icons.
-COLLECTION identifies the icon set (e.g. 'octicon, 'faicon).
+  "Abstraction over `nerd-icons' project.
+LABEL is a short icon description merged with COLLECTION to
+identify an icon to use. For instance, 'faicon or 'octicon.
 
-ARGS is a plist passed directly to the all-the-icons function.
+ARGS, a plist, contain the title, sizing and other information.
 
-Example:
-  (font-icons 'octicon \"git-branch\" :title \"Git\")
+For instance:
+  (font-icons 'faicon \"file\" :title \"File Management\")
 
-Reformats:
+The goal is to take:
   (all-the-icons-octicon \"git-branch\")
-into:
+And reformat to:
   (font-icons 'octicon \"git-branch\")"
-  (let* ((func (intern (format "all-the-icons-%s" collection)))
+  (let* ((func (intern (format "nerd-icons-%s" collection)))
+         (short (cl-case collection
+                  (octicon "oct")
+                  (faicon "fa")
+                  (mdicon "md")
+                  (codicon "cod")
+                  (sucicon "custom")
+                  (devicon "dev")
+                  (t collection)))
          (title (plist-get args :title))
          (space (plist-get args :space))
-         ;; remove our custom keys before passing args through
-         (icon-args (cl-loop for (k v) on args by #'cddr
-                             unless (memq k '(:title :space))
-                             append (list k v))))
-    (concat
-     (apply func label icon-args)
-     (cond
-      ((and title space) (concat (s-repeat space " ") title))
-      (title             (concat " " title))))))
+         (icon (format "nf-%s-%s" short
+                       (string-replace "-" "_" label))))
+
+    ;; With the appropriate nerd-icons function name,
+    ;; an expanded icon name, we get the icon string:
+    (concat (apply func (cons icon args))
+            (cond
+             ((and title space) (concat (s-repeat space " ") title))
+             (title             (concat " " title))))))
+
 #+end_src
 
 ***** ligature
