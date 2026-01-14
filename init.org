@@ -34,11 +34,10 @@ $ emacs -q -l ~/repo/perso/nemacs/emacs-init.el --init-directory=~/repo/perso/ne
 chemacs
 
 
-
 * TODO TODOs
-** WIP v1 [1/8] [12%]
+** TODO v1 [2/8] [25%]
 *** DONE early init
-*** TODO elpa management
+*** DONE elpa management
 *** TODO keybinding
 *** TODO key describe (helpful)
 *** TODO claude-el
@@ -91,11 +90,46 @@ We configure elpaca to download packages per emacs version
 (setq inhibit-default-init nil)
 ;; Report native comp async warnings as errors.
 (setq native-comp-async-report-warnings-errors nil)
+#+END_SRC
+
+Skipping a bunch of regular expression searching in the file-name-handler-alist should improve start time.
+
+#+begin_src emacs-lisp
 ;; skipping bunch of regex at start time
 (defvar default-file-name-handler-alist
   file-name-handler-alist)
 (setq file-name-handler-alist nil)
-#+END_SRC
+#+end_src
+
+*** debug
+
+Running this form will launch the debugger after loading a package.
+This is useful for finding out when a dependency is requiring a package
+(perhaps earlier than you want).
+Use by tangling this block and launching Emacs with emacs --debug-init.
+
+#+begin_src emacs-lisp
+;; (unless (string-empty-p file)
+;;   (eval-after-load file
+;;     '(debug)))
+#+end_src
+
+Similarly, this variable will hit the debugger when a message matches its regexp.
+
+#+begin_src emacs-lisp
+;; (setq debug-on-message "")
+#+end_src
+
+Adding a variable watcher can be a useful way to track down initialization and mutation of a variable.
+
+#+begin_src emacs-lisp
+;; (add-variable-watcher 'org-capture-after-finalize-hook
+;;                       (lambda (symbol newval operation where)
+;;                         (debug)
+;;                         (message "%s set to %s" symbol newval)))
+
+;; (setq debug-on-error t)
+#+end_src
 
 *** gbc tweak
 
@@ -119,8 +153,9 @@ The following is a table shows values from popular Emacs configurations.
   (run-with-idle-timer
    5 nil
    (lambda () (unless (frame-focus-state) (garbage-collect)))))
+#+END_SRC
 
-;; ;; FIXME: not called via w/ after-init-hook
+#+BEGIN_SRC emacs-lisp
 (defun +nemacs/better-init-values ()
   "Set GC value to some sensitive one."
   (run-with-idle-timer
@@ -146,31 +181,46 @@ The following is a table shows values from popular Emacs configurations.
 Modify GUI elements before we have a chance to peek.
 
 
+Turning off these visual elements before UI initialization should speed up init.
+
 #+BEGIN_SRC emacs-lisp
-;; disable some UI stuff for quicker startup
-(push
- ;; disables menubar
- '(menu-bar-lines . 0) default-frame-alist)
-(push
- ;; disables toolbar
- '(tool-bar-lines . 0) default-frame-alist)
-(push
- ;; disables vertical scrollbar
- '(vertical-scroll-bars) default-frame-alist)
+;; disables menubar
+(push '(menu-bar-lines . 0) default-frame-alist)
+;; disables toolbar
+(push '(tool-bar-lines . 0) default-frame-alist)
+;; disables vertical scrollbar
+(push '(vertical-scroll-bars) default-frame-alist)
+#+END_SRC
 
-;; change clientframe close instruction
+Prevent instructions on how to close an emacsclient frame.
+
+#+BEGIN_SRC emacs-lisp
 (setq server-client-instructions nil)
-(setq frame-inhibit-implied-resize t)
+#+END_SRC
 
+Implicitly resizing the Emacs frame adds to init time. Fonts larger than the system default can cause frame resizing, which adds to startup tim.e
+
+#+BEGIN_SRC emacs-lisp
+(setq frame-inhibit-implied-resize t)
+#+END_SRC
+
+Ignore X resources.
+
+#+BEGIN_SRC emacs-lisp
+(advice-add #'x-apply-session-resources :override #'ignore)
+#+END_SRC
+
+Silence ring bell.
+
+#+BEGIN_SRC emacs-lisp
+(setq ring-bell-function #'ignore)
+#+END_SRC
+
+Lets tune the UI to something more minimal.
+
+#+BEGIN_SRC emacs-lisp
 ;; enable smooth scrolling
 (pixel-scroll-precision-mode 1)
-
-;; ignore X resources
-(advice-add #'x-apply-session-resources :override #'ignore)
-;; silence bell
-(setq ring-bell-function #'ignore)
-
-;; minimal UI
 ;; disables menubar
 (menu-bar-mode -1)
 ;; disables toolbar
@@ -179,7 +229,6 @@ Modify GUI elements before we have a chance to peek.
 (scroll-bar-mode -1)
 
 (setq
-
  ;; no thanks
  inhibit-splash-screen t
  ;; don't use system file dialog
@@ -190,14 +239,22 @@ Modify GUI elements before we have a chance to peek.
  tab-bar-close-button-show nil
  ;; don't show tab close button
  tab-line-close-button-show nil)
+#+END_SRC
 
+Let's tune the system windows.
+
+#+BEGIN_SRC emacs-lisp
 ;; undecorate windows
 ;; this should be called before toggle-frame-maximized
 (set-frame-parameter nil 'undecorated t)
 (set-frame-parameter nil 'internal-border-width 0)
 (add-to-list 'default-frame-alist '(undecorated . t))
 (add-to-list 'default-frame-alist '(internal-border-width . 0))
+#+END_SRC
 
+Set a few fonts.
+
+#+BEGIN_SRC emacs-lisp
 ;; Set fonts.
 (push '(font . "Fira Code Retina") default-frame-alist)
 (set-face-font 'default "Fira Code Retina")
@@ -205,13 +262,30 @@ Modify GUI elements before we have a chance to peek.
 (copy-face 'default 'fixed-pitch)
 ;; NOTE: needed for emacsclient - fix reduced font size
 (add-to-list 'default-frame-alist '(font . "Fira Code Retina"))
-
-
-;; Start as maximized window.
-(unless (frame-parameter nil 'fullscreen)
-  (toggle-frame-maximized))
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
 #+END_SRC
+
+And start as a maximized window.
+
+Taken from this [[https://emacsredux.com/blog/2020/12/04/maximize-the-emacs-frame-on-startup/][essay]], I figured I would start the initial frame automatically in fullscreen, but not any subsequent frames (as this could be part of the capturing system).
+
+#+BEGIN_SRC emacs-lisp
+;; Start as maximized window. (old implem)
+;; (unless (frame-parameter nil 'fullscreen)
+;;   (toggle-frame-maximized))
+;; (add-to-list 'default-frame-alist '(fullscreen . maximized))
+
+
+(add-to-list 'initial-frame-alist '(fullscreen . maximized))
+
+#+END_SRC
+
+But when capturing, I subsequently open smaller frames that shouldn’t be odd looking:
+
+#+begin_src emacs-lisp
+(add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+(add-to-list 'default-frame-alist '(ns-appearance . dark))
+(add-to-list 'default-frame-alist '(undecorated-round . t))
+#+end_src
 
 *** let's "provide" the early init
 
@@ -343,6 +417,7 @@ Let's also setup the ``use-package`` macro.
 
 
 *** keybinding
+
 **** general
 
 Better key-bindings management.
@@ -573,11 +648,12 @@ Which key for helpful emacs
   "C-x t" "Tabs mgmt")
 #+END_SRC
 
-
 *** TODO completion
+
 **** TODO ivy
 
 *** TODO UI
+
 **** faces
 
 #+BEGIN_SRC emacs-lisp
@@ -875,17 +951,12 @@ The [[https://github.com/magnars/s.el][s.el]] project is a simpler string manipu
 Manipulate file paths with the [[https://github.com/rejeep/f.el][f.el]] project.
 
 #+begin_src emacs-lisp
-(use-package s
-  ;; :ensure(:wait t))
-    ;; :demand t)
-)
-(use-package f
-  ;; :ensure(:wait t)
-  ;; :demand t)
-)
+(use-package s)
+(use-package f)
 #+end_src
 
 *** IDE
+
 **** projectile
 
 #+BEGIN_SRC emacs-lisp
