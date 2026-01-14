@@ -506,6 +506,14 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     "c o" '((lambda () (interactive) (find-file "~/repo/perso/nemacs_2/init.org"))
             :wk "Open emacs config"))
 
+(nemacs/leader-keys
+   "e" '(:ignore t :wk "Evaluate")
+   "e b" '(eval-buffer :wk "Evaluate elisp in buffer")
+   "e d" '(eval-defun :wk "Evaluate defun containing or after point")
+   "e e" '(eval-expression :wk "Evaluate and elisp expression")
+   "e l" '(eval-last-sexp :wk "Evaluate elisp expression before point")
+   "e r" '(eval-region :wk "Evaluate elisp in region"))
+
   (nemacs/leader-keys
     "E" '(:ignore t :wk "Error")
     "E b" '((lambda () (interactive) (setq compilations-scroll-output t)) :wk "Errror buffer to bottom")
@@ -513,14 +521,6 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
   ;;   "E l" '(flycheck-list-errors :wk "List flycheck error")
   ;;   "E t" '(lsp-treemacs-errors-list :wk "List error tree")
     )
-
-  (nemacs/leader-keys
-   "e" '(:ignore t :wk "Evaluate")
-   "e b" '(eval-buffer :wk "Evaluate elisp in buffer")
-   "e d" '(eval-defun :wk "Evaluate defun containing or after point")
-   "e e" '(eval-expression :wk "Evaluate and elisp expression")
-   "e l" '(eval-last-sexp :wk "Evaluate elisp expression before point")
-   "e r" '(eval-region :wk "Evaluate elisp in region"))
 
   ;; file manipulation
   ;; namespace mostly used by 'sudo-edit' and 'f.el'
@@ -542,6 +542,12 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
   ;;  "g S"  '(magit-stage-file :wk "Git stage file")
   ;;  "g s"  '(magit-status :wk "Git status")
   ;;  "g U"  '(magit-unstage-file :wk "Git unstage file")
+    )
+
+  ;; goto
+  ;; namespace used 'consult-todo' & others
+  (nemacs/leader-keys
+    "G" '(:ignore t :wk "GoTo")
     )
 
   ;; help
@@ -1581,9 +1587,8 @@ Suggests to bind some keys to hl-todo-next in order to jump from tag to tag, but
 
 #+begin_src emacs-lisp
 (use-package consult-todo
-  ;; :straight (:host github :repo "liuyinz/consult-todo")
   :ensure (:wait t)
-  ;; :after (general)
+  :after (general)
   :init
   (defconst consult-todo--narrow
     '((?t . "TODO")
@@ -1591,10 +1596,11 @@ Suggests to bind some keys to hl-todo-next in order to jump from tag to tag, but
       (?h . "HACK")
       (?i . "IDEA")
       (?l . "LINK")
-      (?n . "NOTE"))
-  ;;   "Mapping of narrow and keywords.")
-  ;; :general (:states 'normal "g t" '("jump todos" . consult-todo))
-    ))
+      (?n . "NOTE")))
+  :general
+  (nemacs/leader-keys
+    "G t" '("GoTo ToDos" . consult-todo))
+  )
 #+end_src
 
 **** Rainbow delimiters
