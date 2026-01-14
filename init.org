@@ -46,12 +46,15 @@ chemacs
 **** DONE dashboard
 **** DONE fonts / faces / emojies / ligatures
 **** DONE other stuffs (windows, box)
-*** TODO utils
+*** WIP utils [1/2]
+- [X] magit
+- [ ] org
 *** TODO claude-el
 *** TODO LSP
 *** TODO doc (how to use chapter)
 
-* TODO the config [0/14]
+
+* TODO the config [0/12]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
@@ -306,7 +309,7 @@ But when capturing, I subsequently open smaller frames that shouldn’t be odd l
 ;;; early-init.el ends here
 #+END_SRC
 
-** TODO config [0/13]
+** TODO config [0/11]
 *** init.el header
 
 #+begin_src emacs-lisp
@@ -513,10 +516,10 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
   (nemacs/leader-keys
     "c" '(:ignore t :wk "Config")
     "c r" '((lambda () (interactive)
-	      (elpaca-process-queues)
+              (elpaca-process-queues)
               (elpaca-wait)
-	      (load-file "~/repo/perso/nemacs_2/emacs-init.el"))
-	    ;; another option: "c r" '(restart-emacs :wk "Restart Emacs") + (use-package restart-emacs  :ensure t)
+              (load-file "~/repo/perso/nemacs_2/emacs-init.el"))
+            ;; another option: "c r" '(restart-emacs :wk "Restart Emacs") + (use-package restart-emacs  :ensure t)
             :wk "Reload emacs config")
     "c o" '((lambda () (interactive) (find-file "~/repo/perso/nemacs_2/init.org"))
             :wk "Open emacs config"))
@@ -543,20 +546,10 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     "f" '(:ignore t :wk "Files")
     )
 
+  ;; file manipulation
+  ;; namespace mostly used by 'magit'
   (nemacs/leader-keys
     "g" '(:ignore t :wk "Git")
-  ;;  "g b"  '(magit-branch :wk "Git branch")
-  ;;  "g B"  '(magit-blame  :wk "Git blame")
-  ;;  "g c"  '(magit-clone    :wk "Git clone")
-  ;;  "g f"  '(:ignore t :which-key "Git file")
-  ;;  "g ff" '(magit-find-file :wk "Git find file")
-  ;;  "g fh" '(magit-log-buffer-file :wk "Git log buffer fule")
-  ;;  "g i"  '(magit-init :wk "Git init")
-  ;;  "g L"  '(magit-list-repositories :wk "Git list repositories")
-  ;;  "g m"  '(magit-dispatch :wk "Git dispatch")
-  ;;  "g S"  '(magit-stage-file :wk "Git stage file")
-  ;;  "g s"  '(magit-status :wk "Git status")
-  ;;  "g U"  '(magit-unstage-file :wk "Git unstage file")
     )
 
   ;; goto
@@ -679,6 +672,22 @@ For contextual information
     "h k" '(helpful-key :wk "helpful key"))
   )
 #+END_SRC
+**** marginalia
+
+The [[https://github.com/minad/marginalia][marginalia]] package gives a preview of M-x functions with a one line description,
+extra information when selecting files, etc. Nice enhancement without learning any new keybindings.
+
+#+begin_src emacs-lisp
+(use-package marginalia
+  :ensure (:wait t)
+  :demand t
+  :init
+  (setq marginalia-annotators-heavy t)
+  :config
+  (add-to-list 'marginalia-command-categories '(project-find-file . file))
+  (add-to-list 'marginalia-command-categories '(projectile-find-file . file))
+  (marginalia-mode))
+#+end_src
 
 **** WIP which-key
 
@@ -716,28 +725,62 @@ Which key for helpful emacs
 )
 #+END_SRC
 
-**** marginalia
-
-The [[https://github.com/minad/marginalia][marginalia]] package gives a preview of M-x functions with a one line description,
-extra information when selecting files, etc. Nice enhancement without learning any new keybindings.
-
-#+begin_src emacs-lisp
-(use-package marginalia
-  :ensure (:wait t)
-  :demand t
-  :init
-  (setq marginalia-annotators-heavy t)
-  :config
-  (add-to-list 'marginalia-command-categories '(project-find-file . file))
-  (add-to-list 'marginalia-command-categories '(projectile-find-file . file))
-  (marginalia-mode))
-#+end_src
-
 *** TODO completion
 
 Generic auto-complete with boosted Ivy.
 
-**** TODO company
+**** counsel
+
+Spread ivy to M-x with [[https://github.com/abo-abo/swiper#counsel][counsel (ivy#counsel)]].
+
+#+begin_src  emacs-lisp
+(use-package counsel
+  :ensure (:wait t)
+  :demand t
+  :diminish
+  :config (counsel-mode)
+  :general
+  (general-define-key
+   "C-x b" '(counsel-switch-buffer :wk "Better file buffer")
+   "C-x C-f" '(counsel-find-file :wk "Beffer find file")
+   )
+  :bind (("M-x" . counsel-M-x)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history)))
+
+(use-package counsel-projectile
+  :ensure (:wait t)
+  :demand t
+  :diminish
+  :after projectile
+  :config (counsel-projectile-mode))
+#+end_src
+
+**** swiper
+
+Enhance Ivy with [[https://github.com/abo-abo/swiper][swiper]].
+
+#+begin_src emacs-lisp
+(use-package swiper
+  :config
+  ;; TODO: add which key
+  (global-set-key (kbd "C-s") 'swiper-isearch))
+#+end_src
+
+**** smex
+
+Enhance ivy & other with frequently / most used invocation.
+See [[https://github.com/nonsequitur/smex][the official repo]] for more.
+
+#+BEGIN_SRC emacs-lisp
+(use-package smex
+  :ensure (:wait t)
+  :demand t
+  :after (ivy counsel)
+  :config
+  (smex-initialize)
+)
+#+END_SRC
 
 **** ivy
 
@@ -746,7 +789,7 @@ See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
 #+begin_src emacs-lisp
 ;; Use 'ivy' instead of 'helm' (default).
 (use-package ivy
-  :ensure (:wait t)
+  ;; :ensure (:wait t)
   :demand t
   :diminish ivy-mode
   ;; TODO: which-key
@@ -808,60 +851,7 @@ See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
                                'ivy-rich-switch-buffer-transformer))
 #+end_src
 
-**** counsel
-
-Spread ivy to M-x with [[https://github.com/abo-abo/swiper#counsel][counsel (ivy#counsel)]].
-
-#+begin_src  emacs-lisp
-(use-package counsel
-  :ensure (:wait t)
-  :demand t
-  :diminish
-  :config (counsel-mode)
-  :general
-  (general-define-key
-   "C-x b" '(counsel-switch-buffer :wk "Better file buffer")
-   "C-x C-f" '(counsel-find-file :wk "Beffer find file")
-   )
-  :bind (("M-x" . counsel-M-x)
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history)))
-
-(use-package counsel-projectile
-  :ensure (:wait t)
-  :demand t
-  :diminish
-  :after projectile
-  :config (counsel-projectile-mode))
-#+end_src
-
-**** swiper
-
-Enhance Ivy with [[https://github.com/abo-abo/swiper][swiper]].
-
-#+begin_src emacs-lisp
-(use-package swiper
-  :config
-  ;; TODO: add which key
-  (global-set-key (kbd "C-s") 'swiper-isearch))
-#+end_src
-
-**** smex
-
-Enhance ivy & other with frequently / most used invocation.
-See [[https://github.com/nonsequitur/smex][the official repo]] for more.
-
-#+BEGIN_SRC emacs-lisp
-(use-package smex
-  :ensure (:wait t)
-  :demand t
-  :after (ivy counsel)
-  :config
-  (smex-initialize)
-)
-#+END_SRC
-
-*** TODO UI
+*** UI
 **** bell
 
 Enable visual bells
@@ -1458,7 +1448,7 @@ Let's use neotree, nicer than treemacs
                   (setq auto-hscroll-mode nil)))))
 #+end_src
 
-**** TODO tabs
+**** tabs
 
 Native tab ? Or smth better ?
 
@@ -1467,25 +1457,90 @@ Native tab ? Or smth better ?
   :custom
   (tab-bar-close-button-show nil "Dont' show the x button on tabs")
   (tab-bar-new-button-show   nil)
-  (tab-bar-show  nil "hide the tab bar. Use commands to access tabs.")
+  ;;(tab-bar-show  nil "hide the tab bar. Use commands to access tabs.")
+  (tab-bar-tab-hints t)
+  (tab-bar-auto-width nil)
+  (tab-bar-separator " ")
+  (tab-bar-format '(tab-bar-format-tabs-groups
+                    tab-bar-format-tabs
+                    tab-bar-separator
+                    tab-bar-format-add-tab))
   :general
   (general-define-key
     "C-x t b" '(tab-bar-history-back :wk "Backward history tab")
     "C-x t d" '(tab-bar-close-tab :wk "Close tab")
     "C-x t f" '(tab-bar-history-forward :wk "Forward history tab")
-    "C-x t N" '(tab-bar-new-tab :wk "New tab")
-    "C-x t n" '(tab-bar-switch-to-next-tab :wk "Next tab")
-    "C-x t p" '(tab-bar-switch-to-prev-tab :wk "Prev tab")
-    "C-x t L" '((lambda (arg) (interactive "p") (tab-bar-move-tab arg)) :wk "Move tab right")
-    "C-x t l" '(tab-bar-switch-to-next-tab :wk "Switch to next tab")
+    "C-x t g" '(nemacs/tab-switch-to-group :wk "Switch to tab group")
     "C-x t H" '((lambda (arg) (interactive "p") (tab-bar-move-tab (- arg))) :wk "Move tab left")
     "C-x t h" '(tab-bar-switch-to-prev-tab :wk "Switch to previous tab")
+    "C-x t l" '(tab-bar-switch-to-next-tab :wk "Switch to next tab")
+    "C-x t L" '((lambda (arg) (interactive "p") (tab-bar-move-tab arg)) :wk "Move tab right")
+    "C-x t n" '(tab-bar-switch-to-next-tab :wk "Switch to Next tab")
+    "C-x t N" '(tab-bar-new-tab :wk "New tab")
+    "C-x t p" '(tab-bar-switch-to-prev-tab :wk "Prev tab")
+    "C-x t P" '(nemacs/tab-group-from-project :wk "Group tabs per project")
     "C-x t r" '(tab-bar-rename-tab :wk "Rename tab")
     "C-x t t" '(tab-bar-switch-to-tab :wk "Switch to tab")
     "C-x t u" '(tab-bar-undo-close-tab :wk "Undo close tab")
     "C-x t O" '(tab-bar-close-other-tabs :wk "Close Other tabs")
     "C-x t w" '(tab-bar-move-tab-to-frame :wk "Move tab to frame"))
   )
+
+;; First, tab-bar-tab-name-format-hints: I want to put some arrows around the hints number, and NOT show the buffer name.
+(defun tab-bar-tab-name-format-hints (name _tab i)
+  (if tab-bar-tab-hints (concat (format "»%d«" i) "") name))
+
+(defun tab-bar-tab-group-format-default (tab _i &optional current-p)
+  (propertize
+   (concat (funcall tab-bar-tab-group-function tab))
+   'face (if current-p 'tab-bar-tab-group-current 'tab-bar-tab-group-inactive)))
+
+(defun nemacs/tab-group-from-project ()
+  "Call `tab-group` with the current project name as the group."
+  (interactive)
+  (when-let* ((proj (project-current))
+			  (name (file-name-nondirectory
+					 (directory-file-name (project-root proj)))))
+	(tab-group (format "[%s]" name))))
+
+
+(add-to-list 'display-buffer-alist
+			 '("\\*scratch\\*"
+			   (display-buffer-in-tab display-buffer-full-frame)
+			   (tab-group . "[EMACS]")))
+
+(defun nemacs/tab-switch-to-group ()
+  "Prompt for a tab group and switch to its first tab.
+Uses position instead of index field."
+  (interactive)
+  (let* ((tabs (funcall tab-bar-tabs-function)))
+	(let* ((groups (delete-dups (mapcar (lambda (tab)
+										  (funcall tab-bar-tab-group-function tab))
+										tabs)))
+		   (group (completing-read "Switch to group: " groups nil t)))
+	  (let ((i 1) (found nil))
+		(dolist (tab tabs)
+		  (let ((tab-group (funcall tab-bar-tab-group-function tab)))
+			(when (and (not found)
+					   (string= tab-group group))
+			  (setq found t)
+			  (tab-bar-select-tab i)))
+		  (setq i (1+ i)))))))
+
+;; (custom-set-faces
+;;   '(tab-bar
+;; 	((t (:background "#232635" :foreground "#A6Accd"))))
+;;   '(tab-bar-tab
+;; 	((t (:background "#232635" :underline t))))
+;;   '(tab-bar-tab-inactive
+;; 	((t ( ;; :background "#232635" ;; uncomment to use this
+;; 		  ;; :box (:line-width 1 :color "#676E95")
+;; 		  ))))
+;;   '(tab-bar-tab-group-current
+;; 	((t (:background "#232635" :foreground "#A6Accd" :underline t))))
+;;   '(tab-bar-tab-group-inactive
+;; 	((t (:background "#232635" :foreground "#777")))))
+
 #+end_src
 
 **** window dimmer
@@ -1910,26 +1965,89 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
 *** TODO IDE
 
 **** TODO flycheck / flymake / flyspell & others
-**** TODO magit
 **** TODO claude.el
 **** TODO LSP
 
 
-**** treesitter
+**** magit
 
-Auto install treesitter sources if they’re not present
 
-#+begin_src emacs-lisp
-;; (use-package treesit-auto
-;;   :ensure (:wait t)
-;;   :demand t
-;;   :custom
-;;   (treesit-auto-install 'prompt)
-;;   :config
-;;   (setq treesit-auto-langs '(javascript typescript tsx css html))
-;;   (treesit-auto-add-to-auto-mode-alist '(javascript typescript tsx css html))
-;;   (global-treesit-auto-mode))
-#+end_src
+#+BEGIN_SRC emacs-lisp
+;;;;;;;;;;;;;;;;;
+;; magit stuff ;;
+;;;;;;;;;;;;;;;;;
+
+(use-package sqlite3
+  :ensure (:wait t)
+  :demand t)
+
+(defun nemacs/magit-display-buffer-pop-up-frame (buffer)
+  "Create or update the magit status dedicated buffer window"
+  (if (with-current-buffer buffer (eq major-mode 'magit-status-mode))
+      (display-buffer buffer
+                      '((display-buffer-reuse-window
+                         display-buffer-pop-up-frame)
+                        (reusable-frames . t)))
+    (magit-display-buffer-traditional buffer)))
+
+;; install magit for git management
+(use-package magit
+  ;; :ensure (:wait t)
+  ;; :demand t
+  :after (general)
+  :commands (magit-status magit-get-current-branch)
+  :custom
+  (magit-display-buffer-function #'
+   ;; magit-display-buffer-same-window-except-diff-v1)
+   nemacs/magit-display-buffer-pop-up-frame)
+  :config
+  (magit-rebase-commit-arguments '("--format=%h %an %s"))
+  (transient-bind-q-to-quit)
+  :general
+  (nemacs/leader-keys
+    "g b"  '(magit-branch :wk "Git branch")
+    "g B"  '(magit-blame  :wk "Git blame")
+    "g c"  '(magit-clone    :wk "Git clone")
+    "g f"  '(:ignore t :which-key "Git file")
+    "g f f" '(magit-find-file :wk "Git find file")
+    "g f h" '(magit-log-buffer-file :wk "Git log buffer fule")
+    "g i"  '(magit-init :wk "Git init")
+    "g L"  '(magit-list-repositories :wk "Git list repositories")
+    "g m"  '(magit-dispatch :wk "Git dispatch")
+    "g S"  '(magit-stage-file :wk "Git stage file")
+    "g s"  '(magit-status :wk "Git status")
+    "g U"  '(magit-unstage-file :wk "Git unstage file")
+    )
+)
+
+(use-package magit-todos :after (magit forge))
+#+END_SRC
+
+***** forge
+
+Forge allow to fetch extra meta-data from github & gitlab.
+
+See [[https://magit.vc/manual/forge/Token-Creation.html#Token-Creation][token creation]] and [[https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started][getting started]].
+
+TLDR:
+
+#+BEGIN_EXAMPLE console
+$ cat .authinfo
+machine gitlab.com/api/v4 login [username]^forge password [token]
+#+END_EXAMPLE
+
+#+BEGIN_SRC  emacs-lisp
+(use-package forge
+  ;; :ensure (:wait t)
+  ;; :demand t
+  :after magit
+  :config
+  (add-to-list 'forge-alist
+               '("gitlab.frafos.net" "gitlab.frafos.net/api/v4"
+                 "gitlab.frafos.net" forge-gitlab-repository)))
+(setq auth-sources '("~/.authinfo"))
+#+END_SRC
+>>>>>>> Stashed changes
 
 **** projectile
 
@@ -1963,3 +2081,16 @@ Auto install treesitter sources if they’re not present
                                   :test-suffix "_test.go")
 
 #+END_SRC
+**** treesitter
+
+#+begin_src emacs-lisp
+;; (use-package treesit-auto
+;;   :ensure (:wait t)
+;;   :demand t
+;;   :custom
+;;   (treesit-auto-install 'prompt)
+;;   :config
+;;   (setq treesit-auto-langs '(javascript typescript tsx css html))
+;;   (treesit-auto-add-to-auto-mode-alist '(javascript typescript tsx css html))
+;;   (global-treesit-auto-mode))
+#+end_src
