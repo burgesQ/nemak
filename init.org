@@ -49,7 +49,7 @@ chemacs
 *** TODO LSP
 *** doc (how to use chapter)
 
-* TODO the config [0/13]
+* TODO the config [0/15]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
@@ -304,7 +304,7 @@ But when capturing, I subsequently open smaller frames that shouldn’t be odd l
 ;;; early-init.el ends here
 #+END_SRC
 
-** TODO config [0/12]
+** TODO config [0/14]
 *** init.el header
 
 #+begin_src emacs-lisp
@@ -515,12 +515,18 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     )
 
   (nemacs/leader-keys
-   "E" '(:ignore t :wk "Evaluate")
-   "E b" '(eval-buffer :wk "Evaluate elisp in buffer")
-   "E d" '(eval-defun :wk "Evaluate defun containing or after point")
-   "E e" '(eval-expression :wk "Evaluate and elisp expression")
-   "E l" '(eval-last-sexp :wk "Evaluate elisp expression before point")
-   "E r" '(eval-region :wk "Evaluate elisp in region"))
+   "e" '(:ignore t :wk "Evaluate")
+   "e b" '(eval-buffer :wk "Evaluate elisp in buffer")
+   "e d" '(eval-defun :wk "Evaluate defun containing or after point")
+   "e e" '(eval-expression :wk "Evaluate and elisp expression")
+   "e l" '(eval-last-sexp :wk "Evaluate elisp expression before point")
+   "e r" '(eval-region :wk "Evaluate elisp in region"))
+
+  ;; file manipulation
+  ;; namespace mostly used by 'sudo-edit' and 'f.el'
+  (nemacs/leader-keys
+    "f" '(:ignore t :wk "Files")
+    )
 
   (nemacs/leader-keys
     "g" '(:ignore t :wk "Git")
@@ -538,10 +544,10 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
   ;;  "g U"  '(magit-unstage-file :wk "Git unstage file")
     )
 
+  ;; help
+  ;; namespace mostly used by 'helpful'
   (nemacs/leader-keys
-   "h" '(:ignore t :wk "Help")
-   "h f" '(describe-function :wk "Describe function")
-   "h v" '(describe-variable :wk "Describe variable"))
+    "h" '(:ignore t :wk "Help"))
 
   ;; lsp
   (nemacs/leader-keys
@@ -622,8 +628,6 @@ And a few keybindings that doesn't belong to any groups
  "<C-wheel-down>" '(text-scale-increase :wk "Zoom in")
  "<C-wheel-up>" '(text-scale-decrease  :wk "Zoom out")
 
-
-
  ;; ctrl+pgup / ctrl+pgdn to change next/prev tab
  "<C-next>" '(tab-bar-switch-to-next-tab :wk "Next tab")
  "<C-prior>" '(tab-bar-switch-to-prev-tab :wk "Previous tab")
@@ -642,20 +646,16 @@ For contextual information
 (use-package helpful
   :ensure (:wait t)
   :demand t
-  ;; :custom   ;; set some custom-var
-  ;; (counsel-describe-function-function #'helpful-callable)
-  ;; (counsel-describe-variable-function #'helpful-variable)
-  :bind
-
-  ;; (global-set-key (kbd "C-h f") #'helpful-callable)
-  ;; (global-set-key (kbd "C-h v") #'helpful-variable)
-  ;; (global-set-key (kbd "C-h k") #'helpful-key)
-  ;; (global-set-key (kbd "C-h x") #'helpful-command)
-
-  ([remap describe-function] . helpful-callable)
-  ([remap describe-command] . helpful-command)
-  ([remap describe-variable] . helpful-variable)
-  ([remap describe-key] . helpful-key))
+  :after general
+  :general
+  (nemacs/leader-keys
+    "h c" '(helpful-command :wk "helpful command")
+    "h f" '(helpful-callable :wk "helpful callable")
+    "h h" '(helpful-at-point :wk "helpful at point")
+    "h F" '(helpful-function :wk "helpful function")
+    "h v" '(helpful-variable :wk "helpful variable")
+    "h k" '(helpful-key :wk "helpful key"))
+  )
 #+END_SRC
 
 **** WIP which-key
@@ -1621,7 +1621,6 @@ as well as org-mode, which is why rainbow works in this document.
   ((prog-mode org-mode) . rainbow-mode))
 #+END_SRC
 
-
 **** find the bloody cursor
 
 Large screen, lots of windows, so where is the cursor? While I used to use hl-line+,
@@ -1652,9 +1651,23 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
 (pulsar-global-mode 1))
 #+end_src
 
+**** sudo edit
+
+#+BEGIN_SRC emacs-lisp
+;; quickly sudo edit files
+(use-package sudo-edit
+  :ensure (:wait t)
+  :demand t
+  :after general
+  :general
+  (nemacs/leader-keys
+    "f u" '(sudo-edit-find-file :wk "Sudo find file")
+    "f U" '(sudo-edit :wk "Sudo edit file"))
+)
+#+END_SRC
 *** TODO IDE
 
-**** magit
+**** TODO magit
 **** projectile
 
 #+BEGIN_SRC emacs-lisp
