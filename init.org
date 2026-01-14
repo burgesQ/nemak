@@ -294,8 +294,8 @@ Let's also setup the ``use-package`` macro.
   ;; Enable use-package :ensure support for Elpaca.
   (elpaca-use-package-mode))
 
-;; Enfore ``:ensure``
-(setq use-package-always-ensure t)
+;; Set default ``:ensure`` to `(:wait t)
+;; (setq use-package-always-ensure t)
 
 ;;When installing a package used in the init file itself,
 ;;e.g. a package which adds a use-package key word,
@@ -310,9 +310,20 @@ Let's also setup the ``use-package`` macro.
 ;;   :ensure nil
 ;;   :config (setq ring-bell-function #'ignore))
 
+
+;; NOTE: current config tell elpaca to load package **after** emacs init.
+;; the following will "lazy-load" a package installation
+;; (use-package s :ensure (:wait t))
+;; will  adding :demand t will enfore it's installation
+
 (setq custom-file (expand-file-name "init.el" user-emacs-directory))
 (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror)))
 #+end_src
+
+
+
+
+
 
 *** TODO emacs defaults
 
@@ -338,149 +349,149 @@ Better key-bindings management.
 See the [[https://github.com/noctuid/general.el][repo]] for more info.
 
 #+begin_src emacs-lisp
-  ;;
-  ;; Key-Bindings
-  ;;
+;;
+;; Key-Bindings
+;;
 
-  ;; Install general to manage keybinding.
-  (use-package general
-    :ensure (:wait t)
-    :demand t
-    :config
-    (general-auto-unbind-keys)
+;; Install general to manage keybinding.
+(use-package general
+  :ensure(:wait t)
+  :demand t
+  :config
+  (general-auto-unbind-keys)
 
-    ;; Setup M-m as the global leader key.
-    (general-create-definer nemacs/leader-keys
-      :state '(normal inset visual emacs)
-      :keymap 'override
-      :prefix "M-m" ;; Set leader.
-      :global-prefix "M-m") ;; Access leader in insert mode.
+  ;; Setup M-m as the global leader key.
+  (general-create-definer nemacs/leader-keys
+    :state '(normal inset visual emacs)
+    :keymap 'override
+    :prefix "M-m" ;; Set leader.
+    :global-prefix "M-m") ;; Access leader in insert mode.
 
-    (nemacs/leader-keys
-      "b" '(:ignore t :wk "Buffer")
-      "b d"  '(kill-current-buffer :wk "Kill current buffer")
-      "b b" '(switch-to-buffer :wk "Switch buffer")
-      "b i" '(ibuffer :wk "Ibuffer")
-      "b k" '(kill-this-buffer :wk "Kill this buffer")
-      "b M" '((lambda () (interactive) (switch-to-buffer "*Messages*"))
-              :wk "Messages buffer")
-      "b n" '(next-buffer :wk "Next buffer")
-      "b p" '(previous-buffer :wk "Previous buffer")
-      "b r" '(revert-buffer :wk "Reload buffer")
-      "b s"  '(scratch-buffer :wk "Scratch buffer"))
+  (nemacs/leader-keys
+    "b" '(:ignore t :wk "Buffer")
+    "b d"  '(kill-current-buffer :wk "Kill current buffer")
+    "b b" '(switch-to-buffer :wk "Switch buffer")
+    "b i" '(ibuffer :wk "Ibuffer")
+    "b k" '(kill-this-buffer :wk "Kill this buffer")
+    "b M" '((lambda () (interactive) (switch-to-buffer "*Messages*"))
+            :wk "Messages buffer")
+    "b n" '(next-buffer :wk "Next buffer")
+    "b p" '(previous-buffer :wk "Previous buffer")
+    "b r" '(revert-buffer :wk "Reload buffer")
+    "b s"  '(scratch-buffer :wk "Scratch buffer"))
 
-    (nemacs/leader-keys
-      "c" '(:ignore t :wk "Config")
-      "c r" '((lambda () (interactive)
-  	      (elpaca-process-queues)
-                (elpaca-wait)
-  	      (load-file "~/repo/perso/nemacs_2/emacs-init.el"))
-  	    ;; another option: "c r" '(restart-emacs :wk "Restart Emacs") + (use-package restart-emacs  :ensure t)
-              :wk "Reload emacs config")
-      "c o" '((lambda () (interactive) (find-file "~/repo/perso/nemacs_2/init.org"))
-              :wk "Open emacs config"))
+  (nemacs/leader-keys
+    "c" '(:ignore t :wk "Config")
+    "c r" '((lambda () (interactive)
+	      (elpaca-process-queues)
+              (elpaca-wait)
+	      (load-file "~/repo/perso/nemacs_2/emacs-init.el"))
+	    ;; another option: "c r" '(restart-emacs :wk "Restart Emacs") + (use-package restart-emacs  :ensure t)
+            :wk "Reload emacs config")
+    "c o" '((lambda () (interactive) (find-file "~/repo/perso/nemacs_2/init.org"))
+            :wk "Open emacs config"))
 
-    ;; (nemacs/leader-keys
-    ;;   "E" '(:ignore t :wk "Error")
-    ;;   "E b" '((lambda () (interactive) (setq compilations-scroll-output t)) :wk "Errror buffer to bottom")
-    ;;   "E f" '((lambda () (interactive) (setq compilations-scroll-output 'first-error)) :wk "Errror buffer first error")
-    ;;   "E l" '(flycheck-list-errors :wk "List flycheck error")
-    ;;   "E t" '(lsp-treemacs-errors-list :wk "List error tree"))
+  ;; (nemacs/leader-keys
+  ;;   "E" '(:ignore t :wk "Error")
+  ;;   "E b" '((lambda () (interactive) (setq compilations-scroll-output t)) :wk "Errror buffer to bottom")
+  ;;   "E f" '((lambda () (interactive) (setq compilations-scroll-output 'first-error)) :wk "Errror buffer first error")
+  ;;   "E l" '(flycheck-list-errors :wk "List flycheck error")
+  ;;   "E t" '(lsp-treemacs-errors-list :wk "List error tree"))
 
-    (nemacs/leader-keys
-     "E" '(:ignore t :wk "Evaluate")
-     "E b" '(eval-buffer :wk "Evaluate elisp in buffer")
-     "E d" '(eval-defun :wk "Evaluate defun containing or after point")
-     "E e" '(eval-expression :wk "Evaluate and elisp expression")
-     "E l" '(eval-last-sexp :wk "Evaluate elisp expression before point")
-     "E r" '(eval-region :wk "Evaluate elisp in region"))
+  (nemacs/leader-keys
+   "E" '(:ignore t :wk "Evaluate")
+   "E b" '(eval-buffer :wk "Evaluate elisp in buffer")
+   "E d" '(eval-defun :wk "Evaluate defun containing or after point")
+   "E e" '(eval-expression :wk "Evaluate and elisp expression")
+   "E l" '(eval-last-sexp :wk "Evaluate elisp expression before point")
+   "E r" '(eval-region :wk "Evaluate elisp in region"))
 
-    (nemacs/leader-keys
-      "g" '(:ignore t :wk "Git")
-    ;;  "g b"  '(magit-branch :wk "Git branch")
-    ;;  "g B"  '(magit-blame  :wk "Git blame")
-    ;;  "g c"  '(magit-clone    :wk "Git clone")
-    ;;  "g f"  '(:ignore t :which-key "Git file")
-    ;;  "g ff" '(magit-find-file :wk "Git find file")
-    ;;  "g fh" '(magit-log-buffer-file :wk "Git log buffer fule")
-    ;;  "g i"  '(magit-init :wk "Git init")
-    ;;  "g L"  '(magit-list-repositories :wk "Git list repositories")
-    ;;  "g m"  '(magit-dispatch :wk "Git dispatch")
-    ;;  "g S"  '(magit-stage-file :wk "Git stage file")
-    ;;  "g s"  '(magit-status :wk "Git status")
-    ;;  "g U"  '(magit-unstage-file :wk "Git unstage file")
-      )
-
-    (nemacs/leader-keys
-     "h" '(:ignore t :wk "Help")
-     "h f" '(describe-function :wk "Describe function")
-     "h v" '(describe-variable :wk "Describe variable"))
-
-    ;; lsp
-    (nemacs/leader-keys
-      "l" '(:ignore t :wk "LSP"))
-
-    ;; Major mode
-    (nemacs/leader-keys
-      "m" '(:ignore t :wk "Major mode"))
-
-    (nemacs/leader-keys org-mode-map
-      "m" '(:ignore t :wk "Org")
-    ;;   "m a" '(org-agenda :wk "Org agenda")
-    ;;   "m e" '(org-export-dispatch :wk "Org export dispatch")
-    ;;   "m i" '(org-toggle-item :wk "Org toggle item")
-    ;;   "m t" '(org-todo :wk "Org todo")
-    ;;   "m B" '(org-babel-tangle :wk "Org babel tangle")
-    ;;   "m T" '(org-todo-list :wk "Org todo list")
-    ;;   "m b" '(:ignore t :wk "Tables")
-    ;;   "m b -" '(org-table-insert-hline :wk "Insert hline in table")
-    ;;   "m d" '(:ignore t :wk "Date/deadline")
-    ;;   "m d t" '(org-time-stamp :wk "Org time stamp")
-      )
-
-    ;; (nemacs/leader-keys
-    ;;   "p" '(projectile-command-map :wk "Projectile"))
-
-    (nemacs/leader-keys
-      "s" '(:ignore t :wk "Spelling")
-    ;;   "s b" '(flyspell-buffer :wk "Check buffer")
-    ;;   "s d" '(nemacs/fd-switch-dictionary t :wk "Change dictionary")
-    ;; "s n" '(flyspell-goto-next-error :wk "Go to next error")
-    ;; "s p" '(flycheck-popup-auto-correct-mode :wk "Toggle popup")
-    ;;   "s r" '(flyspell-region :wk "Check region")
-    ;;   "s s" '(flyspell-correct-at-point :wk "Correct at point")
-    ;;   "s t" '(nemacs/flyspell-toggle t :wk "Toggle spell check")
-      )
-
-    (nemacs/leader-keys
-      "T" '(:ignore t :wk "Theme")
-      "T l" '(load-theme :wk "Load theme")
-      ;;  "T n" '((lambda () (interactive) (load-theme 'doom-one t)) :wk "Load night theme")
-      ;;  "T d" '((lambda () (interactive) (load-theme 'doom-one-light t)) :wk "Toggle day theme")
-      )
-
-    (nemacs/leader-keys
-      "t" '(:ignore t :wk "Toggle")
-      ;; "t e" '(eshell-toggle :wk "Toggle eshell")
-      ;; "t e" '(flycheck-list-errors :wk "Toggle errors list")
-      ;;"t e" '(lsp-treemacs-errors-list :wk "Toggle errors list")
-      "t L" '(display-fill-column-indicator-mode :wk "Toggle long lines visual limit")
-      "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
-      ;; "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
-      ;; "t s" '(nemacs/flyspell-toggle t :wk "Toggle spell check")
-      "t t" '(visual-line-mode :wk "Toggle truncated lines")
-      ;; "t z" '(vterm-toggle :wk "Toggle zsh")
-      ;; "t z" '(eshell-toggle :wk "Toggle eshell")
-      )
-
-    ;; (nemacs/leader-keys
-    ;;   "w" '(:ignore t :wk "Windows")
-    ;;   "w <left>" '(buf-move-left :wk "Buffer move left")
-    ;;   "w <down>" '(buf-move-down :wk "Buffer move down")
-    ;;   "w <up>" '(buf-move-up :wk "Buffer move up")
-    ;;   "w <right>" '(buf-move-right :wk "Buffer move right"))
-    ;; )
+  (nemacs/leader-keys
+    "g" '(:ignore t :wk "Git")
+  ;;  "g b"  '(magit-branch :wk "Git branch")
+  ;;  "g B"  '(magit-blame  :wk "Git blame")
+  ;;  "g c"  '(magit-clone    :wk "Git clone")
+  ;;  "g f"  '(:ignore t :which-key "Git file")
+  ;;  "g ff" '(magit-find-file :wk "Git find file")
+  ;;  "g fh" '(magit-log-buffer-file :wk "Git log buffer fule")
+  ;;  "g i"  '(magit-init :wk "Git init")
+  ;;  "g L"  '(magit-list-repositories :wk "Git list repositories")
+  ;;  "g m"  '(magit-dispatch :wk "Git dispatch")
+  ;;  "g S"  '(magit-stage-file :wk "Git stage file")
+  ;;  "g s"  '(magit-status :wk "Git status")
+  ;;  "g U"  '(magit-unstage-file :wk "Git unstage file")
     )
+
+  (nemacs/leader-keys
+   "h" '(:ignore t :wk "Help")
+   "h f" '(describe-function :wk "Describe function")
+   "h v" '(describe-variable :wk "Describe variable"))
+
+  ;; lsp
+  (nemacs/leader-keys
+    "l" '(:ignore t :wk "LSP"))
+
+  ;; Major mode
+  (nemacs/leader-keys
+    "m" '(:ignore t :wk "Major mode"))
+
+  (nemacs/leader-keys org-mode-map
+    "m" '(:ignore t :wk "Org")
+  ;;   "m a" '(org-agenda :wk "Org agenda")
+  ;;   "m e" '(org-export-dispatch :wk "Org export dispatch")
+  ;;   "m i" '(org-toggle-item :wk "Org toggle item")
+  ;;   "m t" '(org-todo :wk "Org todo")
+  ;;   "m B" '(org-babel-tangle :wk "Org babel tangle")
+  ;;   "m T" '(org-todo-list :wk "Org todo list")
+  ;;   "m b" '(:ignore t :wk "Tables")
+  ;;   "m b -" '(org-table-insert-hline :wk "Insert hline in table")
+  ;;   "m d" '(:ignore t :wk "Date/deadline")
+  ;;   "m d t" '(org-time-stamp :wk "Org time stamp")
+    )
+
+  ;; (nemacs/leader-keys
+  ;;   "p" '(projectile-command-map :wk "Projectile"))
+
+  (nemacs/leader-keys
+    "s" '(:ignore t :wk "Spelling")
+  ;;   "s b" '(flyspell-buffer :wk "Check buffer")
+  ;;   "s d" '(nemacs/fd-switch-dictionary t :wk "Change dictionary")
+  ;; "s n" '(flyspell-goto-next-error :wk "Go to next error")
+  ;; "s p" '(flycheck-popup-auto-correct-mode :wk "Toggle popup")
+  ;;   "s r" '(flyspell-region :wk "Check region")
+  ;;   "s s" '(flyspell-correct-at-point :wk "Correct at point")
+  ;;   "s t" '(nemacs/flyspell-toggle t :wk "Toggle spell check")
+    )
+
+  (nemacs/leader-keys
+    "T" '(:ignore t :wk "Theme")
+    "T l" '(load-theme :wk "Load theme")
+    ;;  "T n" '((lambda () (interactive) (load-theme 'doom-one t)) :wk "Load night theme")
+    ;;  "T d" '((lambda () (interactive) (load-theme 'doom-one-light t)) :wk "Toggle day theme")
+    )
+
+  (nemacs/leader-keys
+    "t" '(:ignore t :wk "Toggle")
+    ;; "t e" '(eshell-toggle :wk "Toggle eshell")
+    ;; "t e" '(flycheck-list-errors :wk "Toggle errors list")
+    ;;"t e" '(lsp-treemacs-errors-list :wk "Toggle errors list")
+    "t L" '(display-fill-column-indicator-mode :wk "Toggle long lines visual limit")
+    "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
+    ;; "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
+    ;; "t s" '(nemacs/flyspell-toggle t :wk "Toggle spell check")
+    "t t" '(visual-line-mode :wk "Toggle truncated lines")
+    ;; "t z" '(vterm-toggle :wk "Toggle zsh")
+    ;; "t z" '(eshell-toggle :wk "Toggle eshell")
+    )
+
+  ;; (nemacs/leader-keys
+  ;;   "w" '(:ignore t :wk "Windows")
+  ;;   "w <left>" '(buf-move-left :wk "Buffer move left")
+  ;;   "w <down>" '(buf-move-down :wk "Buffer move down")
+  ;;   "w <up>" '(buf-move-up :wk "Buffer move up")
+  ;;   "w <right>" '(buf-move-right :wk "Buffer move right"))
+  ;; )
+  )
 #+end_src
 
 And a few keybindings that doesn't belong to any groups
@@ -509,24 +520,24 @@ And a few keybindings that doesn't belong to any groups
 For contextual information
 
 #+BEGIN_SRC emacs-lisp
-  ;; install an enriched help screen
-  (use-package helpful
-    :ensure (:wait t)
-    :demand t
-    ;; :custom   ;; set some custom-var
-    ;; (counsel-describe-function-function #'helpful-callable)
-    ;; (counsel-describe-variable-function #'helpful-variable)
-    :bind
+;; install an enriched help screen
+(use-package helpful
+  :ensure(:wait t)
+  :demand t
+  ;; :custom   ;; set some custom-var
+  ;; (counsel-describe-function-function #'helpful-callable)
+  ;; (counsel-describe-variable-function #'helpful-variable)
+  :bind
 
-    ;; (global-set-key (kbd "C-h f") #'helpful-callable)
-    ;; (global-set-key (kbd "C-h v") #'helpful-variable)
-    ;; (global-set-key (kbd "C-h k") #'helpful-key)
-    ;; (global-set-key (kbd "C-h x") #'helpful-command)
+  ;; (global-set-key (kbd "C-h f") #'helpful-callable)
+  ;; (global-set-key (kbd "C-h v") #'helpful-variable)
+  ;; (global-set-key (kbd "C-h k") #'helpful-key)
+  ;; (global-set-key (kbd "C-h x") #'helpful-command)
 
-    ([remap describe-function] . helpful-callable)
-    ([remap describe-command] . helpful-command)
-    ([remap describe-variable] . helpful-variable)
-    ([remap describe-key] . helpful-key))
+  ([remap describe-function] . helpful-callable)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-variable] . helpful-variable)
+  ([remap describe-key] . helpful-key))
 #+END_SRC
 
 **** which-key
@@ -536,12 +547,12 @@ Which key for helpful emacs
 #+BEGIN_SRC emacs-lisp
 ;; install which-key
 (use-package which-key
-  :ensure (:wait t)
+  :ensure(:wait t)
   :demand t
   :init
   (setq which-key-enable-extended-define-key t)
   (which-key-mode 1) ;;; init is run every time at pre-config aka set var, invoke mode
-  ;; :diminish
+  :diminish
   :config                ;;; config is run after the mode' loaded (via hook ?)
   (setq which-key-side-window-location 'bottom
         which-key-sort-order #'which-key-key-order
@@ -583,33 +594,38 @@ Which key for helpful emacs
 ***** all-the-icons / dired
 
 #+BEGIN_SRC emacs-lisp
-  ;; Please run M-x all-the-icons-install-fonts
-  (use-package all-the-icons
-    :demand t
-    :if (display-graphic-p))
+;; Please run M-x all-the-icons-install-fonts
+(use-package all-the-icons
+  :ensure(:wait t)
+  :demand t
+  :if (display-graphic-p))
 
-  ;; (use-package dired-single) --> not found starting 30.0 ?
+;; (use-package dired-single) --> not found starting 30.0 ?
 
-  (use-package all-the-icons-dired
-    :demand t
-    :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+(use-package all-the-icons-dired
+  :ensure(:wait t)
+  :demand t
+  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
 
-  (use-package all-the-icons-completion
-    :demand t
-    :after (all-the-icons)
-    :init (all-the-icons-completion-mode))
+(use-package all-the-icons-completion
+  :ensure(:wait t)
+  :demand t
+  :after (all-the-icons)
+  :init (all-the-icons-completion-mode))
 
-  (use-package dired-open
-    :demand t
-    :config
-    ;; Doesn't work as expected!
-    ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
-    (setq dired-open-extensions '(("png" . "feh")
-                                  ("mkv" . "mpv"))))
+(use-package dired-open
+  :ensure(:wait t)
+  :demand t
+  :config
+  ;; Doesn't work as expected!
+  ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
+  (setq dired-open-extensions '(("png" . "feh")
+                                ("mkv" . "mpv"))))
 
-  (use-package dired-hide-dotfiles
-    :demand t
-    :hook (dired-mode . dired-hide-dotfiles-mode))
+(use-package dired-hide-dotfiles
+  :ensure(:wait t)
+  :demand t
+  :hook (dired-mode . dired-hide-dotfiles-mode))
 #+END_SRC
 
 ***** ligature
@@ -618,82 +634,82 @@ emacs 27+ "nativly" support ligature. See the
 [[https://github.com/mickeynp/ligature.el/wiki#cascadia--fira-code][official doc]] for more info.
 
 #+BEGIN_SRC emacs-lisp
-  ;;;;;;;;;;;;;;;;;;;;;;
-  ;; Ligature support ;;
-  ;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;
+;; Ligature support ;;
+;;;;;;;;;;;;;;;;;;;;;;
 
-  (use-package ligature
-    :ensure (:wait t)
-    :demand t
-    :config
-    ;; Enable the "www" ligature in every possible major mode
-    (ligature-set-ligatures 't '("www"))
-    ;; Enable traditional ligature support in eww-mode, if the
-    ;; `variable-pitch' face supports it
-    (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
-    ;; Enable all Cascadia and Fira Code ligatures in programming modes
-    (ligature-set-ligatures 'prog-mode
-                            '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
-                              ;; =:= =!=
-                              ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
-                              ;; ;; ;;;
-                              (";" (rx (+ ";")))
-                              ;; && &&&
-                              ("&" (rx (+ "&")))
-                              ;; !! !!! !. !: !!. != !== !~
-                              ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
-                              ;; ?? ??? ?:  ?=  ?.
-                              ("?" (rx (or ":" "=" "\." (+ "?"))))
-                              ;; %% %%%
-                              ("%" (rx (+ "%")))
-                              ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
-                              ;; |->>-||-<<-| |- |== ||=||
-                              ;; |==>>==<<==<=>==//==/=!==:===>
-                              ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
-                                              "-" "=" ))))
-                              ;; \\ \\\ \/
-                              ("\\" (rx (or "/" (+ "\\"))))
-                              ;; ++ +++ ++++ +>
-                              ("+" (rx (or ">" (+ "+"))))
-                              ;; :: ::: :::: :> :< := :// ::=
-                              (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
-                              ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
-                              ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
-                                              "="))))
-                              ;; .. ... .... .= .- .? ..= ..<
-                              ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
-                              ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
-                              ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
-                              ;; *> */ *)  ** *** ****
-                              ("*" (rx (or ">" "/" ")" (+ "*"))))
-                              ;; www wwww
-                              ("w" (rx (+ "w")))
-                              ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
-                              ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
-                              ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
-                              ;; << <<< <<<<
-                              ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
-                                              "-"  "/" "|" "="))))
-                              ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
-                              ;; >> >>> >>>>
-                              (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
-                              ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
-                              ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
-                                           (+ "#"))))
-                              ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
-                              ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
-                              ;; __ ___ ____ _|_ __|____|_
-                              ("_" (rx (+ (or "_" "|"))))
-                              ;; Fira code: 0xFF 0x12
-                              ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
-                              ;; Fira code:
-                              "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
-                              ;; The few not covered by the regexps.
-                              "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
-    ;; Enables ligature checks globally in all buffers. You can also do it
-    ;; per mode with `ligature-mode'.
-    (global-ligature-mode t)
-    )
+(use-package ligature
+  :ensure(:wait t)
+  :demand t
+  :config
+  ;; Enable the "www" ligature in every possible major mode
+  (ligature-set-ligatures 't '("www"))
+  ;; Enable traditional ligature support in eww-mode, if the
+  ;; `variable-pitch' face supports it
+  (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
+  ;; Enable all Cascadia and Fira Code ligatures in programming modes
+  (ligature-set-ligatures 'prog-mode
+                          '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
+                            ;; =:= =!=
+                            ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
+                            ;; ;; ;;;
+                            (";" (rx (+ ";")))
+                            ;; && &&&
+                            ("&" (rx (+ "&")))
+                            ;; !! !!! !. !: !!. != !== !~
+                            ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
+                            ;; ?? ??? ?:  ?=  ?.
+                            ("?" (rx (or ":" "=" "\." (+ "?"))))
+                            ;; %% %%%
+                            ("%" (rx (+ "%")))
+                            ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
+                            ;; |->>-||-<<-| |- |== ||=||
+                            ;; |==>>==<<==<=>==//==/=!==:===>
+                            ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
+                                            "-" "=" ))))
+                            ;; \\ \\\ \/
+                            ("\\" (rx (or "/" (+ "\\"))))
+                            ;; ++ +++ ++++ +>
+                            ("+" (rx (or ">" (+ "+"))))
+                            ;; :: ::: :::: :> :< := :// ::=
+                            (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
+                            ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
+                            ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
+                                            "="))))
+                            ;; .. ... .... .= .- .? ..= ..<
+                            ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
+                            ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
+                            ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
+                            ;; *> */ *)  ** *** ****
+                            ("*" (rx (or ">" "/" ")" (+ "*"))))
+                            ;; www wwww
+                            ("w" (rx (+ "w")))
+                            ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
+                            ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
+                            ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
+                            ;; << <<< <<<<
+                            ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
+                                            "-"  "/" "|" "="))))
+                            ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
+                            ;; >> >>> >>>>
+                            (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
+                            ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
+                            ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
+                                         (+ "#"))))
+                            ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
+                            ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
+                            ;; __ ___ ____ _|_ __|____|_
+                            ("_" (rx (+ (or "_" "|"))))
+                            ;; Fira code: 0xFF 0x12
+                            ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
+                            ;; Fira code:
+                            "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
+                            ;; The few not covered by the regexps.
+                            "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
+  ;; Enables ligature checks globally in all buffers. You can also do it
+  ;; per mode with `ligature-mode'.
+  (global-ligature-mode t)
+  )
 #+END_SRC
 
 **** dashboard
@@ -702,123 +718,126 @@ Nice welcome screen. See the official
 [[https://github.com/emacs-dashboard/emacs-dashboard][repo]] for more info.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package page-break-lines
-    :demand t)
+(use-package page-break-lines
+  :ensure(:wait t)
+  :demand t
+)
 
-  ;; nicer welcome screen
-  (use-package dashboard
-    ;; :ensure (:wait t)
-    :demand t
-    :after (all-the-icons projectile page-break-lines)
-    :ensure t  ; install dashboard if not installed
-    :init      ; tweak dashboard config before loading it
-    (setq initial-buffer-choice 'dashboard-refresh-buffer)
-    (setq dashboard-projects-backend 'projectile)
-
-
-    ;; horizontally center content
-    (setq dashboard-center-content t)
-    ;; verically center content
-    (setq dashboard-vertically-center-content t)
-    ;; enable cycle navigation between each section
-    (setq dashboard-navigation-cycle t)
-
-    ;; add icons to the widget headings and their items
-    (setq dashboard-set-heading-icons t)
-    (setq dashboard-set-file-icons t)
-
-    (setq dashboard-set-navigator t)
-    ; close agenda buffers
-    (setq dashboard-agenda-release-buffers t)
-    (setq dashboard-set-init-info t) ; package & loadtime
-
-    ;; (setq dashboard-display-icons-p t) ;; use `all-the-icons' package
-    ;; (setq dashboard-icon-type 'nerd-icons) ;; use `all-the-icons' package
-    (setq dashboard-icon-type 'all-the-icons) ;; use `all-the-icons' package
-
-    (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name)
-
-    (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
-    (setq dashboard-startup-banner "/home/master/repo/perso/nemacs/logo/aum.xpm")
-    (setq dashboard-image-banner-max-width 500)
-    (setq dashboard-image-banner-max-height 500)
-    (setq dashboard-image-extra-props '(:mask heuristic))
+;; nicer welcome screen
+(use-package dashboard
+  :ensure(:wait t)
+  :demand t
+  :after (all-the-icons projectile page-break-lines)
+  :init      ; tweak dashboard config before loading it
+  (setq initial-buffer-choice 'dashboard-refresh-buffer)
+  (setq dashboard-projects-backend 'projectile)
 
 
-    (setq dashboard-items '((agenda . 15)
-                            (recents . 15)
-                            (projects . 15)
-                            ;; (bookmarks . 5)
-                            ;; (registers . 5)
-                            ))
+  ;; horizontally center content
+  (setq dashboard-center-content t)
+  ;; verically center content
+  (setq dashboard-vertically-center-content t)
+  ;; enable cycle navigation between each section
+  (setq dashboard-navigation-cycle t)
 
-    (setq dashboard-item-shortcuts '((recents   . "r")
-                                   (bookmarks . "m")
-                                   (projects  . "p")
-                                   (agenda    . "a")
-                                   (registers . "e")
-                                   ))
+  ;; add icons to the widget headings and their items
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
 
-    (setq dashboard-item-names '(("Recent Files:"               . "Recently opened files:")
-                                 ("Agenda for today:"           . "Today's agenda:")
-                                 ("Agenda for the coming week:" . "Agenda:")
+  (setq dashboard-set-navigator t)
+  ; close agenda buffers
+  (setq dashboard-agenda-release-buffers t)
+  (setq dashboard-set-init-info t) ; package & loadtime
+
+  ;; (setq dashboard-display-icons-p t) ;; use `all-the-icons' package
+  ;; (setq dashboard-icon-type 'nerd-icons) ;; use `all-the-icons' package
+  (setq dashboard-icon-type 'all-the-icons) ;; use `all-the-icons' package
+
+  (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name)
+
+  (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
+  (setq dashboard-startup-banner "/home/master/repo/perso/nemacs/logo/aum.xpm")
+  (setq dashboard-image-banner-max-width 500)
+  (setq dashboard-image-banner-max-height 500)
+  (setq dashboard-image-extra-props '(:mask heuristic))
+
+
+  (setq dashboard-items '((agenda . 15)
+                          (recents . 15)
+                          (projects . 15)
+                          ;; (bookmarks . 5)
+                          ;; (registers . 5)
+                          ))
+
+  (setq dashboard-item-shortcuts '((recents   . "r")
+                                 (bookmarks . "m")
+                                 (projects  . "p")
+                                 (agenda    . "a")
+                                 (registers . "e")
                                  ))
 
-    :when (not command-line-args-left)
-    :config
-    (dashboard-setup-startup-hook)
-    (dashboard-modify-heading-icons '((recents . "file-text"))
+  (setq dashboard-item-names '(("Recent Files:"               . "Recently opened files:")
+                               ("Agenda for today:"           . "Today's agenda:")
+                               ("Agenda for the coming week:" . "Agenda:")
+                               ))
+
+  :when (not command-line-args-left)
+  :config
+  (dashboard-setup-startup-hook)
+  (dashboard-modify-heading-icons '((recents . "file-text"))
 
 
-                                    ;; Format: "(icon title help action face prefix suffix)"
+                                  ;; Format: "(icon title help action face prefix suffix)"
 
-  )
-  )
+)
+)
 
 #+END_SRC
 
 **** doom
 
 #+BEGIN_SRC emacs-lisp
-  (use-package doom-modeline
-    :demand t
-    :defer 2
-    :init (doom-modeline-mode 1)
-    :config
-    (column-number-mode 1)
-    (doom-modeline-mode 1)
-    (display-battery-mode)
-    :custom
-    (doom-modeline-project-detection 'projectile "Use projectile to fetch the project")
-    (doom-modeline-time-icon nil "Disable time")
-    (doom-modeline-enable-word-count t "Enable word count")
-    ;; (setq doom-modeline-vcs-max-length 12)
-                                          ; (doom-modeline-minor-modes t "Enable minor mode display")
-    )
+(use-package doom-modeline
+  ;; :ensure(:wait t)
+  ;; :demand t
+  :defer 2
+  ;; :init (doom-modeline-mode 1)
+  :config
+  (column-number-mode 1)
+  (doom-modeline-mode 1)
+  (display-battery-mode)
+  :custom
+  (doom-modeline-project-detection 'projectile "Use projectile to fetch the project")
+  (doom-modeline-time-icon nil "Disable time")
+  (doom-modeline-enable-word-count t "Enable word count")
+  ;; (setq doom-modeline-vcs-max-length 12)
+                                        ; (doom-modeline-minor-modes t "Enable minor mode display")
+  )
 
-  ;; install nicer theme
-  ;; need to run M-x nerd-icons-install-fonts
-  (use-package doom-themes
-    :demand t
-    :config
-    ;; Global settings (defaults)
-    (setq
-     ;; if nil, bold is universally disabled
-     doom-themes-enable-bold t
-     ;; if nil, italics is universally disabled
-     doom-themes-enable-italic t)
+;; install nicer theme
+;; need to run M-x nerd-icons-install-fonts
+(use-package doom-themes
+  :ensure(:wait t)
+  :demand t
+  :config
+  ;; Global settings (defaults)
+  (setq
+   ;; if nil, bold is universally disabled
+   doom-themes-enable-bold t
+   ;; if nil, italics is universally disabled
+   doom-themes-enable-italic t)
 
-    (load-theme 'doom-one t)
+  (load-theme 'doom-one t)
 
-    ;; Enable flashing mode-line on errors
-    (doom-themes-visual-bell-config)
-    ;; Enable custom neotree theme (all-the-icons must be installed!)
-    ;; (doom-themes-neotree-config)
-    ;; or for treemacs users
-    (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-    ;; (doom-themes-treemacs-config)
-    ;; Corrects (and improves) org-mode's native fontification.
-    (doom-themes-org-config))
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  ;; (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+  ;; (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 #+END_SRC
 
 **** diminish
@@ -829,14 +848,15 @@ This package implements hiding or abbreviation of the modeline displays
 modeline.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package diminish
-    :demand t
-    :config
-    (diminish 'whitespace-mode)
-    (diminish 'eldoc-mode)
-    (diminish 'abbrev-mode)
-    (diminish 'auto-revert-mode)
-  )
+(use-package diminish
+  :ensure(:wait t)
+  :demand t
+  :config
+  (diminish 'whitespace-mode)
+  (diminish 'eldoc-mode)
+  (diminish 'abbrev-mode)
+  (diminish 'auto-revert-mode)
+)
 #+END_SRC
 
 
@@ -846,37 +866,56 @@ modeline.
 **** TODO line/col
 **** TODO buffers
 
+*** TODO QoL
+
+**** install boosted string manipulation functions
+
+The [[https://github.com/magnars/s.el][s.el]] project is a simpler string manipulation library that I (and other projects) use.
+
+Manipulate file paths with the [[https://github.com/rejeep/f.el][f.el]] project.
+
+#+begin_src emacs-lisp
+(use-package s
+  ;; :ensure(:wait t))
+    ;; :demand t)
+)
+(use-package f
+  ;; :ensure(:wait t)
+  ;; :demand t)
+)
+#+end_src
+
 *** IDE
 **** projectile
 
 #+BEGIN_SRC emacs-lisp
-  ;; projects handler
-  (use-package projectile
-    :ensure (:wait t)
-    :demand t
-    :after (general)
-    ;; :diminish
-    :config (add-to-list 'projectile-globally-ignored-directories "*node_modules")
-    (add-to-list 'projectile-globally-ignored-directories "*vendor")
-    (projectile-mode 1)
-    ;; :custom ((project-completion-system 'ivy))
-    :init
-    (when (file-directory-p "~/repo")
-      (setq projectile-project-search-path '("~/repo")))
-    (setq
-     projectile-indexing-method 'alien
-     projectile-enable-caching t
-     projectile-switch-project-action #'projectile-dired))
+;; projects handler
+(use-package projectile
+  :ensure(:wait t)
+  :demand t
+  :after (general)
+  :diminish
+  :config (add-to-list 'projectile-globally-ignored-directories "*node_modules")
+  (add-to-list 'projectile-globally-ignored-directories "*vendor")
+  (projectile-mode 1)
+  ;; :custom ((project-completion-system 'ivy))
+  :init
+  (when (file-directory-p "~/repo")
+    (setq projectile-project-search-path '("~/repo")))
+  (setq
+   projectile-indexing-method 'alien
+   projectile-enable-caching t
+   projectile-switch-project-action #'projectile-dired))
 
-  (projectile-register-project-type 'go_make '("Makefile" "src" "etc")
-                                    ;; :project-file '("Makefile", "src/go.mod" "src/go.sum", "src/vendor")
-                                    ;; :compilation-dir "."
-                                    :compile "make static"
-                                    :configure "make tidy sync rvendor"
-                                    ;; :install "make install DESTDIR=`mktemp -d`"
-                                    :test "make test TEST_ARGS='-failfast' TEST_TIMEOUT=5s"
-                                    :src-dir "src"
-                                    :test-suffix "_test.go")
+(projectile-register-project-type 'go_make '("Makefile" "src" "etc")
+                                  ;; :project-file '("Makefile", "src/go.mod" "src/go.sum", "src/vendor")
+                                  ;; :compilation-dir "."
+                                  :compile "make static"
+                                  :configure "make tidy sync rvendor"
+                                  ;; :install "make install DESTDIR=`mktemp -d`"
+                                  :test "make test TEST_ARGS='-failfast' TEST_TIMEOUT=5s"
+                                  :src-dir "src"
+                                  :test-suffix "_test.go")
 
 #+END_SRC
 
