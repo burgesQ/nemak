@@ -49,7 +49,7 @@ chemacs
 *** TODO LSP
 *** doc (how to use chapter)
 
-* TODO the config [0/16]
+* TODO the config [0/13]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
@@ -304,8 +304,7 @@ But when capturing, I subsequently open smaller frames that shouldn’t be odd l
 ;;; early-init.el ends here
 #+END_SRC
 
-
-** TODO config [0/15]
+** TODO config [0/12]
 *** init.el header
 
 #+begin_src emacs-lisp
@@ -402,7 +401,6 @@ Let's also setup the ``use-package`` macro.
 (setq custom-file (expand-file-name "init.el" user-emacs-directory))
 (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror)))
 #+end_src
-
 
 
 
@@ -662,7 +660,7 @@ For contextual information
   ([remap describe-key] . helpful-key))
 #+END_SRC
 
-**** which-key
+**** WIP which-key
 
 Which key for helpful emacs
 
@@ -692,7 +690,10 @@ Which key for helpful emacs
 
 ;; document un-documented commonnly used shortcuts
 (which-key-add-key-based-replacements
-  "C-x t" "Tabs mgmt")
+  "C-x P" "Popwin mgmt"
+  "C-x t" "Tabs mgmt"
+  ;; C-x smth
+)
 #+END_SRC
 
 *** TODO completion
@@ -1252,7 +1253,7 @@ Native to emacs29+
 
 **** TODO tabs
 
-*** TODO QoL
+*** QoL
 
 **** Prompts
 
@@ -1280,7 +1281,7 @@ Fix emacs regex
 (setq-default pcre-mode t)
 #+end_src
 
-**** TODO Buffers
+**** Buffers
 
 Remember where I left off after killing a file
 
@@ -1340,8 +1341,6 @@ When a file changes on disk, automatically reload its buffer silently
 (setq mouse-wheel-follow-mouse 't)
 #+end_src
 
-***** TODO popwin
-***** TODO ominobox
 ***** move buffer
 
 Creating some functions to allow us to easily move windows (splits) around.  The following block of code was taken from buffer-move.el found on the EmacsWiki:
@@ -1434,6 +1433,87 @@ Instead of kill other via X-1. Stollen from spacemacs, sorry mom.
 		(delete-other-windows)))))
 #+END_SRC
 
+***** pop-win
+
+popwin is a popup window manager for Emacs which makes you free from the hell of annoying buffers such like *Help*, *Completions*, *compilation*, and etc.
+
+#+BEGIN_SRC emacs-lisp
+;; better buffer per name position mgmt
+(use-package popwin
+  :ensure(:wait t)
+  :config
+  (popwin-mode 1)
+  (setq popwin:special-display-config
+        '(
+          ;; compilation at bottom
+          ("*compilation*" :height 0.4 :noselect t :stick t)
+          ;; termnial at bottom
+          ("*terminal*" :position top :height 0.3 :noselect t)
+          ("*shell*" :position top :height 0.3 :noselect t)
+          ;; ("*Compile-Log*" :position bottom :height 0.3 )
+          ;; Error right
+          )))
+
+(global-set-key (kbd "C-x P") popwin:keymap)
+#+END_SRC
+
+***** ominobox
+
+Visual Studio like - see [[https://github.com/sebastiencs/omnibox][here]] for more.
+
+#+BEGIN_SRC emacs-lisp
+(use-package omnibox
+  :ensure t
+  :config
+  (global-set-key (kbd "M-x") 'omnibox-M-x)
+  (omnibox-setup))
+
+;; better projectile switch via omnibox UI
+(defun omnibox-projectile-switch-project nil
+  """Spawn projectile switch project into an omnibox widget."""
+  (interactive)
+  (omnibox
+   :prompt "Projects: "
+   :candidates projectile-known-projects
+   :action (lambda (candidate)
+             (projectile-switch-project-by-name candidate))
+   :title "Switch Project: "))
+
+(defun omnibox-projectile-find-file nil
+  """Spawn projectile find file into an omnibox widget."""
+  (interactive)
+  (let* ((omnibox-projectile-project-root (projectile-project-root)))
+    (omnibox
+     :prompt (format "[%s]: " (projectile-project-name))
+     :candidates (projectile-current-project-files)
+     :action (lambda (candidate)
+               (find-file (expand-file-name candidate omnibox-projectile-project-root)))
+     :title "Open File: ")))
+
+;; bind default projectile-find-file to omnibox one
+(setq projectile-switch-project-action 'omnibox-projectile-find-file)
+
+;; counsel--M-x candidates sourced from source code
+;; see https://github.com/abo-abo/swiper/blob/595d44264420d989e420351ea25b3c99528547c0/counsel.el#L856
+
+;; ;; this is a wip
+(defun omnibox-counsel-M-x ()
+  """Spawm counsel-M-x into an omnibox widget."""
+  (interactive)
+  (omnibox
+   :prompt "M-x: "
+   :candidates (counsel--M-x-externs)
+   ;; :history extended-command-history
+   :detail 'omnibox--function-doc
+   :action (lambda (candidate)
+             (when candidate
+               (counsel-M-x-action candidate)))
+  :title "Omnibox counsel M-x"
+  :require-match t))
+
+;; (global-set-key (kbd "M-x") 'omnibox-counsel-M-x)
+#+END_SRC
+
 **** Symbols
 
 #+begin_src emacs-lisp
@@ -1451,7 +1531,7 @@ Manipulate file paths with the [[https://github.com/rejeep/f.el][f.el]] project.
 (use-package f)
 #+end_src
 
-**** in-code TODOs highlight-ing
+**** Code inlined TODOs highlight-ing
 
 Highlight in-code TODOs
 
@@ -1494,7 +1574,7 @@ Suggests to bind some keys to hl-todo-next in order to jump from tag to tag, but
     ))
 #+end_src
 
-**** rainbow delimiters
+**** Rainbow delimiters
 
 #+BEGIN_SRC emacs-lisp
 ;; install rainbow delimites
@@ -1504,7 +1584,7 @@ Suggests to bind some keys to hl-todo-next in order to jump from tag to tag, but
   :diminish
   :hook (prog-mode . rainbow-delimiters-mode))
 #+END_SRC
-**** rainbow mode
+**** Rainbow mode
 
 Display the actual color as a background for any hex color value (ex. #ffffff).
 The code block below enables rainbow-mode in all programming modes (prog-mode)
@@ -1520,6 +1600,7 @@ as well as org-mode, which is why rainbow works in this document.
 
 *** TODO IDE
 
+**** magit
 **** projectile
 
 #+BEGIN_SRC emacs-lisp
