@@ -305,8 +305,7 @@ But when capturing, I subsequently open smaller frames that shouldn’t be odd l
 #+END_SRC
 
 
-** config
-
+** TODO config [0/15]
 *** init.el header
 
 #+begin_src emacs-lisp
@@ -461,7 +460,7 @@ Let's also setup the ``use-package`` macro.
 
 **** TODO org
 
-*** keybinding
+*** WIP keybinding
 
 **** WIP general
 
@@ -697,11 +696,11 @@ Which key for helpful emacs
 #+END_SRC
 
 *** TODO completion
-
+**** TODO counsel
 **** TODO ivy
+**** others
 
 *** TODO UI
-
 **** bell
 
 Enable visual bells
@@ -793,7 +792,7 @@ Stolen from [[https://howardabrams.com/hamacs/ha-dashboard.html][here]] - I like
 
 #+end_src
 
-***** emacs features
+***** emacs native features
 
 I would appreciate seeing if my Emacs installation has the features that I expect:
 
@@ -1281,7 +1280,7 @@ Fix emacs regex
 (setq-default pcre-mode t)
 #+end_src
 
-**** Buffers
+**** TODO Buffers
 
 Remember where I left off after killing a file
 
@@ -1307,9 +1306,8 @@ When a file changes on disk, automatically reload its buffer silently
 (setq auto-revert-verbose nil)
 #+end_src
 
-***** TODO auto-scroll *Compilation* buffer
+***** auto-scroll *Compilation* buffer
 
-NOTE:  bind those toggle via `M-m E(rror) f(irst)` and `M-m E b(ottom)`.
 #+begin_src emacs-lisp
 ;; scroll compilation buffer to first error
 ;; (setq compilation-scroll-output 'first-error)
@@ -1555,4 +1553,5 @@ as well as org-mode, which is why rainbow works in this document.
 
 #+END_SRC
 
+**** flycheck / flymake / flyspell & others
 **** TODO LSP
