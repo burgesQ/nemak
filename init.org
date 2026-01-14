@@ -857,17 +857,17 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     "h" '(:ignore t :wk "Help"))
 
   ;; lsp
-  ;; TODO
+  ;; TODO: general lsp
   (nemacs/leader-keys
     "l" '(:ignore t :wk "LSP"))
 
   ;; Major mode
-  ;; TODO
+  ;; TODO: general majore-mode
   (nemacs/leader-keys
     "m" '(:ignore t :wk "Major mode"))
 
   ;; while org is the major mode
-  ;; TODO
+  ;; TODO: general org-mode
   (nemacs/leader-keys org-mode-map
     "m" '(:ignore t :wk "Org")
   ;;   "m a" '(org-agenda :wk "Org agenda")
@@ -883,7 +883,7 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     )
 
   ;; while go is the major mode
-  ;; TODO
+  ;; TODO: general go-mode
   ;; (nemacs/leader-keys go-mode-map)
 
   ;; Spelling
@@ -1711,8 +1711,9 @@ Nice welcome screen. See the official
   (setq dashboard-display-icons-p t) ;; use `all-the-icons' package
   (setq dashboard-icon-type 'all-the-icons) ;; use `all-the-icons' package
 
-  ;; FIXME: need counsel (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name)
+  (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name)
 
+  ;; IDEA: random cover in a dir
   (setq dashboard-startup-banner "/home/master/repo/perso/nemacs/logo/aum.xpm")
   (setq dashboard-image-banner-max-width 500)
   (setq dashboard-image-banner-max-height 500)
