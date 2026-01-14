@@ -481,9 +481,9 @@ Let's pimp 'org'
 
 #+end_src
 
-*** WIP keybinding
+*** keybinding
 
-**** WIP general
+**** general
 
 Better key-bindings management.
 See the [[https://github.com/noctuid/general.el][repo]] for more info.
@@ -700,7 +700,7 @@ extra information when selecting files, etc. Nice enhancement without learning a
   (marginalia-mode))
 #+end_src
 
-**** WIP which-key
+**** which-key
 
 Which key for helpful emacs
 
@@ -732,7 +732,7 @@ Which key for helpful emacs
 (which-key-add-key-based-replacements
   "C-x P" "Popwin mgmt"
   "C-x t" "Tabs mgmt"
-  ;; C-x smth
+  ;; TODO: document other C-x smth
 )
 #+END_SRC
 
@@ -2018,7 +2018,7 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
 #+END_SRC
 *** TODO IDE
 
-**** TODO on the fly checkers
+**** on the fly checkers
 
 Various kind of on the flt error reporters.
 
@@ -2187,7 +2187,6 @@ All credit to the [[https://www.emacswiki.org/emacs/FlySpell][emacswiki]].
 
 #+end_src
 
-
 **** TODO claude.el
 
 Let's setup 'claude.el'
@@ -2199,7 +2198,6 @@ Let's setup 'claude.el'
 ;;
 
 #+end_src
-
 
 **** TODO LSP
 
@@ -2214,7 +2212,6 @@ Let's setup LSP
 #+end_src
 
 ***** languages
-
 
 **** magit
 
