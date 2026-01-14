@@ -6,7 +6,7 @@
 
 Thanks
 
-- [[https://github.com/progfolio/.emacs.d/tree/master][nice helper]]
+- [[https://github.com/progfolio/.emacs.d/tree/master][nice big ass config]]
 - [[https://github.com/syl20bnr/spacemacs][spcemacs]] of course
 - [[https://github.com/doomemacs/doomemacs][doomecas]] also
 - stackoverflow
@@ -16,6 +16,7 @@ Thanks
 - [[https://www.rahuljuliato.com/posts/emacs-tab-bar-groups][better native tab-bar]]
 - [[https://howardabrams.com/hamacs/][monster config]]
 - [[https://github.com/jeremygooch/jeremacs][less monstruous but still huge]]
+- [[https://www.patrickdelliott.com/emacs.d/]][nicely assembled config]]
 
 * TODO how to use [0/3]
 
@@ -32,7 +33,7 @@ chemacs
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
-** TODO v1 [7/13] [53%]
+** TODO v1 [9/13] [69%]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
@@ -46,14 +47,15 @@ chemacs
 **** DONE dashboard
 **** DONE fonts / faces / emojies / ligatures
 **** DONE other stuffs (windows, box)
-*** WIP magit
+*** DONE [fly/spell/*]check
+*** DONE magit
 *** TODO org
 *** TODO claude-el
 *** TODO LSP
 
-*** TODO [fly/spell/*]check
+*** treesitter (another attempt)
 
-* TODO the config [0/9]
+* TODO the config [0/6]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
@@ -308,7 +310,7 @@ But when capturing, I subsequently open smaller frames that shouldn’t be odd l
 ;;; early-init.el ends here
 #+END_SRC
 
-** TODO config [0/8]
+** TODO config [0/5]
 *** init.el header
 
 #+begin_src emacs-lisp
@@ -2328,7 +2330,7 @@ machine gitlab.com/api/v4 login [username]^forge password [token]
                                   :test-suffix "_test.go")
 
 #+END_SRC
-**** treesitter
+**** TODO treesitter
 
 #+begin_src emacs-lisp
 ;; (use-package treesit-auto
