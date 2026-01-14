@@ -1559,10 +1559,20 @@ Native tab ? Or smth better ?
 					 (directory-file-name (project-root proj)))))
 	(tab-group (format "[%s]" name))))
 
+(tab-bar-mode t)
 
+;; always open scratch in a fixed bugger.
 (add-to-list 'display-buffer-alist
 			 '("\\*scratch\\*"
-			   (display-buffer-in-tab display-buffer-full-frame)
+			   (display-buffer-in-tab
+                display-buffer-full-frame)
+			   (tab-group . "[EMACS]")))
+
+;; always open dashboard in a fixed bugger.
+(add-to-list 'display-buffer-alist
+			 '("\\*dashboard\\*"
+			   (display-buffer-in-tab
+                display-buffer-full-frame)
 			   (tab-group . "[EMACS]")))
 
 (defun nemacs/tab-switch-to-group ()
@@ -2203,7 +2213,7 @@ Let's setup 'claude.el'
 
 **** TODO LSP
 
-Let's setup LSP
+Let's setup LSP + LSP-docker ?
 
 #+begin_src emacs-lisp
 
