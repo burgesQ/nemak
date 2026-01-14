@@ -1920,15 +1920,15 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
 Auto install treesitter sources if they’re not present
 
 #+begin_src emacs-lisp
-(use-package treesit-auto
-  :ensure (:wait t)
-  :demand t
-  :custom
-  (treesit-auto-install 'prompt)
-  :config
-  (setq treesit-auto-langs '(javascript typescript tsx css html))
-  (treesit-auto-add-to-auto-mode-alist '(javascript typescript tsx css html))
-  (global-treesit-auto-mode))
+;; (use-package treesit-auto
+;;   :ensure (:wait t)
+;;   :demand t
+;;   :custom
+;;   (treesit-auto-install 'prompt)
+;;   :config
+;;   (setq treesit-auto-langs '(javascript typescript tsx css html))
+;;   (treesit-auto-add-to-auto-mode-alist '(javascript typescript tsx css html))
+;;   (global-treesit-auto-mode))
 #+end_src
 
 **** projectile
