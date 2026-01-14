@@ -17,7 +17,6 @@ Thanks
 - [[https://howardabrams.com/hamacs/][monster config]]
 - [[https://github.com/jeremygooch/jeremacs][less monstruous but still huge]]
 
-
 * TODO how to use [0/3]
 
 #+begin_example console
@@ -28,7 +27,6 @@ $ emacs -q -l ~/repo/perso/nemacs_2/emacs-init.el --init-directory=~/repo/perso/
 ** TODO as systemctl service (aka emacsclient)
 ** TODO misc
 chemacs
-
 
 * TODO TODOs
 :PROPERTIES:
@@ -409,7 +407,6 @@ Let's also setup the ``use-package`` macro.
 
 
 
-
 *** TODO emacs defaults
 
 #+begin_src emacs-lisp
@@ -607,14 +604,14 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     ;; "t z" '(eshell-toggle :wk "Toggle eshell")
     )
 
-  ;; (nemacs/leader-keys
-  ;;   "w" '(:ignore t :wk "Windows")
-  ;;   "w <left>" '(buf-move-left :wk "Buffer move left")
-  ;;   "w <down>" '(buf-move-down :wk "Buffer move down")
-  ;;   "w <up>" '(buf-move-up :wk "Buffer move up")
-  ;;   "w <right>" '(buf-move-right :wk "Buffer move right"))
-  ;; )
-  )
+  (nemacs/leader-keys
+    "w" '(:ignore t :wk "Windows")
+    "w <left>" '(nemacs--buf-move-left :wk "Buffer move left")
+    "w <down>" '(nemacs--buf-move-down :wk "Buffer move down")
+    "w <up>" '(nemacs--buf-move-up :wk "Buffer move up")
+    "w <right>" '(nemacs--buf-move-right :wk "Buffer move right")
+    )
+)
 #+end_src
 
 And a few keybindings that doesn't belong to any groups
@@ -623,15 +620,18 @@ And a few keybindings that doesn't belong to any groups
 (general-define-key
   ;; "C-M-j" '(counsel-switch-buffer :wk "Better file buffer")
  "C-x <down>" '(bs-show :wk "BS show")
+ "C-x 1" '(nemacs/toggle-maximize-buffer :wk "Maximize")
+
  "C-=" '(text-scale-increase :wk "Zoom in")
- "<C-wheel-down>" '(text-scale-increase :wk "Zoom in")
  "C--" '(text-scale-decrease :wk "Zoom out")
+ "<C-wheel-down>" '(text-scale-increase :wk "Zoom in")
  "<C-wheel-up>" '(text-scale-decrease  :wk "Zoom out")
- ;; "C-x 1" '(nemacs/toggle-maximize-buffer :wk "Maximize")
+
+
 
  ;; ctrl+pgup / ctrl+pgdn to change next/prev tab
- ;; "<C-next>" '(tab-bar-switch-to-next-tab :wk "Next tab")
- ;; "<C-prior>" '(tab-bar-switch-to-prev-tab :wk "Previous tab")
+ "<C-next>" '(tab-bar-switch-to-next-tab :wk "Next tab")
+ "<C-prior>" '(tab-bar-switch-to-prev-tab :wk "Previous tab")
  )
 
 ;; pres ESC once instead of twice of three times
@@ -1281,7 +1281,7 @@ Fix emacs regex
 (setq-default pcre-mode t)
 #+end_src
 
-**** TODO Buffer
+**** Buffers
 
 Remember where I left off after killing a file
 
@@ -1344,16 +1344,103 @@ NOTE:  bind those toggle via `M-m E(rror) f(irst)` and `M-m E b(ottom)`.
 
 ***** TODO popwin
 ***** TODO ominobox
-***** TODO buffer move
-***** TODO buffer maximize
+***** move buffer
 
+Creating some functions to allow us to easily move windows (splits) around.  The following block of code was taken from buffer-move.el found on the EmacsWiki:
+  https://www.emacswiki.org/emacs/buffer-move.el
+
+#+BEGIN_SRC emacs-lisp
+(require 'windmove)
+
+;;;###autoload
+(defun nemacs--buf-move-up ()
+  "Swap the current buffer and the buffer above the split.
+If there is no split, ie now window above the current one, an
+error is signaled."
+;;  "Switches between the current buffer, and the buffer above the
+;;  split, if possible."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'up))
+     (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+        (error "No window above this one")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+;;;###autoload
+(defun nemacs--buf-move-down ()
+"Swap the current buffer and the buffer under the split.
+If there is no split, ie now window under the current one, an
+error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'down))
+     (buf-this-buf (window-buffer (selected-window))))
+    (if (or (null other-win)
+            (string-match "^ \\*Minibuf" (buffer-name (window-buffer other-win))))
+        (error "No window under this one")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+;;;###autoload
+(defun nemacs--buf-move-left ()
+"Swap the current buffer and the buffer on the left of the split.
+If there is no split, ie now window on the left of the current
+one, an error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'left))
+     (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+        (error "No left split")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+;;;###autoload
+(defun nemacs--buf-move-right ()
+"Swap the current buffer and the buffer on the right of the split.
+If there is no split, ie now window on the right of the current
+one, an error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'right))
+     (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+        (error "No right split")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+#+END_SRC
+***** maximize buffer
+
+Instead of kill other via X-1. Stollen from spacemacs, sorry mom.
+
+#+BEGIN_SRC emacs-lisp
+(defun nemacs/toggle-maximize-buffer ()
+  "Maximize buffer"
+  (interactive)
+  (save-excursion
+	(if (and (= 1 (length (window-list)))
+			 (assoc ?_ register-alist))
+		(jump-to-register ?_)
+      (progn
+		(window-configuration-to-register ?_)
+		(delete-other-windows)))))
+#+END_SRC
 
 **** Symbols
 
 #+begin_src emacs-lisp
 (global-prettify-symbols-mode 1)
 #+end_src
-
 
 **** Boosted string n file manipulation functions
 
@@ -1365,6 +1452,73 @@ Manipulate file paths with the [[https://github.com/rejeep/f.el][f.el]] project.
 (use-package s)
 (use-package f)
 #+end_src
+
+**** in-code TODOs highlight-ing
+
+Highlight in-code TODOs
+
+#+begin_src emacs-lisp
+(use-package hl-todo
+  :ensure(:wait t)
+  :hook ((org-mode . hl-todo-mode)
+         (prog-mode . hl-todo-mode)
+         ;; (yaml-mode . hl-todo-mode)
+         ;; (markdown-mode . hl-todo-mode)
+         )
+  :config
+  (setq hl-todo-highlight-punctuation ":"
+        hl-todo-keyword-faces
+        `(("TODO"  warning bold)
+          ("FIXME" error bold)
+          ("HACK"  font-lock-constant-face bold)
+          ("IDEA"  font-lock-keyword-face bold)
+          ("LINK"  success bold)
+          ("NOTE"  success bold))))
+#+end_src
+
+Suggests to bind some keys to hl-todo-next in order to jump from tag to tag, but the consult-todo implements that in a more visual way:
+
+#+begin_src emacs-lisp
+(use-package consult-todo
+  ;; :straight (:host github :repo "liuyinz/consult-todo")
+  :ensure(:wait t)
+  ;; :after (general)
+  :init
+  (defconst consult-todo--narrow
+    '((?t . "TODO")
+      (?f . "FIXME")
+      (?h . "HACK")
+      (?i . "IDEA")
+      (?l . "LINK")
+      (?n . "NOTE"))
+  ;;   "Mapping of narrow and keywords.")
+  ;; :general (:states 'normal "g t" '("jump todos" . consult-todo))
+    ))
+#+end_src
+
+**** rainbow delimiters
+
+#+BEGIN_SRC emacs-lisp
+;; install rainbow delimites
+;; use M-x check-parens for parenthesis error
+(use-package rainbow-delimiters
+  :ensure(:wait t)
+  :diminish
+  :hook (prog-mode . rainbow-delimiters-mode))
+#+END_SRC
+**** rainbow mode
+
+Display the actual color as a background for any hex color value (ex. #ffffff).
+The code block below enables rainbow-mode in all programming modes (prog-mode)
+as well as org-mode, which is why rainbow works in this document.
+
+#+BEGIN_SRC  emacs-lisp
+(use-package rainbow-mode
+  :ensure(:wait t)
+  :diminish
+  :hook
+  ((prog-mode org-mode) . rainbow-mode))
+#+END_SRC
 
 *** TODO IDE
 
