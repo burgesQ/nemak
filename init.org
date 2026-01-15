@@ -55,7 +55,7 @@ chemacs
 *** DONE [fly/spell/*]check
 *** DONE magit
 *** DONE org
-* TODO the config [0/5]
+* TODO the config [0/6]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
@@ -310,7 +310,7 @@ But when capturing, I subsequently open smaller frames that shouldn’t be odd l
 ;;; early-init.el ends here
 #+END_SRC
 
-** TODO config [0/4]
+** TODO config [0/5]
 *** init.el header
 
 #+begin_src emacs-lisp
@@ -544,9 +544,11 @@ Better defaults
 
   ;; styling, hide markup, etc. (recommended by org-modern)
    org-hide-emphasis-markers t
+   org-pretty-entities t
+   org-ellipsis "..."
+
    org-src-fontify-natively t ;; fontify source blocks natively
    org-highlight-latex-and-related '(native) ;; fontify latex blocks natively
-   org-pretty-entities t
 
    ;; agenda styling (recommended by org-modern)
    org-agenda-tags-column 0
@@ -557,9 +559,6 @@ Better defaults
      " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
    org-agenda-current-time-string
    "⭠ now ─────────────────────────────────────────────────"
-
-   org-ellipsis "..."
-
    ))
 #+END_SRC
 
@@ -589,7 +588,7 @@ Let's provide org
 
   (setq org-use-speed-commands t)
   (nemacs/org-better-stats)
-  (nemacs/org-pretty-checkbox)
+  ;; (nemacs/org-pretty-checkbox) --> handled by org-modern
   (nemacs/org-pretty-bullet)
   (nemacs/org-better-def)
 
@@ -626,6 +625,16 @@ Let's provide org
   ;; (setq org-directory "~/MEGA/org/agenda")
   ;; (setq org-default-notes-file (concat org-directory "/notes.org"))
   ;; FIXME: :general
+  ;; "m a" '(org-agenda :wk "Org agenda")
+  ;;   "m e" '(org-export-dispatch :wk "Org export dispatch")
+  ;;   "m i" '(org-toggle-item :wk "Org toggle item")
+  ;;   "m t" '(org-todo :wk "Org todo")
+  ;;   "m B" '(org-babel-tangle :wk "Org babel tangle")
+  ;;   "m T" '(org-todo-list :wk "Org todo list")
+  ;;   "m b" '(:ignore t :wk "Tables")
+  ;;   "m b -" '(org-table-insert-hline :wk "Insert hline in table")
+  ;;   "m d" '(:ignore t :wk "Date/deadline")
+  ;;   "m d t" '(org-time-stamp :wk "Org time stamp")
   )
 #+end_src
 
@@ -690,11 +699,22 @@ Thanks [[https://emacs.stackexchange.com/questions/60710/is-there-any-way-of-get
 
 #+begin_src emacs-lisp
 (use-package org-modern
-  ;; :ensure (:wait t)
-  :defer t
+  :ensure (:wait t)
+  ;; :defer t
   :demand t
   :after org
-  :config (global-org-modern-mode))
+  :config 
+  ;; Overwrite default bullets from org-modern
+  (setq org-modern-fold-stars
+        '(
+          ("◉" . "●")
+          ("●". "○")
+          ("●". "◉")
+          ("○" . "●")
+          ("▸" . "▾"))
+        )
+  (global-org-modern-mode)
+)
 #+end_src
 
 **** org-bullet
@@ -704,6 +724,7 @@ But stopped working so fuck it.
 
 #+BEGIN_SRC emacs-lisp
 (use-package org-bullets
+  :disabled t
   :ensure t
   ;; :defer t
   :demand t
@@ -765,6 +786,7 @@ Useful when inserting code block into org files
 )
 #+end_src
 
+*** TODO latex
 *** keybinding
 
 **** general
@@ -870,16 +892,6 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
   ;; TODO: general org-mode
   (nemacs/leader-keys org-mode-map
     "m" '(:ignore t :wk "Org")
-  ;;   "m a" '(org-agenda :wk "Org agenda")
-  ;;   "m e" '(org-export-dispatch :wk "Org export dispatch")
-  ;;   "m i" '(org-toggle-item :wk "Org toggle item")
-  ;;   "m t" '(org-todo :wk "Org todo")
-  ;;   "m B" '(org-babel-tangle :wk "Org babel tangle")
-  ;;   "m T" '(org-todo-list :wk "Org todo list")
-  ;;   "m b" '(:ignore t :wk "Tables")
-  ;;   "m b -" '(org-table-insert-hline :wk "Insert hline in table")
-  ;;   "m d" '(:ignore t :wk "Date/deadline")
-  ;;   "m d t" '(org-time-stamp :wk "Org time stamp")
     )
 
   ;; while go is the major mode
@@ -944,7 +956,7 @@ And a few keybindings that doesn't belong to any groups
  )
 
 ;; pres ESC once instead of twice of three times
-(global-set-key [escape] 'keyboard-escape-quit)
+;; (global-set-key [escape] 'keyboard-escape-quit)
 #+end_src
 
 **** helpful
@@ -1082,7 +1094,7 @@ Spread ivy to M-x with [[https://github.com/abo-abo/swiper#counsel][counsel (ivy
    "C-x b" '(counsel-switch-buffer :wk "Better file buffer")
    "C-x C-f" '(counsel-find-file :wk "Beffer find file")
    )
-  :bind (("M-x" . counsel-M-x)
+  :bind (("M-x" . counsel-M-x) ;; TODO: convert to  geneal
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history)))
 
@@ -1131,7 +1143,7 @@ See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
   :demand t
   :diminish ivy-mode
   ;; TODO: which-key
-  :bind
+  :bind ;; TODO: convert to  geneal
   (
    :map ivy-minibuffer-map
    ("<left>" . ivy-backward-delete-char)
@@ -1190,6 +1202,7 @@ See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
 #+end_src
 
 *** UI
+
 **** bell
 
 Enable visual bells
@@ -1908,7 +1921,7 @@ Uses position instead of index field."
 #+end_src
 *** QoL
 
-**** Prompts
+**** prompts
 
 I prefer emacs to just ask y/n not yes/no
 
@@ -1917,7 +1930,7 @@ I prefer emacs to just ask y/n not yes/no
 (setopt use-short-answers t)
 #+end_src
 
-**** Shells
+**** shells
 
 Prevent async shell command buffers from popping-up:
 
@@ -1926,7 +1939,7 @@ Prevent async shell command buffers from popping-up:
   '("\\*Async Shell Command\\*.*" display-buffer-no-window))
 #+end_src
 
-**** Regex
+**** regex
 
 Fix emacs regex
 
@@ -1934,7 +1947,7 @@ Fix emacs regex
 (setq-default pcre-mode t)
 #+end_src
 
-**** Buffers
+**** buffers
 
 Remember where I left off after killing a file
 
@@ -2183,13 +2196,13 @@ A better undo system. See the [[https://elpa.gnu.org/packages/undo-tree.html][of
   (global-undo-tree-mode))
 #+END_SRC
 
-**** Symbols
+**** symbols
 
 #+begin_src emacs-lisp
 (global-prettify-symbols-mode 1)
 #+end_src
 
-**** Boosted string n file manipulation functions
+**** boosted string n file manipulation functions
 
 The [[https://github.com/magnars/s.el][s.el]] project is a simpler string manipulation library that I (and other projects) use.
 
@@ -2200,7 +2213,7 @@ Manipulate file paths with the [[https://github.com/rejeep/f.el][f.el]] project.
 (use-package f)
 #+end_src
 
-**** Code inlined TODOs highlight-ing
+**** code inlined TODOs highlight-ing
 
 Highlight in-code TODOs
 
@@ -2244,7 +2257,7 @@ Suggests to bind some keys to hl-todo-next in order to jump from tag to tag, but
   )
 #+end_src
 
-**** Rainbow delimiters
+**** rainbow delimiters
 
 #+BEGIN_SRC emacs-lisp
 ;; install rainbow delimites
@@ -2254,7 +2267,7 @@ Suggests to bind some keys to hl-todo-next in order to jump from tag to tag, but
   :diminish
   :hook (prog-mode . rainbow-delimiters-mode))
 #+END_SRC
-**** Rainbow mode
+**** rainbow mode
 
 Display the actual color as a background for any hex color value (ex. #ffffff).
 The code block below enables rainbow-mode in all programming modes (prog-mode)
@@ -2281,19 +2294,31 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
 (use-package pulsar
   :ensure (:wait t)
   :demand t
-  :bind ("<f8>" . pulsar-pulse-line)
+  :bind ("<f8>" . pulsar-pulse-line) ;; TODO: convert to geneal
   :custom
   (pulsar-face 'pulsar-generic)
   (pulsar-delay 0.15)
   :config
-  (dolist (built-in-function '(recenter-top-bottom move-to-window-line-top-bottom reposition-window
-                               bookmark-jump other-window delete-window delete-other-windows
-                               forward-page backward-page scroll-up-command scroll-down-command
-                               tab-new tab-close tab-next org-next-visible-heading
-                               org-previous-visible-heading org-forward-heading-same-level
-                               org-backward-heading-same-level outline-backward-same-level
-                               outline-forward-same-level outline-next-visible-heading
-                               outline-previous-visible-heading outline-up-heading))
+  (dolist (built-in-function '(recenter-top-bottom
+                               move-to-window-line-top-bottom
+                               reposition-window
+                               bookmark-jump
+                               other-window
+                               delete-window
+                               delete-other-windows
+                               forward-page
+                               backward-page
+                               scroll-up-command scroll-down-command
+                               tab-new tab-close tab-next
+                               org-next-visible-heading
+                               org-previous-visible-heading
+                               org-forward-heading-same-level
+                               org-backward-heading-same-level
+                               outline-backward-same-level
+                               outline-forward-same-level
+                               outline-next-visible-heading
+                               outline-previous-visible-heading
+                               outline-up-heading))
     (add-to-list 'pulsar-pulse-functions built-in-function))
 (pulsar-global-mode 1))
 #+end_src
@@ -2614,7 +2639,6 @@ machine gitlab.com/api/v4 login [username]^forge password [token]
                  "gitlab.frafos.net" forge-gitlab-repository)))
 (setq auth-sources '("~/.authinfo"))
 #+END_SRC
->>>>>>> Stashed changes
 
 **** projectile
 
