@@ -1047,7 +1047,9 @@ The way we access the font icons has always been … odd; needing to specify the
 Used by the `nemacs-features` function ATM.
 
 #+begin_src emacs-lisp
-(use-package nerd-icons)
+(use-package nerd-icons
+  :ensure t
+  :demand t)
 
 (defun nemacs--font-icons (collection label &rest args)
   "Abstraction over `nerd-icons' project.
@@ -1381,7 +1383,7 @@ Nice welcome screen. See the official
 (use-package dashboard
   :ensure (:wait t)
   ;; :demand t
-  :after (all-the-icons nerd-icons projectile page-break-lines)
+  :after (all-the-icons nerd-icons projectile page-break-lines s)
   :init
   (defun nemacs-dashboard-version ()
     (let ((smaller-version (replace-regexp-in-string
@@ -2272,9 +2274,9 @@ Thanks [[https://emacs.stackexchange.com/questions/60710/is-there-any-way-of-get
 
 #+begin_src emacs-lisp
 (use-package org-modern
-  :ensure (:wait t)
+  :ensure t
   ;; :defer t
-  :demand t
+  ;; :demand t
   :after org
   :config
   ;; Overwrite default bullets from org-modern
@@ -2298,9 +2300,9 @@ See the [[https://github.com/awth13/org-appear][repo]] for more.
 
 #+begin_src emacs-lisp
 (use-package org-appear
-  :ensure (:wait t)
+  :ensure t
   ;; :defer t
-  :demand t
+  ;; :demand t
   :after org
   :hook
   (org-mode-hook . org-appear-mode)
@@ -2371,8 +2373,9 @@ Useful when inserting code block into org files
 (use-package olivetti
   :ensure (:wait t)
   ;; :defer t
-  :demand t
+  ;; :demand t
   :after org
+  :diminish
   :config (setq olivetti-body-width 0.95)
   :hook (org-mode . olivetti-mode)
 )
@@ -2458,7 +2461,7 @@ Let's setup the famous `lsp-mode`
 
 (use-package lsp-mode
   :ensure (:wait t)
-  :demand t
+  ;; :demand t
   :hook (
          (lsp-mode . nemacs/lsp-mode-setup)
          (prog-mode . lsp-deferred)
@@ -2498,7 +2501,7 @@ Seems to make the screen cluttered, needs a few tweaks.
 ;; More incode LSP info
 (use-package lsp-ui
   :ensure (:wait t)
-  :demand t
+  ;; :demand t
   :after lsp-mode
   ;; :defer t
   :commands lsp-ui-mode
@@ -2514,13 +2517,14 @@ Seems to make the screen cluttered, needs a few tweaks.
 The [[https://github.com/emacs-lsp/lsp-ui/blob/master/lsp-ui-imenu.el][lsp-imenu]] project offers a lsp-ui-imenu function for jumping to functions:
 
 #+begin_src emacs-lisp
-(use-package lsp-ui-imenu
-    :after lsp-ui
-    :config
-    ;; (ha-local-leader :keymaps 'prog-mode-map
-    ;;   "g"  '(:ignore t :which-key "goto")
-    ;;   "g m" '("imenu" . lsp-ui-imenu))
-    (add-hook 'lsp-after-open-hook 'lsp-enable-imenu))
+;; (use-package lsp-ui-imenu
+;;   :ensure t
+;;   :after lsp-ui
+;;   :config
+;;   ;; (ha-local-leader :keymaps 'prog-mode-map
+;;   ;;   "g"  '(:ignore t :which-key "goto")
+;;   ;;   "g m" '("imenu" . lsp-ui-imenu))
+;;   (add-hook 'lsp-after-open-hook 'lsp-enable-imenu))
 #+end_src
 
 ***** lsp-ivy
@@ -2659,24 +2663,6 @@ The `flyspell-prog-mode` checks for misspellings in comments.
 
 Let's also set up flyspell pop-up for easier fixing
 
-#+begin_src emacs-lisp
-(use-package flyspell-correct-popup
-  :ensure t
-  :commands (flyspell-correct-popup)
-  :init
-  (setq flyspell-correct-interface #'flyspell-correct-popup))
-
-;; auto load flyspell per buffer
-(add-hook 'after-change-major-mode-hook 'nemacs/flyspell-on-for-buffer-type)
-
-;; skip code block check
-(add-to-list 'ispell-skip-region-alist '("^#+BEGIN_SRC emacs-lisp" . "^#+END_SRC"))
-
-;; don't log message for each word
-(setq flyspell-issue-message-flag nil)
-(setq flyspell-popup-correct-delay 0.5)
-#+end_src
-
 And let's try that one
 
 #+begin_src emacs-lisp
@@ -2689,6 +2675,25 @@ And let's try that one
     "s P" '(flyspell-correct-at-point :wk "Correct at point")
     )
   )
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package flyspell-correct-popup
+  :ensure t
+  :commands (flyspell-correct-popup)
+  :after (flyspell-correct)
+  :init
+  (setq flyspell-correct-interface #'flyspell-correct-popup))
+
+;; auto load flyspell per buffer
+(add-hook 'after-change-major-mode-hook 'nemacs/flyspell-on-for-buffer-type)
+
+;; skip code block check
+(add-to-list 'ispell-skip-region-alist '("^#+BEGIN_SRC emacs-lisp" . "^#+END_SRC"))
+
+;; don't log message for each word
+(setq flyspell-issue-message-flag nil)
+(setq flyspell-popup-correct-delay 0.5)
 #+end_src
 
 And now let's define a few helpful functions.
@@ -2758,18 +2763,23 @@ All credit to the [[https://www.emacswiki.org/emacs/FlySpell][emacswiki]].
                         (reusable-frames . t)))
     (magit-display-buffer-traditional buffer)))
 
+;; ✅ Force install transient before magit
+(use-package transient
+  :ensure t
+  :demand t)
+
 ;; install magit for git management
 (use-package magit
   :ensure (:wait t)
   :demand t
-  :after (general)
+  :after (general projectile transient)
   :commands (magit-status magit-get-current-branch)
   :custom
   (magit-display-buffer-function #'
    ;; magit-display-buffer-same-window-except-diff-v1)
    nemacs/magit-display-buffer-pop-up-frame)
   :config
-  (magit-rebase-commit-arguments '("--format=%h %an %s"))
+  ;; (magit-rebase-commit-arguments '("--format=%h %an %s"))
   (transient-bind-q-to-quit)
   :general
   (nemacs/leader-keys
