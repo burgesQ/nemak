@@ -55,7 +55,7 @@ chemacs
 *** DONE [fly/spell/*]check
 *** DONE magit
 *** DONE org
-* TODO the config [0/7]
+* TODO the config [0/17]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
@@ -310,7 +310,7 @@ But when capturing, I subsequently open smaller frames that shouldn’t be odd l
 ;;; early-init.el ends here
 #+END_SRC
 
-** TODO config [0/6]
+** TODO config [0/16]
 *** init.el header
 
 #+begin_src emacs-lisp
@@ -529,8 +529,8 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
   (nemacs/leader-keys
     "c" '(:ignore t :wk "Config")
     "c r" '((lambda () (interactive)
-              (elpaca-process-queues)
-              (elpaca-wait)
+              ;; (elpaca-process-queues)
+              ;; (elpaca-wait)
               (load-file "~/repo/perso/nemacs_2/emacs-init.el"))
             :wk "Reload emacs config")
     "c o" '((lambda () (interactive)
@@ -587,12 +587,19 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
   ;; while org is the major mode
   ;; TODO: general org-mode
   (nemacs/leader-keys org-mode-map
+    :major-modes '(org-mode)
+    :keymap '(org-mode-map)
     "m" '(:ignore t :wk "Org mode")
     )
 
   ;; while go is the major mode
   ;; TODO: general go-mode
   ;; (nemacs/leader-keys go-mode-map)
+  (nemacs/leader-keys ;; go-mode
+    :major-modes '(go-mode)
+    :keymap '(go-mode-map)
+    "m" '(:ignore t :wk "Go mode")
+    )
 
   ;; Spelling
   ;; namespace mostly used by 'flyspell'
@@ -1604,20 +1611,7 @@ Uses position instead of index field."
 
 #+end_src
 
-**** window dimmer
-#+begin_src emacs-lisp
-(use-package dimmer
-  :ensure (:wait t)
-  :demand t
-  :custom
-  (dimmer-adjustment-mode :foreground)
-  :config
-  (dimmer-configure-which-key)    ; Do not dim these special windows
-  (dimmer-configure-hydra)
-  (dimmer-configure-magit)
 
-  (dimmer-mode t))
-#+end_src
 *** QoL
 
 **** prompts
@@ -1913,7 +1907,7 @@ Highlight in-code TODOs
   :hook ((org-mode . hl-todo-mode)
          (prog-mode . hl-todo-mode)
          (text-mode . hl-todo-mode)
-         ;; (yaml-mode . hl-todo-mode)
+         (yaml-mode . hl-todo-mode)
          ;; (markdown-mode . hl-todo-mode)
          )
   :config
@@ -2377,7 +2371,7 @@ Useful when inserting code block into org files
   :after org
   :diminish
   :config (setq olivetti-body-width 0.95)
-  :hook (org-mode . olivetti-mode)
+  ;; :hook (org-mode . olivetti-mode)
 )
 #+end_src
 
@@ -2424,17 +2418,27 @@ Let's setup the famous `lsp-mode`
 ;; LSP stuffs ;;
 ;;;;;;;;;;;;;;;;
 
-;; make some space.
-(defun nemacs/lsp-mode-setup ()
+
+
+(use-package lsp-mode
+  :ensure (:wait t)
+  ;; :demand t
+  :hook (
+         ;; (lsp-mode . nemacs/lsp-mode-setup)
+         (yaml-mode . lsp-deferred)
+         (prog-mode . lsp-deferred)
+         (lsp-mode . lsp-enable-which-key-integration))
+  :custom
+  (read-processs-output-max (* 1024 1024))
+  :commands (lsp lsp-deferred)
+  :config (setq lsp-idle-delay 1)
   (setq
-  lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+   lsp-headerline-breadcrumb-segments
+   '(path-up-to-project file symbols))
   (lsp-headerline-breadcrumb-mode)
 
-
   (setq
-   ;; turn off problematic modes
-   lsp-disabled-clients '(semgrep-ls)
-   ;; lsp-ui-doc-enable nil
+   lsp-ui-doc-enable t
    ;; disable file watched
    lsp-enable-file-watchers nil
    ;; don't keep workspace alive
@@ -2444,36 +2448,14 @@ Let's setup the famous `lsp-mode`
    ;; lsp-clangd
    ;; lsp-clangd-binary-path '/usr/bin/clangd
    ;; Use complation at point
-   lsp-completion-provider :capf
-   )
+   lsp-completion-provider :capf)
 
-  ;; golang compat build tag
-  ;; TODO: hook to lsp-go-mode
-  ;; (setq
-  ;;  lsp-go-env '((GOFLAGS . "-tags=integration,e2e,nowatcher")))
-  ;; (progn ;; use flycheck, not flymake
-  ;;   (setq lsp-prefer-flymake nil
-  ;;         lsp-enable-indentation nil
-  ;;         lsp-enable-on-type-formatting nil))
-  ;; )
-
-)
-
-(use-package lsp-mode
-  :ensure (:wait t)
-  ;; :demand t
-  :hook (
-         (lsp-mode . nemacs/lsp-mode-setup)
-         (prog-mode . lsp-deferred)
-         (lsp-mode . lsp-enable-which-key-integration))
-  :custom
-  (read-processs-output-max (* 1024 1024))
-  :commands (lsp lsp-deferred)
-  :config (setq lsp-idle-delay 1)
   :init
+  ;; turn off problematic modes
+  (setq lsp-disabled-clients '(semgrep-ls))
   (setq lsp-keymap-prefix "M-m l")
   (setq lsp-diagnostics-provider :flycheck)
-  ;; :general FIXME: feed custom lsp general ?
+  ;; :general FIXME: feed custom lsp general ? 
   ;; :keymap 'lsp-mode-map
   ;;   "l" '(:ignore t :wk "LSP")
   ;;   "l l" '(lsp-command-map :wk "LSP")
@@ -2502,29 +2484,20 @@ Seems to make the screen cluttered, needs a few tweaks.
 (use-package lsp-ui
   :ensure (:wait t)
   ;; :demand t
-  :after lsp-mode
+  :after ( lsp-mode general)
   ;; :defer t
   :commands lsp-ui-mode
-  ;; :config (progn
-  ;;             ;; disable inline documentation
-  ;;             (setq lsp-ui-sideline-enable nil)
-  ;;             (setq lsp-ui-doc-position 'bottom))
-)
-#+end_src
-
-***** lsp-imenu
-
-The [[https://github.com/emacs-lsp/lsp-ui/blob/master/lsp-ui-imenu.el][lsp-imenu]] project offers a lsp-ui-imenu function for jumping to functions:
-
-#+begin_src emacs-lisp
-;; (use-package lsp-ui-imenu
-;;   :ensure t
-;;   :after lsp-ui
-;;   :config
-;;   ;; (ha-local-leader :keymaps 'prog-mode-map
-;;   ;;   "g"  '(:ignore t :which-key "goto")
-;;   ;;   "g m" '("imenu" . lsp-ui-imenu))
-;;   (add-hook 'lsp-after-open-hook 'lsp-enable-imenu))
+  :config 
+  (progn
+    ;; Enable inline documentation
+    (setq lsp-ui-sideline-enable t)
+    (setq lsp-ui-doc-position 'bottom))
+  (add-hook 'lsp-after-open-hook 'lsp-enable-imenu)
+  :general 
+  (nemacs/leader-keys
+    :keymaps 'prog-mode-map
+    "G m" '("imenu" . lsp-ui-imenu))
+  )
 #+end_src
 
 ***** lsp-ivy
@@ -2534,7 +2507,7 @@ The [[https://github.com/emacs-lsp/lsp-ui/blob/master/lsp-ui-imenu.el][lsp-imenu
 ;; LSP + ivy
 (use-package lsp-ivy
   :ensure (:wait t)
-  :demand t
+  ;; :demand t
   :after (lsp-mode ivy)
   ;; :defer t
   :commands
@@ -2546,7 +2519,7 @@ The [[https://github.com/emacs-lsp/lsp-ui/blob/master/lsp-ui-imenu.el][lsp-imenu
 #+begin_src emacs-lisp
 (use-package lsp-treemacs
   :ensure (:wait t)
-  :demand t
+  ;; :demand t
   :after (lsp-mode)
   ;; :defer t
   :commands
@@ -2558,16 +2531,242 @@ The [[https://github.com/emacs-lsp/lsp-ui/blob/master/lsp-ui-imenu.el][lsp-imenu
 #+begin_src emacs-lisp
 ;; optionally if you want to use debugger
 (use-package  dap-mode
-  :ensure (:wait t)
-  :demand t
+  :ensure t
+  ;; :demand t
   ;; :defer t
   :after (lsp-mode))
 ;; (use-package dap-LANGUAGE) to load the dap adapter for your language
 #+end_src
 
+***** lsp-docker
+
+See the [[https://github.com/emacs-lsp/lsp-docker/tree/master][repo]] for more info.
+Disabled ATM. Let's look into it later.
+
+
+#+begin_src emacs-lisp
+(use-package 'lsp-docker
+  :disabled t
+  :ensure t
+  :after lsp
+  :conf
+  (defvar lsp-docker-client-packages
+    '(lsp-css lsp-clients lsp-bash lsp-go lsp-pylsp lsp-html lsp-typescript
+      lsp-terraform lsp-clangd))
+
+  (setq lsp-docker-client-configs
+        '((:server-id bash-ls :docker-server-id bashls-docker :server-command "bash-language-server start")
+          (:server-id clangd :docker-server-id clangd-docker :server-command "clangd")
+          (:server-id css-ls :docker-server-id cssls-docker :server-command "css-languageserver --stdio")
+          (:server-id dockerfile-ls :docker-server-id dockerfilels-docker :server-command "docker-langserver --stdio")
+          (:server-id gopls :docker-server-id gopls-docker :server-command "gopls")
+          (:server-id html-ls :docker-server-id htmls-docker :server-command "html-languageserver --stdio")
+          (:server-id pylsp :docker-server-id pyls-docker :server-command "pylsp")
+          (:server-id ts-ls :docker-server-id tsls-docker :server-command "typescript-language-server --stdio")))
+  :init
+  (lsp-docker-init-clients
+   :path-mappings '(("path-to-projects-you-want-to-use" . "/projects"))
+   :client-packages lsp-docker-client-packages
+   :client-configs lsp-docker-client-configs)
+  )
+#+end_src
 ***** TODO languages
+****** docker-mode
 
+#+begin_src emacs-lisp
+(use-package dockerfile-mode
+  :ensure t
+  :defer t)
+#+end_src
 
+****** go mod
+
+- [[https://github.com/nsf/gocode/blob/master/emacs-company/README.md][company-go]]
+- [[https://github.com/weijiangan/flycheck-golangci-lint][flycheck-golangci-lint]]
+  require golang-ci obviously
+- [[https://github.com/emacsorphanage/go-eldoc?search=1][go-eldoc]] allow to get meta info
+  require `$ go get -u github.com/nsf/gocode`
+- [[https://github.com/s-kostyaev/go-fill-struct][go-fill-struct]]
+  require `$ go get -u github.com/davidrjenni/reftools/cmd/fillstruct`
+- [[https://github.com/s-kostyaev/go-gen-test][go-gen-test]]
+  require `$ go get -u github.com/cweill/gotests/...`
+
+TLDR:
+
+#+begin_src shell
+$ go -u install \
+  # golangci lint
+  github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.4.0
+  # go mod deps
+  golang.org/x/tools/gopls@latest \
+  # go-eldoc
+  github.com/nsf/gocode@latest \
+  # go-fill-struct
+  github.com/davidrjenni/reftools/cmd/fillstruct@latest \
+  # go-gen-test
+  github.com/cweill/gotests/gotests@latest \
+  # go-tag
+  github.com/fatih/gomodifytags@latest \
+  # stricter go fmt
+  mvdan.cc/gofumpt@latest
+#+end_src
+
+#+BEGIN_SRC emacs-lisp
+;; install go support for company
+(use-package company-go
+  :ensure t
+  :defer t
+  :hook
+  (go-mode-hook . (lambda ()
+                    (set (make-local-variable 'company-backends) '(company-go))
+                    (company-mode))))
+
+;; install flycheck support for golangci-lint
+(use-package flycheck-golangci-lint
+  :ensure t
+  :defer t
+  :hook  (go-mode . flycheck-golangci-lint-setup)
+  ;; :config
+  ;; (setq
+  ;;  flycheck-golangci-lint-config
+  ;;  "/home/master/repo/sbc/src/make_src/golangci.yaml")
+)
+
+;; install func meta info
+(use-package go-eldoc ;; Don't need to require, if you install by package.el
+  :ensure t
+  :hook (go-mode-hook . go-eldoc-setup)
+  :init
+  (set-face-attribute 'eldoc-highlight-function-argument nil
+                      :underline t :foreground "green"
+                      :weight 'bold))
+
+(defun nemacs/go-mode-setup ()
+  "Basic Go mode setup."
+  ;; (add-hook 'before-save-hook #'lsp-format-buffer t t)
+  (add-hook 'before-save-hook #'gofmt-before-save t t)
+  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+
+(use-package go-mode
+  :ensure t
+  :defer t
+  :mode "\\.go\\'"
+  :after general
+  :hook
+  (go-mode . nemacs/go-mode-setup)
+  :config
+  ;; (add-hook 'go-mode-hook #'nemacs/go-mode-setup)
+
+  ;; golang compat build tag
+  ;; TODO: hook to lsp-go-mode
+  (setq
+   lsp-go-env '((GOFLAGS . "-tags=integration,e2e,nowatcher")))
+  (progn ;; use flycheck, not flymake
+    (setq lsp-prefer-flymake nil
+          lsp-enable-indentation nil
+          lsp-enable-on-type-formatting nil))
+  (setq gofmt-command "gofumpt")
+  :general
+  (nemacs/leader-keys
+    :major-modes '(go-mode)
+    :keymap '(go-mode-map)
+    "m r" '(go-rename :wk "Go rename"))
+  )
+
+;; install a test generator
+(use-package go-gen-test
+  :ensure t
+  :defer t
+  :after (general go-mode)
+  :general
+  (nemacs/leader-keys
+    :major-modes '(go-mode)
+    :keymap '(go-mode-map)
+     "m tg" '(:ignore t :wk "Go test gen")
+     "m tgg" '(go-gen-test-dwim)
+     "m tge" '(go-gen-test-exported :wk "Go test exported")
+     "m tga" '(go-gen-test-all :wk "Go test all"))
+    )
+
+;; (use-package go-rename
+;;   :ensure t
+;;   :defer t
+;;   :after (general go-mode)
+;;   :general
+;;   (nemacs/leader-keys
+;;     :major-modes '(go-mode)
+;;     :keymap '(go-mode-map)
+;;     "m r" '(go-rename :wk "Go rename"))
+;;   )
+
+;; install a struct filler
+(use-package go-fill-struct
+  :ensure t
+  :defer t
+  :after (general go-mode)
+  :general
+  (nemacs/leader-keys
+    :major-modes '(go-mode)
+    :gkeymaps '(go-mode-map)
+    "m s" '(go-fill-struct :wk "Fill structure"))
+  )
+
+(use-package go-tag
+  :ensure t
+  :defer t
+  :after (general go-mode)
+  :general
+  (nemacs/leader-keys
+    :major-modes
+   '(go-mode)
+   :keymaps
+   '(go-mode-map)
+   ;; "m" '(:ignore t :wk "Go")
+   "m t" '(:ignore t :wk "Go tag")
+   "m t a" '(go-tag-add :wk "Add tag")
+   "m t r" '(go-tag-remove :wk "Remove tag"))
+  )
+
+;; https://emacs-lsp.github.io/lsp-mode/page/lsp-gopls/#configuration
+(setq lsp-go-analyses '((shadow . t)
+                        (simplifycompositelit . :json-false)))
+
+;; set golangci-lint
+(defvar-local flycheck-local-checkers nil)
+(defun +nemacs/flycheck-checker-get(fn checker property)
+  (or (alist-get property (alist-get checker flycheck-local-checkers))
+      (funcall fn checker property)))
+(advice-add 'flycheck-checker-get :around '+nemacs/flycheck-checker-get)
+
+(add-hook 'go-mode-hook (lambda()
+                          (flycheck-golangci-lint-setup)
+                          (setq flycheck-local-checkers '((lsp . ((next-checkers . (golangci-lint))))))))
+#+END_SRC
+
+****** yaml mod
+
+#+begin_src emacs-lisp
+(use-package yaml-mode
+  :ensure t
+  ;; :after (lsp)
+  :defer t
+  :mode (("\\.\\(yml\\|yaml\\)\\'" . yaml-mode)
+         )
+  ;; :hook 
+  :init (setq emojify-mode -1))
+#+END_SRC
+
+****** TODO python mod
+
+****** TODO php mod
+
+****** TODO c/c++ mod
+
+****** TODO cmake
+****** TODO SQL
+****** TODO markdown + vmd
+****** TODO rust mod
+****** TODO toml mod
 
 
 **** on the fly checkers
