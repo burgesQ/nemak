@@ -2396,19 +2396,136 @@ Let's setup 'claude.el'
 
 #+end_src
 
-**** TODO LSP
+**** WIP LSP
 
-Let's setup LSP + LSP-docker ?
+Let's setup the famous `lsp-mode`
 
 #+begin_src emacs-lisp
-
 ;;
 ;; LSP stuffs
 ;;
 
+;; make some space.
+(defun nemacs/lsp-mode-setup ()
+  (setq
+  lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  (lsp-headerline-breadcrumb-mode)
+
+
+  (setq
+   ;; turn off problematic modes
+   lsp-disabled-clients '(semgrep-ls)
+   ;; lsp-ui-doc-enable nil
+   ;; disable file watched
+   lsp-enable-file-watchers nil
+   ;; don't keep workspace alive
+   lsp-keep-workspace-alive nil
+   ;; disable yasnippet
+   lsp-enable-snippet nil
+   ;; lsp-clangd
+   ;; lsp-clangd-binary-path '/usr/bin/clangd
+   )
+
+  ;; golang compat build tag
+  ;; TODO: hook to lsp-go-mode
+  ;; (setq
+  ;;  lsp-go-env '((GOFLAGS . "-tags=integration,e2e,nowatcher")))
+  ;; (progn ;; use flycheck, not flymake
+  ;;   (setq lsp-prefer-flymake nil
+  ;;         lsp-enable-indentation nil
+  ;;         lsp-enable-on-type-formatting nil))
+  ;; )
+
+)
+
+
+(use-package lsp-mode
+  :hook (
+         (lsp-mode . nemacs/lsp-mode-setup)
+         (prog-mode . lsp-deffered)
+         (lsp-mode . lsp-enable-which-key-integration))
+  :custom
+  (read-processs-output-max (* 1024 1024))
+  :commands (lsp lsp-deferred)
+  :config (setq lsp-idle-delay 1)
+  :init
+  (setq lsp-keymap-prefix "M-m l")
+  (setq lsp-diagnostics-provider :flycheck)
+  ;; :general FIXME: feed custom lsp general ?
+  ;; :keymap 'lsp-mode-map
+  ;;   "l" '(:ignore t :wk "LSP")
+  ;;   "l l" '(lsp-command-map :wk "LSP")
+  ;;   "l f" '(:ignore t :wk "LSP find")
+  ;;   "l fr" '(lsp-find-references t :wk "Reference")
+  ;;   "l fr" '(lsp-treemacs-references t :wk "Tree reference")
+  ;;   "l fd" '(lsp-find-definition t :wk "Definition")
+  ;;   "l fD" '(lsp-find-declaration t :wk "Declaration")
+  ;;   "l fi" '(lsp-find-implementation t :wk "Implementation")
+  ;;   "l r" '(lsp-rename :wk "LSP rename")
+  ;;   "l s" '(:ignore t :wk "LSP session")
+  ;;   "l sd" '(lsp-describe-session :wk "LSP describe session")
+  ;;   "l w" '(:ignore t :wk "LSP workspace")
+  ;;   "l wa" '(lsp-workspace-folders-add :wk "LSP add workspace"))
+
+)
+
+#+end_src
+
+***** lsp-ui
+
+The [[The lsp-ui project offers much of the display and interface to LSP. Seems to make the screen cluttered.][lsp-ui]] project offers much of the display and
+interface to LSP.
+Seems to make the screen cluttered, needs a few tweaks.
+
+#+begin_src emacs-lisp
+;; optionally
+(use-package lsp-ui
+  :commands lsp-ui-mode
+  ;; :config (progn
+  ;;             ;; disable inline documentation
+  ;;             (setq lsp-ui-sideline-enable nil)
+  ;;             (setq lsp-ui-doc-position 'bottom))
+)
+
+(use-package company-lsp
+  :config
+  :after company
+  :config
+  (setq company-lsp-asyn t) ;; fetch completion candidates asynchronously.
+  (push 'company-lsp company-backends))
+
+;; if you are ivy user
+(use-package lsp-ivy
+  :commands
+  lsp-ivy-workspace-symbol)
+(use-package lsp-treemacs
+  :commands
+  lsp-treemacs-errors-list)
+
+;; optionally if you want to use debugger
+(use-package dap-mode)
+;; (use-package dap-LANGUAGE) to load the dap adapter for your language
+#+end_src
+
+***** lsp-imenu
+
+The [[https://github.com/emacs-lsp/lsp-ui/blob/master/lsp-ui-imenu.el][lsp-imenu]] project offers a lsp-ui-imenu function for jumping to functions:
+
+#+begin_src emacs-lisp
+(use-package lsp-ui-imenu
+    :straight nil
+    :after lsp-ui
+    :config
+    (ha-local-leader :keymaps 'prog-mode-map
+      "g"  '(:ignore t :which-key "goto")
+      "g m" '("imenu" . lsp-ui-imenu))
+    (add-hook 'lsp-after-open-hook 'lsp-enable-imenu))
+
 #+end_src
 
 ***** languages
+
+
 
 
 **** on the fly checkers
