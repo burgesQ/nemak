@@ -389,6 +389,18 @@ Let's also setup the ``use-package`` macro.
 ;; package no dl
 ;; (use-package genral :ensure nil ...)
 
+(elpaca-process-queues)
+(elpaca-wait)
+(use-package s
+  :ensure (:wait t)
+  :demand t)
+(use-package f
+  :ensure (:wait t)
+  :demand t)
+(elpaca-process-queues)
+(elpaca-wait)
+
+
 ;;When installing a package used in the init file itself,
 ;;e.g. a package which adds a use-package key word,
 ;;use the :wait recipe keyword to block until that package is installed/configured.
@@ -402,11 +414,6 @@ Let's also setup the ``use-package`` macro.
 ;;   :ensure nil
 ;;   :config (setq ring-bell-function #'ignore))
 
-
-;; NOTE: current config tell elpaca to load package **after** emacs init.
-;; the following will "lazy-load" a package installation
-;; (use-package s :ensure (:wait t))
-;; while  adding :demand t will enfore it's installation
 
 (setq custom-file (expand-file-name "init.el" user-emacs-directory))
 (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror)))
@@ -424,23 +431,6 @@ And the use-feature one
      ,@args))
 #+end_src
 
-
-**** boosted string n file manipulation functions
-
-The [[https://github.com/magnars/s.el][s.el]] project is a simpler string manipulation library that I (and other projects) use.
-
-Manipulate file paths with the [[https://github.com/rejeep/f.el][f.el]] project.
-
-Use by other components.
-
-#+begin_src emacs-lisp
-(use-package s
-  :ensure (:wait t)
-  :demand t)
-(use-package f
-  :ensure (:wait t)
-  :demand t)
-#+end_src
 
 *** emacs defaults
 
@@ -816,7 +806,7 @@ Enhance Ivy with [[https://github.com/abo-abo/swiper][swiper]].
 #+begin_src emacs-lisp
 (use-package swiper
   :ensure t
-  :demand t
+  ;; :demand t
   :config
   ;; TODO: add which key
   (global-set-key (kbd "C-s") 'swiper-isearch))
@@ -878,7 +868,7 @@ See [[https://github.com/nonsequitur/smex][the official repo]] for more.
 #+BEGIN_SRC emacs-lisp
 (use-package smex
   :ensure t
-  :demand t
+  ;; :demand t
   :after (ivy counsel)
   :config
   (smex-initialize)
@@ -1270,6 +1260,7 @@ Stolen from [[https://howardabrams.com/hamacs/ha-dashboard.html][here]] - I like
 (use-package request
   :ensure (:wait t)
   :demand t
+  :diminish
   :init
   (defvar nemacs-dad-joke nil "Holds the latest dad joke.")
 
@@ -1382,13 +1373,14 @@ Nice welcome screen. See the official
 #+BEGIN_SRC emacs-lisp
 (use-package page-break-lines
   :ensure (:wait t)
+  :diminish
   :demand t
 )
 
 ;; nicer welcome screen
 (use-package dashboard
   :ensure (:wait t)
-  :demand t
+  ;; :demand t
   :after (all-the-icons nerd-icons projectile page-break-lines)
   :init
   (defun nemacs-dashboard-version ()
@@ -1908,16 +1900,6 @@ A better undo system. See the [[https://elpa.gnu.org/packages/undo-tree.html][of
 (global-prettify-symbols-mode 1)
 #+end_src
 
-**** boosted string n file manipulation functions
-
-The [[https://github.com/magnars/s.el][s.el]] project is a simpler string manipulation library that I (and other projects) use.
-
-Manipulate file paths with the [[https://github.com/rejeep/f.el][f.el]] project.
-
-#+begin_src emacs-lisp
-(use-package s)
-(use-package f)
-#+end_src
 
 **** code inlined TODOs highlight-ing
 
@@ -2778,8 +2760,8 @@ All credit to the [[https://www.emacswiki.org/emacs/FlySpell][emacswiki]].
 
 ;; install magit for git management
 (use-package magit
-  ;; :ensure (:wait t)
-  ;; :demand t
+  :ensure (:wait t)
+  :demand t
   :after (general)
   :commands (magit-status magit-get-current-branch)
   :custom
@@ -2806,7 +2788,9 @@ All credit to the [[https://www.emacswiki.org/emacs/FlySpell][emacswiki]].
     )
 )
 
-(use-package magit-todos :after (magit forge))
+(use-package magit-todos
+  :ensure t
+  :after (magit forge))
 #+END_SRC
 
 ***** forge
@@ -2824,7 +2808,7 @@ machine gitlab.com/api/v4 login [username]^forge password [token]
 
 #+BEGIN_SRC  emacs-lisp
 (use-package forge
-  ;; :ensure (:wait t)
+  :ensure t
   ;; :demand t
   :after magit
   :config
