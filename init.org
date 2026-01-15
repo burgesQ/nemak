@@ -471,322 +471,6 @@ And the use-feature one
 )
 #+end_src
 
-*** org
-
-Let's pimp 'org'
-
-Let's auto-toggle parent status.
-
-#+begin_src emacs-lisp
-(defun nemacs/org-summary-todo (n-done n-not-done)
-  "Switch entry to DONE when all subentries are done, to TODO otherwise."
-  (let (org-log-done org-todo-log-states)   ; turn off logging
-    (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
-
-(add-hook 'org-after-todo-statistics-hook #'nemacs/org-summary-todo)
-#+end_src
-
-Nicer checkbox.
-
-#+BEGIN_SRC emacs-lisp
-(defun nemacs/org-pretty-checkbox ()
-  (add-hook 'org-mode-hook (lambda ()
-                             "Beautify Org Checkbox Symbol"
-                             (push '("[ ]" .  "☐") prettify-symbols-alist)
-                             (push '("[X]" . "☑" ) prettify-symbols-alist)
-                             (push '("[-]" . "❍" ) prettify-symbols-alist)
-                             (prettify-symbols-mode)))
-  (defface org-checkbox-done-text
-    '((t (:foreground "#71696A")))
-    "Face for the text part of a checked org-mode checkbox.")
-  )
-#+END_SRC
-
-Nicer bullet point.
-
-#+BEGIN_SRC emacs-lisp
-(defun nemacs/org-pretty-bullet ()
-  ;; replace list '-' w/ a '•'
-  (font-lock-add-keywords 'org-mode
-                          '(("^ *\\([-]\\) "
-                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•")))))))
-#+END_SRC
-
-Better defaults
-
-#+BEGIN_SRC emacs-lisp
-(defun nemacs/org-better-def ()
-  (setq
-   ;; show actually italicized text instead of /italicized text/
-   ;; org-hide-emphasis-markers t
-   ;; show ellipsis symbol
-   ;; org-ellipsis " ▾"
-   ;; auto indent
-   org-startup-indented t
-   ;;
-   ;;
-   org-fontify-done-headline t
-   org-fontify-whole-heading-line t
-   variable-pitch-mode 1
-   ;; block parent if child not complete
-   org-enforce-todo-dependencies t
-   ;; org-fontify-quote-and-verse-blocks t
-   ;; (org-indent-mode)
-   ;; visual-line-mode 1
-
-
-   ;; edit settings (recommended by org-modern)
-   org-auto-align-tags nil
-   org-tags-column 0
-   org-catch-invisible-edits 'show-and-error
-   org-special-ctrl-a/e t ;; special navigation behaviour in headlines
-   org-insert-heading-respect-content t
-
-  ;; styling, hide markup, etc. (recommended by org-modern)
-   org-hide-emphasis-markers t
-   org-pretty-entities t
-   org-ellipsis "..."
-
-   org-src-fontify-natively t ;; fontify source blocks natively
-   org-highlight-latex-and-related '(native) ;; fontify latex blocks natively
-
-   ;; agenda styling (recommended by org-modern)
-   org-agenda-tags-column 0
-   org-agenda-block-separator ?─
-   org-agenda-time-grid
-   '((daily today require-timed)
-     (800 1000 1200 1400 1600 1800 2000)
-     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
-   org-agenda-current-time-string
-   "⭠ now ─────────────────────────────────────────────────"
-   ))
-#+END_SRC
-
-Better statistics.
-
-#+BEGIN_SRC emacs-lisp
-(defun nemacs/org-better-stats ()
-  (setq
-   ;; auto recursive checkbox
-   org-checkbox-hierarchical-statistics nil
-   ;; auto recursive todos
-   org-todo-hierarchical-statistics nil
-   ;; auto what
-   org-hierarchical-checkbox-statistics t
-   )
-  )
-#+END_SRC
-
-Let's provide org
-
-#+begin_src emacs-lisp
-(use-package org
-  ;; :ensure (:wait t)
-  :defer t
-  :demand t
-  :init
-
-  (setq org-use-speed-commands t)
-  (nemacs/org-better-stats)
-  ;; (nemacs/org-pretty-checkbox) --> handled by org-modern
-  (nemacs/org-pretty-bullet)
-  (nemacs/org-better-def)
-
-  ;; should disable latext math eval
-  (setq org-use-sub-superscripts '{})
-
-  ;; The following + electric indent to fix code block
-  (setq org-edit-src-content-indentation 0)
-
-
-  ;; todo setup
-  (setq org-todo-keywords
-        ;; it's extremely useful to distinguish between short-term goals and long-term projects
-        '((sequence "IDEA(i)" "TODO(t)" "WIP(w)" "REVIEW(r)"  "|" "DONE(d)" "CANCELED")
-          (sequence "TO-READ(r)" "READING(R)" "|" "HAVE-READ(d)")
-          (sequence "PROJ(p)" "|" "COMPLETED(c)")))
-  ;;:general
-  ;; (nemacs/leader-keys )
-  :hook
-  ;; (org-mode . olivetti-mode)
-  ;; (org-mode . variable-pitch-mode)
-  (org-mode . visual-line-mode)
-  (org-mode . (lambda () (electric-indent-local-mode -1))) ;; disable electric indentation
-
-  :config
-  (set-face-attribute 'org-ellipsis nil :inherit 'default :box nil)
-  (add-to-list 'org-latex-packages-alist '("" "braket" t))
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((js . t)
-     (emacs-lisp . t)
-     (awk . t)))
-  ;; set up org paths
-  ;; (setq org-directory "~/MEGA/org/agenda")
-  ;; (setq org-default-notes-file (concat org-directory "/notes.org"))
-  ;; FIXME: :general
-  ;; "m a" '(org-agenda :wk "Org agenda")
-  ;;   "m e" '(org-export-dispatch :wk "Org export dispatch")
-  ;;   "m i" '(org-toggle-item :wk "Org toggle item")
-  ;;   "m t" '(org-todo :wk "Org todo")
-  ;;   "m B" '(org-babel-tangle :wk "Org babel tangle")
-  ;;   "m T" '(org-todo-list :wk "Org todo list")
-  ;;   "m b" '(:ignore t :wk "Tables")
-  ;;   "m b -" '(org-table-insert-hline :wk "Insert hline in table")
-  ;;   "m d" '(:ignore t :wk "Date/deadline")
-  ;;   "m d t" '(org-time-stamp :wk "Org time stamp")
-  )
-#+end_src
-
-And a "smoll" function to coop with cookies statistics
-Thanks [[https://emacs.stackexchange.com/questions/60710/is-there-any-way-of-getting-overview-statistics-for-all-checkboxes-in-a-given-or][you]].
-
-#+begin_src emacs-lisp
-(defun nemacs/org--aggregate-cookies ()
-  (save-excursion
-    (org-back-to-heading t)
-    (let* ((prop (string-match "\\<aggregate\\>"
-                               (or (org-entry-get nil "COOKIE_DATA") "")))
-           )
-      (if prop
-          (let* ((counts (nemacs/org--aggregate-cookies-one-level))
-                 (numerator (car counts))
-                 (denominator (cadr counts))
-                 (cookie-regex "\\[\\([0-9]*\\)/\\([0-9]*\\)\\]")
-                 (new (format "[%d/%d]" numerator denominator)))
-            (re-search-forward cookie-regex (line-end-position) t)
-            (if (match-beginning 0)
-                (progn
-                  (setq beg (match-beginning 0)
-                        ndel (- (match-end 0) beg))
-                  (goto-char beg)
-                  (insert new)
-                  (delete-region (point) (+ (point) ndel))
-                  ))))
-      (if (org-up-heading-safe)
-          (nemacs/org--aggregate-cookies))
-      )))
-
-(defun nemacs/org--aggregate-cookies-one-level ()
-  (save-excursion
-    (let* ((current (point))
-           (next (save-excursion (outline-next-heading) (point)))
-           (numerator 0)
-           (denominator 0)
-           (cookie-regex "\\[\\([0-9]*\\)/\\([0-9]*\\)\\]")
-           )
-      (defun count-one ()
-        (re-search-forward cookie-regex (line-end-position) t)
-        (if (> (match-end 1) (match-beginning 1))
-            `(,(string-to-number (match-string 1))
-              ,(string-to-number (match-string 2)))
-          (0 0 )))
-      (while (> next current)
-        (goto-char next)
-        (setq current next
-              next (save-excursion (org-forward-heading-same-level 1) (point))
-              current_total (count-one)
-              denominator (+ denominator (cadr current_total))
-              numerator (+ numerator (car current_total))))
-
-      `(,numerator ,denominator)
-      )))
-
-(add-hook 'org-checkbox-statistics-hook (function nemacs/org--aggregate-cookies))
-#+end_src
-
-**** org-modern
-
-#+begin_src emacs-lisp
-(use-package org-modern
-  :ensure (:wait t)
-  ;; :defer t
-  :demand t
-  :after org
-  :config 
-  ;; Overwrite default bullets from org-modern
-  (setq org-modern-fold-stars
-        '(
-          ("◉" . "●")
-          ("●". "○")
-          ("●". "◉")
-          ("○" . "●")
-          ("▸" . "▾"))
-        )
-  (global-org-modern-mode)
-)
-#+end_src
-
-**** org-bullet
-
-See https://github.com/integral-dw/org-bullets or https://github.com/sabof/org-bullets.
-But stopped working so fuck it.
-
-#+BEGIN_SRC emacs-lisp
-(use-package org-bullets
-  :disabled t
-  :ensure t
-  ;; :defer t
-  :demand t
-  :after org
-  :commands org-bullets-mode
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●"))
-  )
-#+end_src
-
-**** org-tempo
-
-Useful when inserting code block into org files
-
-
-| Typing the below + TAB | Expands to ...                          |
-|------------------------+-----------------------------------------|
-| <a                     | '#+BEGIN_EXPORT ascii' … '#+END_EXPORT  |
-| <c                     | '#+BEGIN_CENTER' … '#+END_CENTER'       |
-| <C                     | '#+BEGIN_COMMENT' … '#+END_COMMENT'     |
-| <e                     | '#+BEGIN_EXAMPLE' … '#+END_EXAMPLE'     |
-| <E                     | '#+BEGIN_EXPORT' … '#+END_EXPORT'       |
-| <h                     | '#+BEGIN_EXPORT html' … '#+END_EXPORT'  |
-| <l                     | '#+BEGIN_EXPORT latex' … '#+END_EXPORT' |
-| <q                     | '#+BEGIN_QUOTE' … '#+END_QUOTE'         |
-| <s                     | '#+BEGIN_SRC' … '#+END_SRC'             |
-| <v                     | '#+BEGIN_VERSE' … '#+END_VERSE'         |
-
-#+BEGIN_SRC emacs-lisp
-(require 'org-tempo)
-
-(setq org-src-fontify-natively t
-      org-src-tab-acts-natively t
-      org-confirm-babel-evaluate nil
-      org-edit-src-content-indentation 0)
-#+END_SRC
-
-**** org-toc
-
-#+BEGIN_SRC emacs-lisp
-(use-package toc-org
-  :ensure t
-  :defer t
-  :after org
-  :commands toc-org-enable
-  :init (add-hook 'org-mode-hook 'toc-org-enable))
-#+END_SRC
-**** olivetti-mode
-
-#+begin_src emacs-lisp
-(use-package olivetti
-  :ensure (:wait t)
-  ;; :defer t
-  :demand t
-  :after org
-  :config (setq olivetti-body-width 0.95)
-  :hook (org-mode . olivetti-mode)
-)
-#+end_src
-
-*** TODO latex
 *** keybinding
 
 **** general
@@ -891,7 +575,7 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
   ;; while org is the major mode
   ;; TODO: general org-mode
   (nemacs/leader-keys org-mode-map
-    "m" '(:ignore t :wk "Org")
+    "m" '(:ignore t :wk "Org mode")
     )
 
   ;; while go is the major mode
@@ -1032,6 +716,341 @@ Which key for helpful emacs
 )
 #+END_SRC
 
+*** org
+
+Let's pimp 'org'
+
+Let's auto-toggle parent status.
+
+#+begin_src emacs-lisp
+(defun nemacs/org-summary-todo (n-done n-not-done)
+  "Switch entry to DONE when all subentries are done, to TODO otherwise."
+  (let (org-log-done org-todo-log-states)   ; turn off logging
+    (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
+
+(add-hook 'org-after-todo-statistics-hook #'nemacs/org-summary-todo)
+#+end_src
+
+Nicer checkbox.
+
+#+BEGIN_SRC emacs-lisp
+(defun nemacs/org-pretty-checkbox ()
+  (add-hook 'org-mode-hook (lambda ()
+                             "Beautify Org Checkbox Symbol"
+                             (push '("[ ]" .  "☐") prettify-symbols-alist)
+                             (push '("[X]" . "☑" ) prettify-symbols-alist)
+                             (push '("[-]" . "❍" ) prettify-symbols-alist)
+                             (prettify-symbols-mode)))
+  (defface org-checkbox-done-text
+    '((t (:foreground "#71696A")))
+    "Face for the text part of a checked org-mode checkbox.")
+  )
+#+END_SRC
+
+Nicer bullet point.
+
+#+BEGIN_SRC emacs-lisp
+(defun nemacs/org-pretty-bullet ()
+  ;; replace list '-' w/ a '•'
+  (font-lock-add-keywords 'org-mode
+                          '(("^ *\\([-]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•")))))))
+#+END_SRC
+
+Better defaults.
+
+#+BEGIN_SRC emacs-lisp
+(defun nemacs/org-better-def ()
+  (setq
+   ;; show actually italicized text instead of /italicized text/
+   ;; org-hide-emphasis-markers t
+   ;; show ellipsis symbol
+   ;; org-ellipsis " ▾"
+   ;; auto indent
+   org-startup-indented t
+   ;;
+   ;;
+   org-fontify-done-headline t
+   org-fontify-whole-heading-line t
+   variable-pitch-mode 1
+   ;; block parent if child not complete
+   org-enforce-todo-dependencies t
+   ;; org-fontify-quote-and-verse-blocks t
+   ;; (org-indent-mode)
+   ;; visual-line-mode 1
+
+
+   ;; edit settings (recommended by org-modern)
+   org-auto-align-tags nil
+   org-tags-column 0
+   org-catch-invisible-edits 'show-and-error
+   org-special-ctrl-a/e t ;; special navigation behaviour in headlines
+   org-insert-heading-respect-content t
+
+  ;; styling, hide markup, etc. (recommended by org-modern)
+   org-hide-emphasis-markers t
+   org-pretty-entities t
+   org-ellipsis "..."
+
+   org-src-fontify-natively t ;; fontify source blocks natively
+   org-highlight-latex-and-related '(native) ;; fontify latex blocks natively
+
+   ;; agenda styling (recommended by org-modern)
+   org-agenda-tags-column 0
+   org-agenda-block-separator ?─
+   org-agenda-time-grid
+   '((daily today require-timed)
+     (800 1000 1200 1400 1600 1800 2000)
+     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+   org-agenda-current-time-string
+   "⭠ now ─────────────────────────────────────────────────"
+   ))
+#+END_SRC
+
+Better statistics.
+
+#+BEGIN_SRC emacs-lisp
+(defun nemacs/org-better-stats ()
+  (setq
+   ;; auto recursive checkbox
+   org-checkbox-hierarchical-statistics nil
+   ;; auto recursive todos
+   org-todo-hierarchical-statistics nil
+   ;; auto what
+   org-hierarchical-checkbox-statistics t
+   )
+  )
+#+END_SRC
+
+Let's provide org
+
+#+begin_src emacs-lisp
+(use-package org
+  ;; :ensure (:wait t)
+  :defer t
+  :demand t
+  :after general
+  :init
+
+  (setq org-use-speed-commands t)
+  (nemacs/org-better-stats)
+  ;; (nemacs/org-pretty-checkbox) --> handled by org-modern
+  (nemacs/org-pretty-bullet)
+  (nemacs/org-better-def)
+
+  ;; should disable latext math eval
+  (setq org-use-sub-superscripts '{})
+
+  ;; The following + electric indent to fix code block
+  (setq org-edit-src-content-indentation 0)
+
+
+  ;; todo setup
+  (setq org-todo-keywords
+        ;; it's extremely useful to distinguish between short-term goals and long-term projects
+        '((sequence "IDEA(i)" "TODO(t)" "WIP(w)" "REVIEW(r)"  "|" "DONE(d)" "CANCELED")
+          (sequence "TO-READ(r)" "READING(R)" "|" "HAVE-READ(d)")
+          (sequence "PROJ(p)" "|" "COMPLETED(c)")))
+  ;;:general
+  ;; (nemacs/leader-keys )
+  :hook
+  ;; (org-mode . olivetti-mode)
+  ;; (org-mode . variable-pitch-mode)
+  (org-mode . visual-line-mode)
+  (org-mode . (lambda () (electric-indent-local-mode -1))) ;; disable electric indentation
+
+  :config
+  (set-face-attribute 'org-ellipsis nil :inherit 'default :box nil)
+  (add-to-list 'org-latex-packages-alist '("" "braket" t))
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((js . t)
+     (emacs-lisp . t)
+     (awk . t)))
+  :general
+  (nemacs/leader-keys org-mode-map
+    "m a" '(org-agenda :wk "Org agenda")
+    "m e" '(org-export-dispatch :wk "Org export dispatch")
+    "m i" '(org-toggle-item :wk "Org toggle item")
+    "m t" '(org-todo :wk "Org todo")
+    "m B" '(org-babel-tangle :wk "Org babel tangle")
+    "m T" '(org-todo-list :wk "Org todo list")
+    "m b" '(:ignore t :wk "Tables")
+    "m b -" '(org-table-insert-hline :wk "Insert hline in table")
+    "m d" '(:ignore t :wk "Date/deadline")
+    "m d t" '(org-time-stamp :wk "Org time stamp")
+    )
+  )
+#+end_src
+
+And a "smoll" function to coop with cookies statistics
+Thanks [[https://emacs.stackexchange.com/questions/60710/is-there-any-way-of-getting-overview-statistics-for-all-checkboxes-in-a-given-or][you]].
+
+#+begin_src emacs-lisp
+(defun nemacs/org--aggregate-cookies ()
+  (save-excursion
+    (org-back-to-heading t)
+    (let* ((prop (string-match "\\<aggregate\\>"
+                               (or (org-entry-get nil "COOKIE_DATA") "")))
+           )
+      (if prop
+          (let* ((counts (nemacs/org--aggregate-cookies-one-level))
+                 (numerator (car counts))
+                 (denominator (cadr counts))
+                 (cookie-regex "\\[\\([0-9]*\\)/\\([0-9]*\\)\\]")
+                 (new (format "[%d/%d]" numerator denominator)))
+            (re-search-forward cookie-regex (line-end-position) t)
+            (if (match-beginning 0)
+                (progn
+                  (setq beg (match-beginning 0)
+                        ndel (- (match-end 0) beg))
+                  (goto-char beg)
+                  (insert new)
+                  (delete-region (point) (+ (point) ndel))
+                  ))))
+      (if (org-up-heading-safe)
+          (nemacs/org--aggregate-cookies))
+      )))
+
+(defun nemacs/org--aggregate-cookies-one-level ()
+  (save-excursion
+    (let* ((current (point))
+           (next (save-excursion (outline-next-heading) (point)))
+           (numerator 0)
+           (denominator 0)
+           (cookie-regex "\\[\\([0-9]*\\)/\\([0-9]*\\)\\]")
+           )
+      (defun count-one ()
+        (re-search-forward cookie-regex (line-end-position) t)
+        (if (> (match-end 1) (match-beginning 1))
+            `(,(string-to-number (match-string 1))
+              ,(string-to-number (match-string 2)))
+          (0 0 )))
+      (while (> next current)
+        (goto-char next)
+        (setq current next
+              next (save-excursion (org-forward-heading-same-level 1) (point))
+              current_total (count-one)
+              denominator (+ denominator (cadr current_total))
+              numerator (+ numerator (car current_total))))
+
+      `(,numerator ,denominator)
+      )))
+
+(add-hook 'org-checkbox-statistics-hook (function nemacs/org--aggregate-cookies))
+#+end_src
+
+**** org-modern
+
+#+begin_src emacs-lisp
+(use-package org-modern
+  :ensure (:wait t)
+  ;; :defer t
+  :demand t
+  :after org
+  :config
+  ;; Overwrite default bullets from org-modern
+  (setq org-modern-fold-stars
+        '(
+          ("◉" . "●")
+          ("●". "○")
+          ("●". "◉")
+          ("○" . "●")
+          ("▸" . "▾"))
+        )
+  (global-org-modern-mode)
+)
+#+end_src
+
+**** org-appear
+
+Make invisible parts of Org elements appear visible.
+
+See the [[https://github.com/awth13/org-appear][repo]] for more.
+
+#+begin_src emacs-lisp
+(use-package org-appear
+  :ensure (:wait t)
+  ;; :defer t
+  :demand t
+  :after org
+  :hook
+  (org-mode-hook . org-appear-mode)
+  :config
+  (setq org-appear-autolinks t) ;; expand link
+  (setq org-appear-autokeywords t) ;; expand keywords
+  )
+#+end_src
+**** org-bullet
+
+See https://github.com/integral-dw/org-bullets or https://github.com/sabof/org-bullets.
+But stopped working so fuck it.
+
+#+BEGIN_SRC emacs-lisp
+(use-package org-bullets
+  :disabled t
+  :ensure t
+  ;; :defer t
+  :demand t
+  :after org
+  :commands org-bullets-mode
+  :hook (org-mode . org-bullets-mode)
+  :custom
+  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●"))
+  )
+#+end_src
+
+**** org-tempo
+
+Useful when inserting code block into org files
+
+
+| Typing the below + TAB | Expands to ...                          |
+|------------------------+-----------------------------------------|
+| <a                     | '#+BEGIN_EXPORT ascii' … '#+END_EXPORT  |
+| <c                     | '#+BEGIN_CENTER' … '#+END_CENTER'       |
+| <C                     | '#+BEGIN_COMMENT' … '#+END_COMMENT'     |
+| <e                     | '#+BEGIN_EXAMPLE' … '#+END_EXAMPLE'     |
+| <E                     | '#+BEGIN_EXPORT' … '#+END_EXPORT'       |
+| <h                     | '#+BEGIN_EXPORT html' … '#+END_EXPORT'  |
+| <l                     | '#+BEGIN_EXPORT latex' … '#+END_EXPORT' |
+| <q                     | '#+BEGIN_QUOTE' … '#+END_QUOTE'         |
+| <s                     | '#+BEGIN_SRC' … '#+END_SRC'             |
+| <v                     | '#+BEGIN_VERSE' … '#+END_VERSE'         |
+
+#+BEGIN_SRC emacs-lisp
+(require 'org-tempo)
+
+(setq org-src-fontify-natively t
+      org-src-tab-acts-natively t
+      org-confirm-babel-evaluate nil
+      org-edit-src-content-indentation 0)
+#+END_SRC
+
+**** org-toc
+
+#+BEGIN_SRC emacs-lisp
+(use-package toc-org
+  :ensure t
+  :defer t
+  :after org
+  :commands toc-org-enable
+  :init (add-hook 'org-mode-hook 'toc-org-enable))
+#+END_SRC
+**** olivetti-mode
+
+#+begin_src emacs-lisp
+(use-package olivetti
+  :ensure (:wait t)
+  ;; :defer t
+  :demand t
+  :after org
+  :config (setq olivetti-body-width 0.95)
+  :hook (org-mode . olivetti-mode)
+)
+#+end_src
+
+*** TODO latex
 *** completion
 
 Generic auto-complete with boosted Ivy + company.
