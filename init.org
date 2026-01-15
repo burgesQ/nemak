@@ -381,9 +381,13 @@ Let's also setup the ``use-package`` macro.
   ;; Enable use-package :ensure support for Elpaca.
   (elpaca-use-package-mode))
 
-;; Set default ``:ensure`` to t
-;; (setq use-package-always-ensure t)
-;; (setq use-package-always-defer t)
+;; NOTE:
+;; package dl + loaded for cfg
+;; (use-packageg general :ensure t :demand t)
+;; package dl + lazy loaded
+;; (use-packageg general :ensure t :after/:hook/:defer)
+;; package no dl
+;; (use-package genral :ensure nil ...)
 
 ;;When installing a package used in the init file itself,
 ;;e.g. a package which adds a use-package key word,
@@ -418,6 +422,24 @@ And the use-feature one
   `(use-package ,name
      :ensure nil
      ,@args))
+#+end_src
+
+
+**** boosted string n file manipulation functions
+
+The [[https://github.com/magnars/s.el][s.el]] project is a simpler string manipulation library that I (and other projects) use.
+
+Manipulate file paths with the [[https://github.com/rejeep/f.el][f.el]] project.
+
+Use by other components.
+
+#+begin_src emacs-lisp
+(use-package s
+  :ensure (:wait t)
+  :demand t)
+(use-package f
+  :ensure (:wait t)
+  :demand t)
 #+end_src
 
 *** emacs defaults
@@ -639,8 +661,6 @@ And a few keybindings that doesn't belong to any groups
  "<C-prior>" '(tab-bar-switch-to-prev-tab :wk "Previous tab")
  )
 
-;; pres ESC once instead of twice of three times
-;; (global-set-key [escape] 'keyboard-escape-quit)
 #+end_src
 
 **** helpful
@@ -689,10 +709,10 @@ Which key for helpful emacs
 (use-package which-key
   :ensure (:wait t)
   :demand t
+  :diminish
   :init
   (setq which-key-enable-extended-define-key t)
   (which-key-mode 1) ;;; init is run every time at pre-config aka set var, invoke mode
-  :diminish
   :config                ;;; config is run after the mode' loaded (via hook ?)
   (setq which-key-side-window-location 'bottom
         which-key-sort-order #'which-key-key-order
@@ -728,8 +748,6 @@ On-The-Fly typing completion + box
 (use-package company
   :ensure (:wait t)
   :demand t
-  ;; :defer t
-  ;; :after lsp-mode
   :diminish
   :config
   (setq
@@ -770,7 +788,7 @@ Spread ivy to M-x with [[https://github.com/abo-abo/swiper#counsel][counsel (ivy
 #+begin_src  emacs-lisp
 (use-package counsel
   :ensure (:wait t)
-  :demand t
+  ;; :demand t
   :diminish
   :after general
   :config (counsel-mode)
@@ -784,8 +802,8 @@ Spread ivy to M-x with [[https://github.com/abo-abo/swiper#counsel][counsel (ivy
          ("C-r" . 'counsel-minibuffer-history)))
 
 (use-package counsel-projectile
-  :ensure (:wait t)
-  :demand t
+  :ensure t
+  ;; :demand t
   :diminish
   :after projectile
   :config (counsel-projectile-mode))
@@ -797,25 +815,12 @@ Enhance Ivy with [[https://github.com/abo-abo/swiper][swiper]].
 
 #+begin_src emacs-lisp
 (use-package swiper
+  :ensure t
+  :demand t
   :config
   ;; TODO: add which key
   (global-set-key (kbd "C-s") 'swiper-isearch))
 #+end_src
-
-**** smex
-
-Enhance ivy & other with frequently / most used invocation.
-See [[https://github.com/nonsequitur/smex][the official repo]] for more.
-
-#+BEGIN_SRC emacs-lisp
-(use-package smex
-  :ensure (:wait t)
-  :demand t
-  :after (ivy counsel)
-  :config
-  (smex-initialize)
-)
-#+END_SRC
 
 **** ivy
 
@@ -824,6 +829,7 @@ See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
 #+begin_src emacs-lisp
 ;; Use 'ivy' instead of 'helm' (default).
 (use-package ivy
+  :ensure t
   ;; :ensure (:wait t)
   :demand t
   :diminish ivy-mode
@@ -864,16 +870,26 @@ See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
   (ivy-prescient-mode))
 #+end_src
 
+**** smex
+
+Enhance ivy & other with frequently / most used invocation.
+See [[https://github.com/nonsequitur/smex][the official repo]] for more.
+
+#+BEGIN_SRC emacs-lisp
+(use-package smex
+  :ensure t
+  :demand t
+  :after (ivy counsel)
+  :config
+  (smex-initialize)
+)
+#+END_SRC
+
 **** ivy-rich
 
 #+begin_src emacs-lisp
-(use-package all-the-icons-ivy-rich
-  :ensure t
-  :after (ivy ivy-rich all-the-icons)
-  :init (all-the-icons-ivy-rich-mode 1))
-
 (use-package ivy-rich
-  :ensure (:wait t)
+  :ensure t
   :demand t
   :after (ivy counsel)
   :init  (ivy-rich-mode 1)
@@ -884,10 +900,14 @@ See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
   :config
   (ivy-set-display-transformer 'ivy-switch-buffer
                                'ivy-rich-switch-buffer-transformer))
+
+(use-package all-the-icons-ivy-rich
+  :ensure t
+  :after (ivy ivy-rich all-the-icons)
+  :init (all-the-icons-ivy-rich-mode 1))
 #+end_src
 
 *** UI
-
 **** bell
 
 Enable visual bells
