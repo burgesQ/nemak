@@ -7,7 +7,7 @@ After=sshd.service
 Type=forking
 # Load python3 virtual env stuff
 # force load via zsh for env var (go etc...)
-ExecStart=zsh -c "emacs --debug-init -q -l ~/repo/perso/nemaks/emacs-init.el --init-directory=~/repo/perso/nemaks --daemon"
+ExecStart=zsh -c "emacs -q -l /home/master/repo/perso/nemaks/emacs-init.el --init-directory=/home/master/repo/perso/nemaks --daemon"
 ExecStop=/usr/local/bin/emacsclient --eval "(kill-emacs)"
 Restart=on-failure
 
