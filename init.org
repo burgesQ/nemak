@@ -389,7 +389,7 @@ Let's also setup the ``use-package`` macro.
 ;; package no dl
 ;; (use-package genral :ensure nil ...)
 
-;; (elpaca-process-queues)
+(elpaca-process-queues)
 (elpaca-wait)
 (use-package s
   :ensure (:wait t)
@@ -397,8 +397,8 @@ Let's also setup the ``use-package`` macro.
 (use-package f
   :ensure (:wait t)
   :demand t)
-;; (elpaca-process-queues)
-;; (elpaca-wait)
+(elpaca-process-queues)
+(elpaca-wait)
 
 
 ;;When installing a package used in the init file itself,
