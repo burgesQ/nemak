@@ -491,16 +491,21 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     "b r" '(revert-buffer :wk "Reload buffer")
     "b s"  '(scratch-buffer :wk "Scratch buffer"))
 
+  ;; Claude-code
+  ;; Populated by 'claude-code.el'
+  (nemaks/leader-keys
+    "c" '(:ignore t :wk "ClaudeCode"))
+
   ;; Config management.
   ;; Used by 'restart-emacs'.
   (nemaks/leader-keys
-    "c" '(:ignore t :wk "Config")
-    "c r" '((lambda () (interactive)
+    "C" '(:ignore t :wk "Config")
+    "C r" '((lambda () (interactive)
               (elpaca-process-queues)
               ;; (elpaca-wait)
               (load-file "~/repo/perso/nemaks/emacs-init.el"))
             :wk "Reload emacs config")
-    "c o" '((lambda () (interactive)
+    "C o" '((lambda () (interactive)
               (find-file "~/repo/perso/nemaks/init.org"))
             :wk "Open emacs config"))
 
@@ -2039,7 +2044,7 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
   ;; :defer t
   :general
   (nemaks/leader-keys
-    "c R" '(restart-emacs :wk "Restart Emacs"))
+    "C R" '(restart-emacs :wk "Restart Emacs"))
   )
 
 #+end_src
@@ -2406,18 +2411,6 @@ Useful when inserting code block into org files
 ;;   (treesit-auto-add-to-auto-mode-alist '(javascript typescript tsx css html))
 ;;   (global-treesit-auto-mode))
 #+end_src
-**** TODO claude.el
-
-Let's setup 'claude.el'
-
-#+begin_src emacs-lisp
-
-;;
-;; claude.el stuffs
-;;
-
-#+end_src
-
 **** WIP LSP
 
 Let's setup the famous `lsp-mode`
@@ -2426,8 +2419,6 @@ Let's setup the famous `lsp-mode`
 ;;;;;;;;;;;;;;;;
 ;; LSP stuffs ;;
 ;;;;;;;;;;;;;;;;
-
-
 
 (use-package lsp-mode
   :ensure (:wait t)
@@ -3102,5 +3093,65 @@ Let's also setup counsel-projectile
   :diminish
   :after (counsel)
   :config (counsel-projectile-mode))
+#+end_src
+
+**** TODO claude.el
+
+Let's setup 'claude.el'
+
+#+begin_src emacs-lisp
+;;
+;; claude.el stuffs
+;;
+
+;; Install monet emacs backend
+(use-package monet
+  ;; :ensure t
+  ;; :vc (:url "https://github.com/stevemolitor/monet" :rev :newest)
+  :ensure (:host github 
+           :repo "stevemolitor/monet"
+           :files ("*.el"))
+  ;; :config
+  ;; (monet-mode 1)
+  :hook 
+  (prog-mode . monet-mode)
+  (text-mode . monet-mode)
+)
+
+;; install required inheritenv dependency:
+(use-package inheritenv
+  :ensure t
+  :vc (:url "https://github.com/purcell/inheritenv" :rev :newest))
+
+;; for eat terminal backend:
+(use-package eat 
+  :ensure t)
+
+;; install claude-code.el
+(use-package claude-code 
+  :ensure t
+  :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
+  :after (monet eat inheritenv)
+  :defer 
+  :init
+  (claude-code-terminal-backend 'eat)
+  :config
+  ;; optional IDE integration with Monet
+
+  (add-hook
+   'claude-code-process-environment-functions #'monet-start-server-function)
+
+  ;; (claude-code-mode)
+  :bind-keymap
+  ("M-m c" . claude-code-command-map)
+
+  ;; Optionally define a repeat map so that "M" will cycle thru Claude auto-accept/plan/confirm modes after invoking claude-code-cycle-mode / C-c M.
+  :bind
+  (:repeat-map 
+   my-claude-code-map ("M" . claude-code-cycle-mode))
+  :hook 
+  (prog-mode . claude-code)
+)
+
 #+end_src
 
