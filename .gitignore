@@ -2,3 +2,5 @@
 !init.org
 !emacs-init.el
 !.gitignore
+!logo
+!emacs.service

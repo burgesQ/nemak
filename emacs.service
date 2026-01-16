@@ -1,0 +1,19 @@
+[Unit]
+Description=Emacs text editor
+Documentation=info:emacs man:emacs(1) https://gnu.org/software/emacs/
+After=sshd.service
+
+[Service]
+Type=forking
+# Load python3 virtual env stuff
+# Environment="PATH=/home/master/.emacs.d/lsp-servers/bin:/usr/local/bin:/usr/bin:/bin"
+# Environment="VIRTUAL_ENV=/home/master/.emacs.d/lsp-servers"
+# force load via zsh for env var (go etc...)
+ExecStart=zsh -c "/usr/local/bin/emacs --with-profile legacy --daemon"
+ExecStop=/usr/local/bin/emacsclient --eval "(kill-emacs)"
+Restart=on-failure
+# Environement=SSH_AUTH_SOCK=%t/keyring/ssh
+
+[Install]
+WantedBy=default.target
+# now use emacsclient -nc -s spacemacsServer
