@@ -557,7 +557,7 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     "m" '(:ignore t :wk "Major mode"))
 
   ;; While org is the major mode
-  (nemaks/leader-keys org-mode-map
+  (nemaks/leader-keys
     :major-modes '(org-mode)
     :keymap '(org-mode-map)
     "m" '(:ignore t :wk "Org mode")
@@ -587,16 +587,21 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
     "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
     ;; "t s" '(nemaks/flyspell-toggle t :wk "Toggle spell check")
-    "t t" '(visual-line-mode :wk "Toggle truncated lines")
-    "t T" '(neotree-toggle :wk "Toggle neotree")
+    "t T" '(visual-line-mode :wk "Toggle truncated lines")
+
+    ;; Theming sub-category.
+    "t t" '(:ignore t :wk "Theme")
+    "t tl" '(load-theme :wk "Load theme")
+    "t tn" '((lambda () (interactive) (load-theme 'doom-one t)) :wk "Load night theme")
+    "t td" '((lambda () (interactive) (load-theme 'doom-one-light t)) :wk "Toggle day theme")
     )
 
-  ;; Theming
+  ;; tabs 
   (nemaks/leader-keys
-    "T" '(:ignore t :wk "Theme")
-    "T l" '(load-theme :wk "Load theme")
-    "T n" '((lambda () (interactive) (load-theme 'doom-one t)) :wk "Load night theme")
-    "T d" '((lambda () (interactive) (load-theme 'doom-one-light t)) :wk "Toggle day theme")
+    "T" '(:ignore t :wk "tabs")
+    ;; "T n" '(load-theme :wk "Load theme")
+    ;; "T n" '((lambda () (interactive) (load-theme 'doom-one t)) :wk "Load night theme")
+    ;; "T d" '((lambda () (interactive) (load-theme 'doom-one-light t)) :wk "Toggle day theme")
     )
 
   ;; Windows
@@ -748,7 +753,8 @@ Which key for helpful emacs
   (setq load-prefer-newer t)
 
   ;; Hide commands in M-x which don't work in the current mode
-  (setq read-extended-command-predicate #'command-completion-default-include-p)
+  (setq read-extended-command-predicate 
+        #'command-completion-default-include-p)
 
 )
 #+end_src
@@ -1220,7 +1226,7 @@ Nice welcome screen. See the official
 (use-package dashboard
   :ensure (:wait t)
   ;; :demand t
-  :after (all-the-icons nerd-icons projectile page-break-lines s)
+  :after (all-the-icons nerd-icons projectile page-break-lines s general)
   :init
   (defun nemaks-dashboard-version ()
     (let ((smaller-version (replace-regexp-in-string
@@ -1236,8 +1242,11 @@ Nice welcome screen. See the official
                 (nemaks-dashboard-version)))
   ;; Disaply a random "dad joke" as footer message.
   (setq dashboard-footer-messages (list (nemaks--dad-joke)))
+
   ;; Set dashboard as initial buffer.
   (setq initial-buffer-choice 'dashboard-refresh-buffer)
+  ;; Set projectile as project backend.
+  (setq dashboard-projects-backend 'projectile)
 
   ;; horizontally center content
   (setq dashboard-center-content t)
@@ -1250,16 +1259,15 @@ Nice welcome screen. See the official
   (setq dashboard-set-heading-icons t)
   (setq dashboard-set-file-icons t)
   (setq dashboard-set-navigator t)
+  
   ;; close agenda buffers
   (setq dashboard-agenda-release-buffers t)
   ;; Disaply package & loadtime metrics.
   (setq dashboard-set-init-info t)
-  ;; Set projcetile as project backend.
-  (setq dashboard-projects-backend 'projectile)
 
-  (setq dashboard-display-icons-p t) ;; use `all-the-icons' package
   (setq dashboard-icon-type 'all-the-icons) ;; use `all-the-icons' package
-
+  (setq dashboard-display-icons-p t) ;; use `all-the-icons' package
+  
   (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name)
 
   ;; IDEA: random cover in a dir
@@ -1269,30 +1277,35 @@ Nice welcome screen. See the official
   (setq dashboard-image-extra-props '(:mask heuristic))
 
   (setq dashboard-items '(
-                          ;; (agenda . 15)
                           (recents . 15)
-                          (projects . 15)
-                          ;; (bookmarks . 5)
-                          ;; (registers . 5)
-                          ))
+                          (projects . 15)))
 
   (setq dashboard-item-shortcuts '(
-                                   ;; (agenda    . "a")
                                    (recents   . "r")
-                                   (projects  . "p")
-                                   ;; (bookmarks . "m")
-                                   ;; (registers . "e")
-                                   ))
+                                   (projects  . "p")))
 
-  (setq dashboard-item-names '(("Recent Files:"               . "Recently opened files:")
-                               ;; ("Agenda for today:"           . "Today's agenda:")
-                               ;; ("Agenda for the coming week:" . "Agenda:")
-                               ))
+  (setq dashboard-item-names '(("Recent Files:"
+                                . "Recently opened files:")))
 
   :when (not command-line-args-left)
   :config
   (dashboard-setup-startup-hook)
   (dashboard-modify-heading-icons '((recents . "file-text")))
+
+
+  ;; Fonction pour ouvrir le dashboard dans un nouvel onglet
+  (defun nemaks/new-tab-with-dashboard ()
+    "Créer un nouvel onglet et ouvrir le dashboard."
+    (interactive)
+    (tab-new)
+    (dashboard-refresh-buffer))
+  
+  ;; Remplacer le binding de création d'onglet
+  (general-define-key
+   "C-x t N" '(nemaks/new-tab-with-dashboard
+               :wk "New tab with dashboard"))
+
+
   )
 
 (add-hook 'dashboard-mode-hook
@@ -1355,6 +1368,7 @@ Native tab ? Or smth better ?
                     tab-bar-format-add-tab))
   :general
   (general-define-key
+   ;; TODO: move to M-m t ? 
     "C-x t b" '(tab-bar-history-back :wk "Backward history tab")
     "C-x t d" '(tab-bar-close-tab :wk "Close tab")
     "C-x t f" '(tab-bar-history-forward :wk "Forward history tab")
@@ -1364,7 +1378,8 @@ Native tab ? Or smth better ?
     "C-x t l" '(tab-bar-switch-to-next-tab :wk "Switch to next tab")
     "C-x t L" '((lambda (arg) (interactive "p") (tab-bar-move-tab arg)) :wk "Move tab right")
     "C-x t n" '(tab-bar-switch-to-next-tab :wk "Switch to Next tab")
-    "C-x t N" '(tab-bar-new-tab :wk "New tab")
+    ;; "C-x t N" '(tab-bar-new-tab :wk "New tab")
+
     "C-x t p" '(tab-bar-switch-to-prev-tab :wk "Prev tab")
     "C-x t P" '(nemaks/tab-group-from-project :wk "Group tabs per project")
     "C-x t r" '(tab-bar-rename-tab :wk "Rename tab")
