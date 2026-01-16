@@ -389,7 +389,7 @@ Let's also setup the ``use-package`` macro.
 ;; package no dl
 ;; (use-package genral :ensure nil ...)
 
-(elpaca-process-queues)
+;; (elpaca-process-queues)
 (elpaca-wait)
 (use-package s
   :ensure (:wait t)
@@ -397,8 +397,8 @@ Let's also setup the ``use-package`` macro.
 (use-package f
   :ensure (:wait t)
   :demand t)
-(elpaca-process-queues)
-(elpaca-wait)
+;; (elpaca-process-queues)
+;; (elpaca-wait)
 
 
 ;;When installing a package used in the init file itself,
@@ -431,58 +431,25 @@ And the use-feature one
      ,@args))
 #+end_src
 
+**** diminish
 
-*** emacs defaults
+This package implements hiding or abbreviation of the modeline displays
+(lighters) of minor-modes.  With this package installed, you can add
+':diminish' to any use-package block to hide that particular mode in the
+modeline.
 
-#+begin_src emacs-lisp
-;;Note this will cause evaluate the declaration immediately. It is not deferred.
-;;Useful for configuring built-in emacs features.
-(use-package emacs
-  :ensure nil
+#+BEGIN_SRC emacs-lisp
+(use-package diminish
+  :ensure (:wait t)
   :demand t
   :config
-  ;;Turns off elpaca-use-package-mode current declaration
-  (setq ring-bell-function #'ignore)
-  ;; Open symlink w/o  confirmation prompt.
-  (setq vc-follow-symlinks t)
-  ;; Load zsh alias
-  (setq shell-command-switch "-ic")
-  ;; set tab to 4 spaces width
-  (setq-default tab-width 4)
-  ;; always insert space
-  (setq-default indent-tabs-mode nil)
-
-  ;; Backup (aka ~/.#)
-  ;; Delete excess backup versions silently
-  (setq delete-old-versions -1)
-  ;; make backups file even when in version controlled dir
-  (setq vc-make-backup-files t)
-  ;; which directory to put backups file
-  (setq backup-directory-alist `(("." . "~/.emacs.d/backups")) )
-  ;; transform backups file name
-  (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)) )
-
-  ;; use utf-8 by default
-  (setq coding-system-for-read 'utf-8 )
-  (setq coding-system-for-write 'utf-8 )
-  ;; sentence SHOULD end with only a point.
-  (setq sentence-end-double-space nil)
-
-  (setq create-lockfiles nil) ;; no need to create lockfiles
-  (setq enable-recursive-minibuffers t)
-  (setq sentence-end-double-space nil)
-  (defalias 'yes-or-no-p 'y-or-n-p) ;; life is too shor
-  (global-set-key (kbd "<escape>") 'keyboard-escape-quit) ;; escape quits everything
-
-  ;; less noise when compiling elisp
-  (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
-  (setq load-prefer-newer t)
-
-  ;; Hide commands in M-x which don't work in the current mode
-  (setq read-extended-command-predicate #'command-completion-default-include-p)
-
+  (diminish 'whitespace-mode)
+  (diminish 'eldoc-mode)
+  (diminish 'abbrev-mode)
+  (diminish 'auto-revert-mode)
 )
-#+end_src
+#+END_SRC
+
 
 *** keybinding
 
@@ -529,7 +496,7 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
   (nemaks/leader-keys
     "c" '(:ignore t :wk "Config")
     "c r" '((lambda () (interactive)
-              ;; (elpaca-process-queues)
+              (elpaca-process-queues)
               ;; (elpaca-wait)
               (load-file "~/repo/perso/nemaks/emacs-init.el"))
             :wk "Reload emacs config")
@@ -729,180 +696,57 @@ Which key for helpful emacs
 )
 #+END_SRC
 
-*** completion
-
-Generic auto-complete with boosted Ivy + company.
-
-**** company
-
-On-The-Fly typing completion + box
-
-#+BEGIN_SRC emacs-lisp
-(use-package company
-  :ensure (:wait t)
-  :demand t
-  :diminish
-  :config
-  (setq
-   ;; don't add any delay before trying to complete thing being typed
-   ;; the call/response to gopls is asynchronous so this should have little
-   ;; to no affect on edit latency
-   company-idle-delay .1
-   ;; start completing after a single character instead of 3
-   company-minimum-prefix-length 2
-   ;; show number
-   company-show-numbers t
-   ;; align fields in completions
-   company-tooltip-align-annotations t
-   ;; LSP compatibility
-   company-backends '(company-capf))
-  :hook
-  ;; lang
-  (prog-mode . company-mode)
-  ;; org, markdown & co
-  (text-mode . company-mode))
-
-(global-set-key (kbd "TAB")
-                #'company-indent-or-complete-common)
-
-(use-package company-box
-  :ensure (:wait t)
-  :demand t
-  :after company
-  :diminish
-  :hook (company-mode . company-box-mode))
-#+END_SRC
-
-**** ivy
-
-See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
+*** emacs defaults
 
 #+begin_src emacs-lisp
-;; Use 'ivy' instead of 'helm' (default).
-(use-package ivy
-  :ensure t
-  :demand t
-  :diminish ivy-mode
-  ;; TODO: which-key
-  :bind ;; TODO: convert to  geneal
-  (
-   :map ivy-minibuffer-map
-   ("<left>" . ivy-backward-delete-char)
-   ;; ("TAB" . ivy-alt-done)
-   ;; ("C-l" . ivy-alt-done)
-   ;; ("C-j" . ivy-next-line)
-   ;; ("C-k" . ivy-previous-line)
-   :map ivy-switch-buffer-map
-   ("<left>" . ivy-backward-delete-char)
-   ;; ("C-k" . ivy-previous-line)
-   ;; ("C-l" . ivy-done)
-   ;; ("C-d" . ivy-switch-buffer-kill)
-   :map ivy-reverse-i-search-map
-   ;; ("C-k" . ivy-previous-line)
-   ;; ("C-d" . ivy-reverse-i-search-kill)
-   ("<left>" . ivy-backward-delete-char))
-  :config
-  (setq ivy-use-virtual-buffers t
-        ivy-count-format "%d/%d ")
-  ;; (global-set-key (kbd "C-x b") 'ivy-switch-buffer)
-  (ivy-mode 1)
-  )
-
-(setq ivy-use-selectable-prompt t)
-
-;; ??
-(use-package ivy-prescient
-  :ensure (:wait t)
-  :demand t
-  :init
-  (setq prescient-use-char-folding nil) ;; helps with regexp too big errors for long paths
-  :config
-  (ivy-prescient-mode))
-#+end_src
-
-**** ivy-rich
-
-#+begin_src emacs-lisp
-(use-package ivy-rich
-  :ensure t
-  :demand t
-  :after ivy
-  :init  (ivy-rich-mode 1)
-  :custom
-  (ivy-virtual-abbreviate
-   'full
-   ivy-rich-switch-buffer-align-virtual-buffer t
-   ivy-rich-path-style 'abbrev)
-  :config
-  (ivy-set-display-transformer
-   'ivy-switch-buffer
-   'ivy-rich-switch-buffer-transformer))
-
-(use-package all-the-icons-ivy-rich
-  :ensure t
-  :demand t
-  :after (ivy-rich all-the-icons)
-  :init (all-the-icons-ivy-rich-mode 1))
-#+end_src
-
-**** counsel
-
-Spread ivy to M-x with [[https://github.com/abo-abo/swiper#counsel][counsel (ivy#counsel)]].
-
-#+begin_src  emacs-lisp
-(use-package counsel
-  :ensure (:wait t)
-  :demand t
-  :diminish
-  :after (general ivy)
-  :config (counsel-mode)
-  :general
-  (general-define-key
-   "C-x b" '(counsel-switch-buffer :wk "Better file buffer")
-   "C-x C-f" '(counsel-find-file :wk "Beffer find file")
-   ;; "M-x" . '(counsel-M-x :wk "Powa")
-   ;;)
-   ;; (general-define-key
-   ;; :map minibuffer-local-map
-   ;;   "C-r" . '(counsel-minibuffer-history :wk "Reverse history search")
-   )
-  )
-
-(use-package counsel-projectile
-  :ensure t
-  :demand t
-  :diminish
-  :after (projectile counsel)
-  :config (counsel-projectile-mode))
-#+end_src
-
-**** swiper
-
-Enhance Ivy with [[https://github.com/abo-abo/swiper][swiper]].
-
-#+begin_src emacs-lisp
-(use-package swiper
-  :ensure t
+;;Note this will cause evaluate the declaration immediately. It is not deferred.
+;;Useful for configuring built-in emacs features.
+(use-package emacs
+  :ensure nil
   :demand t
   :config
-  ;; TODO: add which key
-  (global-set-key (kbd "C-s") 'swiper-isearch))
-#+end_src
+  ;;Turns off elpaca-use-package-mode current declaration
+  (setq ring-bell-function #'ignore)
+  ;; Open symlink w/o  confirmation prompt.
+  (setq vc-follow-symlinks t)
+  ;; Load zsh alias
+  (setq shell-command-switch "-ic")
+  ;; set tab to 4 spaces width
+  (setq-default tab-width 4)
+  ;; always insert space
+  (setq-default indent-tabs-mode nil)
 
-**** smex
+  ;; Backup (aka ~/.#)
+  ;; Delete excess backup versions silently
+  (setq delete-old-versions -1)
+  ;; make backups file even when in version controlled dir
+  (setq vc-make-backup-files t)
+  ;; which directory to put backups file
+  (setq backup-directory-alist `(("." . "~/.emacs.d/backups")) )
+  ;; transform backups file name
+  (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)) )
 
-Enhance ivy & other with frequently / most used invocation.
-See [[https://github.com/nonsequitur/smex][the official repo]] for more.
+  ;; use utf-8 by default
+  (setq coding-system-for-read 'utf-8 )
+  (setq coding-system-for-write 'utf-8 )
+  ;; sentence SHOULD end with only a point.
+  (setq sentence-end-double-space nil)
 
-#+BEGIN_SRC emacs-lisp
-(use-package smex
-  :ensure t
-  :demand t
-  :after (ivy counsel)
-  :config
-  (smex-initialize)
+  (setq create-lockfiles nil) ;; no need to create lockfiles
+  (setq enable-recursive-minibuffers t)
+  (setq sentence-end-double-space nil)
+  (defalias 'yes-or-no-p 'y-or-n-p) ;; life is too shor
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit) ;; escape quits everything
+
+  ;; less noise when compiling elisp
+  (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
+  (setq load-prefer-newer t)
+
+  ;; Hide commands in M-x which don't work in the current mode
+  (setq read-extended-command-predicate #'command-completion-default-include-p)
+
 )
-#+END_SRC
+#+end_src
 
 *** UI
 **** bell
@@ -912,82 +756,6 @@ Enable visual bells
 #+begin_src emacs-lisp
 (setq visible-bell t)
 #+end_src
-
-**** doom
-
-#+BEGIN_SRC emacs-lisp
-(use-package doom-modeline
-  :ensure (:wait t)
-  ;; :demand t
-  ;; :defer 2
-  :init
-  (setq
-   doom-modeline-minor-modes nil
-   doom-modeline-buffer-encoding nil
-   doom-modeline-major-mode-color-icon t
-   doom-modeline-buffer-state-icon t
-   doom-modeline-buffer-modification-icon t
-   doom-modeline-lsp-icon t
-   ;; Set VCS info max length
-   doom-modeline-vcs-max-length 12
-   ;; Enable word count
-   doom-modeline-enable-word-count t
-   ;; Disable time
-   doom-modeline-time-icon nil
-   ;; Show position %
-   doom-modeline-percent-position t)
-  (doom-modeline-mode 1)
-  :config
-  (column-number-mode 1)
-  (display-battery-mode)
-  :custom
-  (doom-modeline-project-detection 'projectile "Use projectile to fetch the project")
-  )
-
-;; install nicer theme
-;; need to run M-x nerd-icons-install-fonts
-(use-package doom-themes
-  :ensure (:wait t)
-  :demand t
-  :config
-  ;; Global settings (defaults)
-  (setq
-   ;; if nil, bold is universally disabled
-   doom-themes-enable-bold t
-   ;; if nil, italics is universally disabled
-   doom-themes-enable-italic t)
-
-  (load-theme 'doom-one t)
-
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Enable custom neotree theme (all-the-icons must be installed!)
-  ;; (doom-themes-neotree-config)
-  ;; or for treemacs users
-  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-  ;; (doom-themes-treemacs-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
-#+END_SRC
-
-**** diminish
-
-This package implements hiding or abbreviation of the modeline displays
-(lighters) of minor-modes.  With this package installed, you can add
-':diminish' to any use-package block to hide that particular mode in the
-modeline.
-
-#+BEGIN_SRC emacs-lisp
-(use-package diminish
-  :ensure (:wait t)
-  :demand t
-  :config
-  (diminish 'whitespace-mode)
-  (diminish 'eldoc-mode)
-  (diminish 'abbrev-mode)
-  (diminish 'auto-revert-mode)
-)
-#+END_SRC
 
 **** faces
 
@@ -1207,6 +975,63 @@ We're asking emacs to render symbol w/ apple ttf emoji.
 )
 
 #+end_src
+
+**** doom
+
+#+BEGIN_SRC emacs-lisp
+(use-package doom-modeline
+  :ensure (:wait t)
+  ;; :demand t
+  ;; :defer 2
+  :init
+  (setq
+   doom-modeline-minor-modes nil
+   doom-modeline-buffer-encoding nil
+   doom-modeline-major-mode-color-icon t
+   doom-modeline-buffer-state-icon t
+   doom-modeline-buffer-modification-icon t
+   doom-modeline-lsp-icon t
+   ;; Set VCS info max length
+   doom-modeline-vcs-max-length 12
+   ;; Enable word count
+   doom-modeline-enable-word-count t
+   ;; Disable time
+   doom-modeline-time-icon nil
+   ;; Show position %
+   doom-modeline-percent-position t)
+  (doom-modeline-mode 1)
+  :config
+  (column-number-mode 1)
+  (display-battery-mode)
+  :custom
+  (doom-modeline-project-detection 'projectile "Use projectile to fetch the project")
+  )
+
+;; install nicer theme
+;; need to run M-x nerd-icons-install-fonts
+(use-package doom-themes
+  :ensure (:wait t)
+  :demand t
+  :config
+  ;; Global settings (defaults)
+  (setq
+   ;; if nil, bold is universally disabled
+   doom-themes-enable-bold t
+   ;; if nil, italics is universally disabled
+   doom-themes-enable-italic t)
+
+  (load-theme 'doom-one t)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  ;; (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+  ;; (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
+#+END_SRC
 
 **** lines/columns
 
@@ -1611,6 +1436,190 @@ Uses position instead of index field."
 
 #+end_src
 
+
+*** completion
+
+Generic auto-complete with boosted Ivy + company.
+
+**** company
+
+On-The-Fly typing completion + box
+
+#+BEGIN_SRC emacs-lisp
+(use-package company
+  :ensure (:wait t)
+  :demand t
+  :diminish
+  :config
+  (setq
+   ;; don't add any delay before trying to complete thing being typed
+   ;; the call/response to gopls is asynchronous so this should have little
+   ;; to no affect on edit latency
+   company-idle-delay .1
+   ;; start completing after a single character instead of 3
+   company-minimum-prefix-length 2
+   ;; show number
+   company-show-numbers t
+   ;; align fields in completions
+   company-tooltip-align-annotations t
+   ;; LSP compatibility
+   company-backends '(company-capf))
+  :hook
+  ;; lang
+  (prog-mode . company-mode)
+  ;; org, markdown & co
+  (text-mode . company-mode))
+
+(global-set-key (kbd "TAB")
+                #'company-indent-or-complete-common)
+
+(use-package company-box
+  :ensure (:wait t)
+  :demand t
+  :after company
+  :diminish
+  :hook (company-mode . company-box-mode))
+#+END_SRC
+
+**** swiper
+
+Enhance Ivy with [[https://github.com/abo-abo/swiper][swiper]].
+
+#+begin_src emacs-lisp
+(use-package swiper
+  :ensure t
+  :after (ivy general)
+  :defer t
+  :general
+  (general-define-key
+   "C-s" '(swiper-isearch :wk "Search with swiper")))
+
+;; (use-package swiper
+;;   :ensure t
+;;   :defer t
+;;   :after (ivy general)
+;;   :commands (swiper swiper-isearch)  ;; Autoload seulement quand appelé
+;;   :init
+;;   ;; Définir le keybinding sans charger swiper
+;;   (global-set-key (kbd "C-s") 'swiper-isearch))
+;;   ;; :config
+;;   ;; :bind (("C-s" . swiper-isearch)))  ;; :bind est mieux pour ça
+;; ;; TODO: add which key
+;; ;;  (global-set-key (kbd "C-s") 'swiper-isearch))
+#+end_src
+
+**** ivy
+
+See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
+
+#+begin_src emacs-lisp
+;; Use 'ivy' instead of 'helm' (default).
+(use-package ivy
+  :ensure t
+  :demand t
+  :diminish ivy-mode
+  ;; TODO: which-key
+  :bind ;; TODO: convert to  geneal
+  (
+   :map ivy-minibuffer-map
+   ("<left>" . ivy-backward-delete-char)
+   ;; ("TAB" . ivy-alt-done)
+   ;; ("C-l" . ivy-alt-done)
+   ;; ("C-j" . ivy-next-line)
+   ;; ("C-k" . ivy-previous-line)
+   :map ivy-switch-buffer-map
+   ("<left>" . ivy-backward-delete-char)
+   ;; ("C-k" . ivy-previous-line)
+   ;; ("C-l" . ivy-done)
+   ;; ("C-d" . ivy-switch-buffer-kill)
+   :map ivy-reverse-i-search-map
+   ;; ("C-k" . ivy-previous-line)
+   ;; ("C-d" . ivy-reverse-i-search-kill)
+   ("<left>" . ivy-backward-delete-char))
+  :config
+  (setq ivy-use-virtual-buffers t
+        ivy-count-format "%d/%d ")
+  ;; (global-set-key (kbd "C-x b") 'ivy-switch-buffer)
+  (ivy-mode 1)
+  )
+
+(setq ivy-use-selectable-prompt t)
+
+;; ??
+(use-package ivy-prescient
+  :ensure (:wait t)
+  :demand t
+  :init
+  (setq prescient-use-char-folding nil) ;; helps with regexp too big errors for long paths
+  :config
+  (ivy-prescient-mode))
+#+end_src
+
+**** ivy-rich
+
+#+begin_src emacs-lisp
+(use-package ivy-rich
+  :ensure t
+  :demand t
+  :after ivy
+  :init  (ivy-rich-mode 1)
+  :custom
+  (ivy-virtual-abbreviate
+   'full
+   ivy-rich-switch-buffer-align-virtual-buffer t
+   ivy-rich-path-style 'abbrev)
+  :config
+  (ivy-set-display-transformer
+   'ivy-switch-buffer
+   'ivy-rich-switch-buffer-transformer))
+
+(use-package all-the-icons-ivy-rich
+  :ensure t
+  :demand t
+  :after (ivy-rich) ;; all-the-icons
+  :init (all-the-icons-ivy-rich-mode 1))
+#+end_src
+
+**** counsel
+
+Spread ivy to M-x with [[https://github.com/abo-abo/swiper#counsel][counsel (ivy#counsel)]].
+
+#+begin_src  emacs-lisp
+(use-package counsel
+  :ensure (:wait t)
+  :demand t
+  :diminish
+  :after (general ivy)
+  :config
+  (counsel-mode)
+  :general
+  (general-define-key
+   "C-x b" '(counsel-switch-buffer :wk "Better file buffer")
+   "C-x C-f" '(counsel-find-file :wk "Beffer find file")
+   ;; "M-x" . '(counsel-M-x :wk "Powa")
+   ;;)
+   ;; (general-define-key
+   ;; :map minibuffer-local-map
+   ;;   "C-r" . '(counsel-minibuffer-history :wk "Reverse history search")
+   )
+  )
+
+#+end_src
+
+**** smex
+
+Enhance ivy & other with frequently / most used invocation.
+See [[https://github.com/nonsequitur/smex][the official repo]] for more.
+
+#+BEGIN_SRC emacs-lisp
+(use-package smex
+  :ensure t
+  :demand t
+  :after (ivy counsel)
+  :config
+  (smex-initialize)
+)
+#+END_SRC
 
 *** QoL
 
@@ -2426,7 +2435,10 @@ Let's setup the famous `lsp-mode`
   :hook (
          ;; (lsp-mode . nemaks/lsp-mode-setup)
          (yaml-mode . lsp-deferred)
-         (prog-mode . lsp-deferred)
+         ;; Activate LSP for prog-modes except emacs-lisp-mode
+         ((prog-mode . (lambda ()
+                         (unless (derived-mode-p 'emacs-lisp-mode)
+                           (lsp-deferred)))))
          (lsp-mode . lsp-enable-which-key-integration))
   :custom
   (read-processs-output-max (* 1024 1024))
@@ -2450,11 +2462,15 @@ Let's setup the famous `lsp-mode`
    ;; Use complation at point
    lsp-completion-provider :capf)
 
+  ;; Disable lsp pour certains modes
+  ;; (add-to-list 'lsp-disabled-clients 'emacs-lisp-ls)
+
   :init
   ;; turn off problematic modes
-  (setq lsp-disabled-clients '(semgrep-ls))
+  (setq lsp-disabled-clients '(semgrep-ls emacs-lisp-ls))
   (setq lsp-keymap-prefix "M-m l")
   (setq lsp-diagnostics-provider :flycheck)
+
   ;; :general FIXME: feed custom lsp general ?
   ;; :keymap 'lsp-mode-map
   ;;   "l" '(:ignore t :wk "LSP")
@@ -2742,6 +2758,28 @@ $ go -u install \
          )
   ;; :hook
   :init (setq emojify-mode -1))
+#+END_SRC
+
+****** systemd-mode
+
+Nice package for systemd file editing. See the official [[https://elpa.gnu.org/packages/systemd.html][doc]] for more info.
+
+#+BEGIN_SRC emacs-lisp
+(use-package systemd
+  :ensure t
+  :defer t
+  :after general
+  :init
+  (setq systemd-use-company-p t)
+  ;; (configuration-layer/package-used-p 'company)
+  :general
+
+  (nemacs/leader-keys
+   :major-modes '(systemd-mode)
+   :keymap '(systemd-mode-map)
+   "m" '(:ignore t :wk "Systemd mode")
+   "m d" '(systemd-doc-directives)
+   "m o" '(systemd-doc-open)))
 #+END_SRC
 
 ****** TODO python mod
@@ -3033,8 +3071,19 @@ machine gitlab.com/api/v4 login [username]^forge password [token]
     "p" '(projectile-command-map :wk "Projectile"))
   :config (add-to-list 'projectile-globally-ignored-directories "*node_modules")
   (add-to-list 'projectile-globally-ignored-directories "*vendor")
+  (projectile-register-project-type 
+   'go_make '("Makefile" "src" "etc")
+   ;; :project-file '("Makefile", "src/go.mod" "src/go.sum", "src/vendor")
+   ;; :compilation-dir "."
+   :compile "make static"
+   :configure "make tidy sync rvendor"
+   ;; :install "make install DESTDIR=`mktemp -d`"
+   :test "make test TEST_ARGS='-failfast' TEST_TIMEOUT=5s"
+   :src-dir "src"
+   :test-suffix "_test.go")
   (projectile-mode 1)
-  :custom ((project-completion-system 'ivy))
+  :custom
+  ((project-completion-system 'ivy))
   :init
   (when (file-directory-p "~/repo")
     (setq projectile-project-search-path '("~/repo")))
@@ -3042,15 +3091,16 @@ machine gitlab.com/api/v4 login [username]^forge password [token]
    projectile-indexing-method 'alien
    projectile-enable-caching t
    projectile-switch-project-action #'projectile-dired))
-
-(projectile-register-project-type 'go_make '("Makefile" "src" "etc")
-                                  ;; :project-file '("Makefile", "src/go.mod" "src/go.sum", "src/vendor")
-                                  ;; :compilation-dir "."
-                                  :compile "make static"
-                                  :configure "make tidy sync rvendor"
-                                  ;; :install "make install DESTDIR=`mktemp -d`"
-                                  :test "make test TEST_ARGS='-failfast' TEST_TIMEOUT=5s"
-                                  :src-dir "src"
-                                  :test-suffix "_test.go")
-
 #+END_SRC
+
+Let's also setup counsel-projectile 
+
+#+begin_src emacs-lisp
+(use-package counsel-projectile
+  :ensure t
+  :demand t
+  :diminish
+  :after (counsel)
+  :config (counsel-projectile-mode))
+#+end_src
+
