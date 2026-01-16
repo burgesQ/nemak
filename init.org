@@ -1486,33 +1486,6 @@ On-The-Fly typing completion + box
   :hook (company-mode . company-box-mode))
 #+END_SRC
 
-**** swiper
-
-Enhance Ivy with [[https://github.com/abo-abo/swiper][swiper]].
-
-#+begin_src emacs-lisp
-(use-package swiper
-  :ensure t
-  :after (ivy general)
-  :defer t
-  :general
-  (general-define-key
-   "C-s" '(swiper-isearch :wk "Search with swiper")))
-
-;; (use-package swiper
-;;   :ensure t
-;;   :defer t
-;;   :after (ivy general)
-;;   :commands (swiper swiper-isearch)  ;; Autoload seulement quand appelé
-;;   :init
-;;   ;; Définir le keybinding sans charger swiper
-;;   (global-set-key (kbd "C-s") 'swiper-isearch))
-;;   ;; :config
-;;   ;; :bind (("C-s" . swiper-isearch)))  ;; :bind est mieux pour ça
-;; ;; TODO: add which key
-;; ;;  (global-set-key (kbd "C-s") 'swiper-isearch))
-#+end_src
-
 **** ivy
 
 See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
@@ -1583,6 +1556,33 @@ See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
   :demand t
   :after (ivy-rich) ;; all-the-icons
   :init (all-the-icons-ivy-rich-mode 1))
+#+end_src
+
+**** swiper
+
+Enhance Ivy with [[https://github.com/abo-abo/swiper][swiper]].
+
+#+begin_src emacs-lisp
+(use-package swiper
+  :ensure t
+  :after (ivy general)
+  :defer t
+  :general
+  (general-define-key
+   "C-s" '(swiper-isearch :wk "Search with swiper")))
+
+;; (use-package swiper
+;;   :ensure t
+;;   :defer t
+;;   :after (ivy general)
+;;   :commands (swiper swiper-isearch)  ;; Autoload seulement quand appelé
+;;   :init
+;;   ;; Définir le keybinding sans charger swiper
+;;   (global-set-key (kbd "C-s") 'swiper-isearch))
+;;   ;; :config
+;;   ;; :bind (("C-s" . swiper-isearch)))  ;; :bind est mieux pour ça
+;; ;; TODO: add which key
+;; ;;  (global-set-key (kbd "C-s") 'swiper-isearch))
 #+end_src
 
 **** counsel
