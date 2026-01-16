@@ -3095,7 +3095,7 @@ Let's also setup counsel-projectile
   :config (counsel-projectile-mode))
 #+end_src
 
-**** TODO claude.el
+**** claude.el
 
 Let's setup 'claude.el'
 
@@ -3108,36 +3108,54 @@ Let's setup 'claude.el'
 (use-package monet
   ;; :ensure t
   ;; :vc (:url "https://github.com/stevemolitor/monet" :rev :newest)
-  :ensure (:host github 
-           :repo "stevemolitor/monet"
-           :files ("*.el"))
+  :ensure (;; :wait t
+                 :host github 
+                 :repo "stevemolitor/monet")
+  ;; :demand t 
+  :defer t
+  :general
+  (nemaks/leader-keys 
+    "c M" '((lambda () (interactive) (monet-mode t)) :wk "Load monet"))
   ;; :config
   ;; (monet-mode 1)
-  :hook 
-  (prog-mode . monet-mode)
-  (text-mode . monet-mode)
+  ;; :hook 
+  ;; (prog-mode . monet-mode)
+  ;; (text-mode . monet-mode)
 )
 
 ;; install required inheritenv dependency:
 (use-package inheritenv
-  :ensure t
-  :vc (:url "https://github.com/purcell/inheritenv" :rev :newest))
+  ;; :ensure t
+  :ensure (;; :wait t
+                 :host github 
+                 :repo "purcell/inheritenv")
+  ;; :defer t
+  :demand t
+  ;; :vc (:url "https://github.com/purcell/inheritenv" :rev :newest)
+  )
 
 ;; for eat terminal backend:
 (use-package eat 
-  :ensure t)
+  :ensure t
+  :demand t
+  ;; :defer t
+  )
 
 ;; install claude-code.el
 (use-package claude-code 
-  :ensure t
-  :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
-  :after (monet eat inheritenv)
-  :defer 
+  ;; :ensure t
+  :ensure (;; :wait t 
+                 :host github 
+                 :repo "stevemolitor/claude-code.el")
+  ;; :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
+  ;; :after (monet eat inheritenv)
+  :defer t
+  ;; :demand t
   :init
-  (claude-code-terminal-backend 'eat)
+  (setq claude-code-terminal-backend 'eat)
   :config
   ;; optional IDE integration with Monet
-
+  (monet-mode 1)
   (add-hook
    'claude-code-process-environment-functions #'monet-start-server-function)
 
@@ -3150,7 +3168,7 @@ Let's setup 'claude.el'
   (:repeat-map 
    my-claude-code-map ("M" . claude-code-cycle-mode))
   :hook 
-  (prog-mode . claude-code)
+  (prog-mode . claude-code-mode)
 )
 
 #+end_src
