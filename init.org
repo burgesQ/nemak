@@ -1,6 +1,6 @@
-#+TITLE: nemacs's config (2)
+#+TITLE: nemaks's config (2)
 #+AUTHOR: Quentin Burgess (quentin.burgess@frafos.com)
-#+DESCRIPTION: Quick summary of tasks for nemacs second gen
+#+DESCRIPTION: Quick summary of tasks for nemaks second gen
 #+STARTUP: show2levels
 #+OPTIONS: toc:2
 
@@ -21,7 +21,7 @@ Thanks
 * TODO how to use [0/3]
 
 #+begin_example console
-$ emacs -q -l ~/repo/perso/nemacs_2/emacs-init.el --init-directory=~/repo/perso/nemacs_2
+$ emacs -q -l ~/repo/perso/nemaks/emacs-init.el --init-directory=~/repo/perso/nemaks
 #+end_example
 
 ** TODO install as ~/.emacs
@@ -157,7 +157,7 @@ The following is a table shows values from popular Emacs configurations.
 (setq gc-cons-threshold most-positive-fixnum
       gc-cons-percentage 1)
 
-(defun +nemacs/gc-after-focus-change ()
+(defun +nemaks/gc-after-focus-change ()
   "Run GC when frame loses focus."
   (run-with-idle-timer
    5 nil
@@ -165,7 +165,7 @@ The following is a table shows values from popular Emacs configurations.
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
-(defun +nemacs/better-init-values ()
+(defun +nemaks/better-init-values ()
   "Set GC value to some sensitive one."
   (run-with-idle-timer
    1 nil
@@ -176,13 +176,13 @@ The following is a table shows values from popular Emacs configurations.
            gc-cons-percentage 0.2)
      (message "gc-cons-threshold & file-name-handler-alist restored")
      (when (boundp 'after-focus-change-function)
-       (add-function :after after-focus-change-function #'+nemacs/gc-after-focus-change))
+       (add-function :after after-focus-change-function #'+nemaks/gc-after-focus-change))
      )))
 
 ;; enable gbc msg
 (setq garbage-collection-messages t)
 
-(add-hook 'emacs-startup-hook #'+nemacs/better-init-values)
+(add-hook 'emacs-startup-hook #'+nemaks/better-init-values)
 #+END_SRC
 
 *** UI tweaks
@@ -504,16 +504,16 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
   (general-auto-unbind-keys)
 
   ;; Setup M-m as the global leader key.
-  (general-create-definer nemacs/leader-keys
+  (general-create-definer nemaks/leader-keys
     :state '(normal inset visual emacs)
     :keymap 'override
     :prefix "M-m" ;; Set leader.
     :global-prefix "M-m") ;; Access leader in insert mode.
 
   ;; Bugger management
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "b" '(:ignore t :wk "Buffer")
-    "b d"  '(nemacs--kill-current-buffer :wk "Kill current buffer")
+    "b d"  '(nemaks--kill-current-buffer :wk "Kill current buffer")
     "b b" '(switch-to-buffer :wk "Switch buffer")
     "b i" '(ibuffer :wk "Ibuffer")
     "b k" '(kill-this-buffer :wk "Kill this buffer")
@@ -526,28 +526,28 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
 
   ;; Config management.
   ;; Used by 'restart-emacs'.
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "c" '(:ignore t :wk "Config")
     "c r" '((lambda () (interactive)
               ;; (elpaca-process-queues)
               ;; (elpaca-wait)
-              (load-file "~/repo/perso/nemacs_2/emacs-init.el"))
+              (load-file "~/repo/perso/nemaks/emacs-init.el"))
             :wk "Reload emacs config")
     "c o" '((lambda () (interactive)
-              (find-file "~/repo/perso/nemacs_2/init.org"))
+              (find-file "~/repo/perso/nemaks/init.org"))
             :wk "Open emacs config"))
 
 
   ;; Error management.
   ;; namespace mostly used by 'flycheck' and 'f.el'
-  (nemacs/leader-keys
+  (nemaks/leader-keys
   "e" '(:ignore t :wk "Error")
   "e b" '((lambda () (interactive) (setq compilations-scroll-output t)) :wk "Errror buffer to bottom")
   "e f" '((lambda () (interactive) (setq compilations-scroll-output 'first-error)) :wk "Errror buffer first error"))
 
   ;; LISP evaluation.
   ;; namespace mostly used by 'sudo-edit' and 'f.el'
-  (nemacs/leader-keys
+  (nemaks/leader-keys
    "E" '(:ignore t :wk "Evaluate")
    "E b" '(eval-buffer :wk "Evaluate elisp in buffer")
    "E d" '(eval-defun :wk "Evaluate defun containing or after point")
@@ -557,45 +557,42 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
 
   ;; file manipulation
   ;; namespace mostly used by 'sudo-edit' and 'f.el'
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "f" '(:ignore t :wk "Files"))
 
   ;; file manipulation
   ;; namespace mostly used by 'magit'
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "g" '(:ignore t :wk "Git"))
 
   ;; goto
   ;; namespace used 'consult-todo' & others
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "G" '(:ignore t :wk "GoTo"))
 
   ;; help
   ;; namespace mostly used by 'helpful'
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "h" '(:ignore t :wk "Help"))
 
   ;; lsp
-  (nemacs/leader-keys lsp-mode
+  (nemaks/leader-keys lsp-mode
     "l" '(:ignore t :wk "LSP"))
 
   ;; Major mode
   ;; TODO: general majore-mode
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "m" '(:ignore t :wk "Major mode"))
 
-  ;; while org is the major mode
-  ;; TODO: general org-mode
-  (nemacs/leader-keys org-mode-map
+  ;; While org is the major mode
+  (nemaks/leader-keys org-mode-map
     :major-modes '(org-mode)
     :keymap '(org-mode-map)
     "m" '(:ignore t :wk "Org mode")
     )
 
-  ;; while go is the major mode
-  ;; TODO: general go-mode
-  ;; (nemacs/leader-keys go-mode-map)
-  (nemacs/leader-keys ;; go-mode
+  ;; While go is the major mode
+  (nemaks/leader-keys ;; go-mode
     :major-modes '(go-mode)
     :keymap '(go-mode-map)
     "m" '(:ignore t :wk "Go mode")
@@ -603,27 +600,27 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
 
   ;; Spelling
   ;; namespace mostly used by 'flyspell'
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "s" '(:ignore t :wk "Spelling")
-    "s d" '(nemacs/fd-switch-dictionary t :wk "Change dictionary")
-    "s t" '(nemacs/flyspell-toggle t :wk "Toggle spell check")
+    "s d" '(nemaks/fd-switch-dictionary t :wk "Change dictionary")
+    "s t" '(nemaks/flyspell-toggle t :wk "Toggle spell check")
     )
 
   ;; Toggling
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "t" '(:ignore t :wk "Toggle")
     "t e" '(flycheck-list-errors :wk "Toggle errors list")
     ;; "t e" '(lsp-treemacs-errors-list :wk "Toggle errors list")
     "t L" '(display-fill-column-indicator-mode :wk "Toggle long lines visual limit")
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
     "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
-    ;; "t s" '(nemacs/flyspell-toggle t :wk "Toggle spell check")
+    ;; "t s" '(nemaks/flyspell-toggle t :wk "Toggle spell check")
     "t t" '(visual-line-mode :wk "Toggle truncated lines")
     "t T" '(neotree-toggle :wk "Toggle neotree")
     )
 
   ;; Theming
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "T" '(:ignore t :wk "Theme")
     "T l" '(load-theme :wk "Load theme")
     "T n" '((lambda () (interactive) (load-theme 'doom-one t)) :wk "Load night theme")
@@ -631,12 +628,12 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     )
 
   ;; Windows
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "w" '(:ignore t :wk "Windows")
-    "w <left>" '(nemacs--buf-move-left :wk "Buffer move left")
-    "w <down>" '(nemacs--buf-move-down :wk "Buffer move down")
-    "w <up>" '(nemacs--buf-move-up :wk "Buffer move up")
-    "w <right>" '(nemacs--buf-move-right :wk "Buffer move right")
+    "w <left>" '(nemaks--buf-move-left :wk "Buffer move left")
+    "w <down>" '(nemaks--buf-move-down :wk "Buffer move down")
+    "w <up>" '(nemaks--buf-move-up :wk "Buffer move up")
+    "w <right>" '(nemaks--buf-move-right :wk "Buffer move right")
     )
 )
 #+end_src
@@ -645,9 +642,8 @@ And a few keybindings that doesn't belong to any groups
 
 #+begin_src emacs-lisp
 (general-define-key
- ;; "C-x b" '(counsel-switch-buffer :wk "Better file buffer")
  "C-x <down>" '(bs-show :wk "BS show")
- "C-x 1" '(nemacs/toggle-maximize-buffer :wk "Maximize")
+ "C-x 1" '(nemaks/toggle-maximize-buffer :wk "Maximize")
  "C-=" '(text-scale-increase :wk "Zoom in")
  "C--" '(text-scale-decrease :wk "Zoom out")
  "<C-wheel-down>" '(text-scale-increase :wk "Zoom in")
@@ -671,7 +667,7 @@ For contextual information
   :demand t
   :after general
   :general
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "h c" '(helpful-command :wk "helpful command")
     "h f" '(helpful-callable :wk "helpful callable")
     "h h" '(helpful-at-point :wk "helpful at point")
@@ -772,52 +768,10 @@ On-The-Fly typing completion + box
 (use-package company-box
   :ensure (:wait t)
   :demand t
-  ;; :defer t
   :after company
   :diminish
   :hook (company-mode . company-box-mode))
 #+END_SRC
-
-**** counsel
-
-Spread ivy to M-x with [[https://github.com/abo-abo/swiper#counsel][counsel (ivy#counsel)]].
-
-#+begin_src  emacs-lisp
-(use-package counsel
-  :ensure (:wait t)
-  ;; :demand t
-  :diminish
-  :after general
-  :config (counsel-mode)
-  :general
-  (general-define-key
-   "C-x b" '(counsel-switch-buffer :wk "Better file buffer")
-   "C-x C-f" '(counsel-find-file :wk "Beffer find file")
-   )
-  :bind (("M-x" . counsel-M-x) ;; TODO: convert to  geneal
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history)))
-
-(use-package counsel-projectile
-  :ensure t
-  ;; :demand t
-  :diminish
-  :after projectile
-  :config (counsel-projectile-mode))
-#+end_src
-
-**** swiper
-
-Enhance Ivy with [[https://github.com/abo-abo/swiper][swiper]].
-
-#+begin_src emacs-lisp
-(use-package swiper
-  :ensure t
-  ;; :demand t
-  :config
-  ;; TODO: add which key
-  (global-set-key (kbd "C-s") 'swiper-isearch))
-#+end_src
 
 **** ivy
 
@@ -827,7 +781,6 @@ See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
 ;; Use 'ivy' instead of 'helm' (default).
 (use-package ivy
   :ensure t
-  ;; :ensure (:wait t)
   :demand t
   :diminish ivy-mode
   ;; TODO: which-key
@@ -851,7 +804,7 @@ See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
   :config
   (setq ivy-use-virtual-buffers t
         ivy-count-format "%d/%d ")
-  (global-set-key (kbd "C-x b") 'ivy-switch-buffer)
+  ;; (global-set-key (kbd "C-x b") 'ivy-switch-buffer)
   (ivy-mode 1)
   )
 
@@ -867,6 +820,75 @@ See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
   (ivy-prescient-mode))
 #+end_src
 
+**** ivy-rich
+
+#+begin_src emacs-lisp
+(use-package ivy-rich
+  :ensure t
+  :demand t
+  :after ivy
+  :init  (ivy-rich-mode 1)
+  :custom
+  (ivy-virtual-abbreviate
+   'full
+   ivy-rich-switch-buffer-align-virtual-buffer t
+   ivy-rich-path-style 'abbrev)
+  :config
+  (ivy-set-display-transformer
+   'ivy-switch-buffer
+   'ivy-rich-switch-buffer-transformer))
+
+(use-package all-the-icons-ivy-rich
+  :ensure t
+  :demand t
+  :after (ivy-rich all-the-icons)
+  :init (all-the-icons-ivy-rich-mode 1))
+#+end_src
+
+**** counsel
+
+Spread ivy to M-x with [[https://github.com/abo-abo/swiper#counsel][counsel (ivy#counsel)]].
+
+#+begin_src  emacs-lisp
+(use-package counsel
+  :ensure (:wait t)
+  :demand t
+  :diminish
+  :after (general ivy)
+  :config (counsel-mode)
+  :general
+  (general-define-key
+   "C-x b" '(counsel-switch-buffer :wk "Better file buffer")
+   "C-x C-f" '(counsel-find-file :wk "Beffer find file")
+   ;; "M-x" . '(counsel-M-x :wk "Powa")
+   ;;)
+   ;; (general-define-key
+   ;; :map minibuffer-local-map
+   ;;   "C-r" . '(counsel-minibuffer-history :wk "Reverse history search")
+   )
+  )
+
+(use-package counsel-projectile
+  :ensure t
+  :demand t
+  :diminish
+  :after (projectile counsel)
+  :config (counsel-projectile-mode))
+#+end_src
+
+**** swiper
+
+Enhance Ivy with [[https://github.com/abo-abo/swiper][swiper]].
+
+#+begin_src emacs-lisp
+(use-package swiper
+  :ensure t
+  :demand t
+  :config
+  ;; TODO: add which key
+  (global-set-key (kbd "C-s") 'swiper-isearch))
+#+end_src
+
 **** smex
 
 Enhance ivy & other with frequently / most used invocation.
@@ -875,34 +897,12 @@ See [[https://github.com/nonsequitur/smex][the official repo]] for more.
 #+BEGIN_SRC emacs-lisp
 (use-package smex
   :ensure t
-  ;; :demand t
+  :demand t
   :after (ivy counsel)
   :config
   (smex-initialize)
 )
 #+END_SRC
-
-**** ivy-rich
-
-#+begin_src emacs-lisp
-(use-package ivy-rich
-  :ensure t
-  :demand t
-  :after (ivy counsel)
-  :init  (ivy-rich-mode 1)
-  :custom
-  (ivy-virtual-abbreviate 'full
-                          ivy-rich-switch-buffer-align-virtual-buffer t
-                          ivy-rich-path-style 'abbrev)
-  :config
-  (ivy-set-display-transformer 'ivy-switch-buffer
-                               'ivy-rich-switch-buffer-transformer))
-
-(use-package all-the-icons-ivy-rich
-  :ensure t
-  :after (ivy ivy-rich all-the-icons)
-  :init (all-the-icons-ivy-rich-mode 1))
-#+end_src
 
 *** UI
 **** bell
@@ -1051,14 +1051,14 @@ The way we access the font icons has always been … odd; needing to specify the
 
 ***** nerd-icons
 
-Used by the `nemacs-features` function ATM.
+Used by the `nemaks-features` function ATM.
 
 #+begin_src emacs-lisp
 (use-package nerd-icons
   :ensure t
   :demand t)
 
-(defun nemacs--font-icons (collection label &rest args)
+(defun nemaks--font-icons (collection label &rest args)
   "Abstraction over `nerd-icons' project.
 LABEL is a short icon description merged with COLLECTION to
 identify an icon to use. For instance, 'faicon or 'octicon.
@@ -1271,33 +1271,33 @@ Stolen from [[https://howardabrams.com/hamacs/ha-dashboard.html][here]] - I like
   :demand t
   :diminish
   :init
-  (defvar nemacs-dad-joke nil "Holds the latest dad joke.")
+  (defvar nemaks-dad-joke nil "Holds the latest dad joke.")
 
   :config
-  (defun nemacs-dad-joke ()
+  (defun nemaks-dad-joke ()
     "Display a random dad joke."
     (interactive)
-    (message (nemacs--dad-joke)))
+    (message (nemaks--dad-joke)))
 
-  (defun nemacs--dad-joke ()
+  (defun nemaks--dad-joke ()
     "Return string containing a dad joke from www.icanhazdadjoke.com."
-    (setq nemacs-dad-joke nil)  ; Clear out old joke
-    (nemacs--dad-joke-request)
-    (nemacs--dad-joke-wait))
+    (setq nemaks-dad-joke nil)  ; Clear out old joke
+    (nemaks--dad-joke-request)
+    (nemaks--dad-joke-wait))
 
-  (defun nemacs--dad-joke-wait ()
-    (while (not nemacs-dad-joke)
+  (defun nemaks--dad-joke-wait ()
+    (while (not nemaks-dad-joke)
       (sit-for 1))
-    (unless nemacs-dad-joke
-      (nemacs--dad-joke-wait))
-    nemacs-dad-joke)
+    (unless nemaks-dad-joke
+      (nemaks--dad-joke-wait))
+    nemaks-dad-joke)
 
-  (defun nemacs--dad-joke-request ()
+  (defun nemaks--dad-joke-request ()
     (request "https://icanhazdadjoke.com"
       :sync t
       :complete (cl-function
                  (lambda (&key data &allow-other-keys)
-                   (setq nemacs-dad-joke data))))))
+                   (setq nemaks-dad-joke data))))))
 
 
 #+end_src
@@ -1307,15 +1307,15 @@ Stolen from [[https://howardabrams.com/hamacs/ha-dashboard.html][here]] - I like
 I would appreciate seeing if my Emacs installation has the features that I expect:
 
 #+begin_src emacs-lisp
-(defun nemacs-features (&optional non-iconic)
+(defun nemaks-features (&optional non-iconic)
   "Simple display of features I'm most keen about.
   If NON-ICONIC is non-nil, return a string of text only."
   (interactive)
 
-  (defun nemacs--feature-combo (container icon title)
-    (nemacs--font-icons container icon :title title :height 1.3 :v-adjust -0.1))
+  (defun nemaks--feature-combo (container icon title)
+    (nemaks--font-icons container icon :title title :height 1.3 :v-adjust -0.1))
 
-  (defun nemacs--all-images ()
+  (defun nemaks--all-images ()
     (s-join "·"
             (-remove 'null
                      (list
@@ -1330,43 +1330,43 @@ I would appreciate seeing if my Emacs installation has the features that I expec
           (list
            ;; An either or ... at least for me:
            (when (eq (window-system) 'ns)
-             (nemacs--feature-combo  'faicon "apple"   "MacOS"))
+             (nemaks--feature-combo  'faicon "apple"   "MacOS"))
            (when (eq (window-system) 'pgtk)
-             (nemacs--feature-combo  'faicon "xing"    "Gnome"))
+             (nemaks--feature-combo  'faicon "xing"    "Gnome"))
 
            ;; Important to know if I have it:
            (when (and (fboundp 'native-comp-available-p)
                       (native-comp-available-p))
-             (nemacs--feature-combo  'faicon "cog"     "Native Compilation"))
+             (nemaks--feature-combo  'faicon "cog"     "Native Compilation"))
            (when (treesit-available-p)
-             (nemacs--feature-combo  'faicon "tree"    "Tree Sitter"))
+             (nemaks--feature-combo  'faicon "tree"    "Tree Sitter"))
            (when (sqlite-available-p)
-             (nemacs--feature-combo  'faicon "database" "Sqlite"))
+             (nemaks--feature-combo  'faicon "database" "Sqlite"))
            (when (gnutls-available-p)
-             (nemacs--feature-combo  'faicon "expeditedssl" "TLS"))
+             (nemaks--feature-combo  'faicon "expeditedssl" "TLS"))
            ;; Did we build with mail utilities? Check the command line
            ;; options we used to build Emacs:
            (when (or (string-search "with-mailutils" system-configuration-options)
                      (string-search "without-pop" system-configuration-options))
-             (nemacs--feature-combo  'octicon "mail" "GNU Mail"))
+             (nemaks--feature-combo  'octicon "mail" "GNU Mail"))
 
            (when (fboundp 'make-xwidget)
-             (nemacs--feature-combo  'mdicon "widgets" "XWidgets"))
+             (nemaks--feature-combo  'mdicon "widgets" "XWidgets"))
 
            ;; This suffix of loadable module files will be nil if
            ;; modules are not supported:
            (when module-file-suffix  ; or (fboundp 'module-load)
-             (nemacs--feature-combo 'faicon "th"       "Modules"))
+             (nemaks--feature-combo 'faicon "th"       "Modules"))
 
            (when (json-available-p)
-             (nemacs--feature-combo  'codicon "json"   "JSON"))
+             (nemaks--feature-combo  'codicon "json"   "JSON"))
            (when (string-search "HARFBUZZ" system-configuration-features)
-             (nemacs--feature-combo  'faicon "font"    "HARFBUZZ"))
+             (nemaks--feature-combo  'faicon "font"    "HARFBUZZ"))
            (when (string-search "DBUS" system-configuration-features)
-             (nemacs--feature-combo  'faicon "bus"     "DBUS"))
-           (nemacs--feature-combo  'faicon "picture-o" (nemacs--all-images))
+             (nemaks--feature-combo  'faicon "bus"     "DBUS"))
+           (nemaks--feature-combo  'faicon "picture-o" (nemaks--all-images))
            (when (fboundp 'imagemagick-types)
-             (nemacs--feature-combo  'faicon "magic"   "ImageMagick"))))
+             (nemaks--feature-combo  'faicon "magic"   "ImageMagick"))))
          (results (s-join "  " (-remove 'null features))))
 
     (if (called-interactively-p)
@@ -1392,7 +1392,7 @@ Nice welcome screen. See the official
   ;; :demand t
   :after (all-the-icons nerd-icons projectile page-break-lines s)
   :init
-  (defun nemacs-dashboard-version ()
+  (defun nemaks-dashboard-version ()
     (let ((smaller-version (replace-regexp-in-string
                             (rx " (" (zero-or-more any) eol) "" (emacs-version))))
       (string-replace "\n" "" smaller-version)))
@@ -1403,9 +1403,9 @@ Nice welcome screen. See the official
                 (if (and (fboundp 'native-comp-available-p)
                          (native-comp-available-p))
                     "with Native Compilation" "")
-                (nemacs-dashboard-version)))
+                (nemaks-dashboard-version)))
   ;; Disaply a random "dad joke" as footer message.
-  (setq dashboard-footer-messages (list (nemacs--dad-joke)))
+  (setq dashboard-footer-messages (list (nemaks--dad-joke)))
   ;; Set dashboard as initial buffer.
   (setq initial-buffer-choice 'dashboard-refresh-buffer)
 
@@ -1433,7 +1433,7 @@ Nice welcome screen. See the official
   (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name)
 
   ;; IDEA: random cover in a dir
-  (setq dashboard-startup-banner "/home/master/repo/perso/nemacs/logo/aum.xpm")
+  (setq dashboard-startup-banner "/home/master/repo/perso/nemaks/logo/aum.xpm")
   (setq dashboard-image-banner-max-width 500)
   (setq dashboard-image-banner-max-height 500)
   (setq dashboard-image-extra-props '(:mask heuristic))
@@ -1467,7 +1467,7 @@ Nice welcome screen. See the official
 
 (add-hook 'dashboard-mode-hook
             (lambda ()
-              (message "opt-in compilation features: %s" (nemacs-features))))
+              (message "opt-in compilation features: %s" (nemaks-features))))
 #+END_SRC
 
 **** transparency
@@ -1528,7 +1528,7 @@ Native tab ? Or smth better ?
     "C-x t b" '(tab-bar-history-back :wk "Backward history tab")
     "C-x t d" '(tab-bar-close-tab :wk "Close tab")
     "C-x t f" '(tab-bar-history-forward :wk "Forward history tab")
-    "C-x t g" '(nemacs/tab-switch-to-group :wk "Switch to tab group")
+    "C-x t g" '(nemaks/tab-switch-to-group :wk "Switch to tab group")
     "C-x t H" '((lambda (arg) (interactive "p") (tab-bar-move-tab (- arg))) :wk "Move tab left")
     "C-x t h" '(tab-bar-switch-to-prev-tab :wk "Switch to previous tab")
     "C-x t l" '(tab-bar-switch-to-next-tab :wk "Switch to next tab")
@@ -1536,7 +1536,7 @@ Native tab ? Or smth better ?
     "C-x t n" '(tab-bar-switch-to-next-tab :wk "Switch to Next tab")
     "C-x t N" '(tab-bar-new-tab :wk "New tab")
     "C-x t p" '(tab-bar-switch-to-prev-tab :wk "Prev tab")
-    "C-x t P" '(nemacs/tab-group-from-project :wk "Group tabs per project")
+    "C-x t P" '(nemaks/tab-group-from-project :wk "Group tabs per project")
     "C-x t r" '(tab-bar-rename-tab :wk "Rename tab")
     "C-x t t" '(tab-bar-switch-to-tab :wk "Switch to tab")
     "C-x t u" '(tab-bar-undo-close-tab :wk "Undo close tab")
@@ -1553,7 +1553,7 @@ Native tab ? Or smth better ?
    (concat (funcall tab-bar-tab-group-function tab))
    'face (if current-p 'tab-bar-tab-group-current 'tab-bar-tab-group-inactive)))
 
-(defun nemacs/tab-group-from-project ()
+(defun nemaks/tab-group-from-project ()
   "Call `tab-group` with the current project name as the group."
   (interactive)
   (when-let* ((proj (project-current))
@@ -1577,7 +1577,7 @@ Native tab ? Or smth better ?
                 display-buffer-full-frame)
 			   (tab-group . "[EMACS]")))
 
-(defun nemacs/tab-switch-to-group ()
+(defun nemaks/tab-switch-to-group ()
   "Prompt for a tab group and switch to its first tab.
 Uses position instead of index field."
   (interactive)
@@ -1651,11 +1651,11 @@ Remember where I left off after killing a file
 When killing a buffer always pick the current buffer by default
 
 #+begin_src emacs-lisp
-(defun nemacs--kill-current-buffer ()
+(defun nemaks--kill-current-buffer ()
   "Kills the current buffer."
   (interactive)
   (kill-buffer (current-buffer)))
-(global-set-key (kbd "C-x k") 'nemacs-kill-current-buffer)
+(global-set-key (kbd "C-x k") 'nemaks-kill-current-buffer)
 #+end_src
 
 When a file changes on disk, automatically reload its buffer silently
@@ -1681,10 +1681,10 @@ When a file changes on disk, automatically reload its buffer silently
 #+BEGIN_SRC emacs-lisp
 ;; color compilation output
 (require 'ansi-color)
-(defun nemacs/colorize-compilation-buffer ()
+(defun nemaks/colorize-compilation-buffer ()
   "Colorize the *compilation* buffer output"
   (ansi-color-apply-on-region compilation-filter-start (point)))
-(add-hook 'compilation-filter-hook 'nemacs/colorize-compilation-buffer)
+(add-hook 'compilation-filter-hook 'nemaks/colorize-compilation-buffer)
 #+END_SRC
 
 ***** smooth scrolling
@@ -1709,7 +1709,7 @@ Creating some functions to allow us to easily move windows (splits) around.  The
 (require 'windmove)
 
 ;;;###autoload
-(defun nemacs--buf-move-up ()
+(defun nemaks--buf-move-up ()
   "Swap the current buffer and the buffer above the split.
 If there is no split, ie now window above the current one, an
 error is signaled."
@@ -1727,7 +1727,7 @@ error is signaled."
       (select-window other-win))))
 
 ;;;###autoload
-(defun nemacs--buf-move-down ()
+(defun nemaks--buf-move-down ()
 "Swap the current buffer and the buffer under the split.
 If there is no split, ie now window under the current one, an
 error is signaled."
@@ -1744,7 +1744,7 @@ error is signaled."
       (select-window other-win))))
 
 ;;;###autoload
-(defun nemacs--buf-move-left ()
+(defun nemaks--buf-move-left ()
 "Swap the current buffer and the buffer on the left of the split.
 If there is no split, ie now window on the left of the current
 one, an error is signaled."
@@ -1760,7 +1760,7 @@ one, an error is signaled."
       (select-window other-win))))
 
 ;;;###autoload
-(defun nemacs--buf-move-right ()
+(defun nemaks--buf-move-right ()
 "Swap the current buffer and the buffer on the right of the split.
 If there is no split, ie now window on the right of the current
 one, an error is signaled."
@@ -1780,7 +1780,7 @@ one, an error is signaled."
 Instead of kill other via X-1. Stollen from spacemacs, sorry mom.
 
 #+BEGIN_SRC emacs-lisp
-(defun nemacs/toggle-maximize-buffer ()
+(defun nemaks/toggle-maximize-buffer ()
   "Maximize buffer"
   (interactive)
   (save-excursion
@@ -1936,7 +1936,7 @@ Suggests to bind some keys to hl-todo-next in order to jump from tag to tag, but
       (?l . "LINK")
       (?n . "NOTE")))
   :general
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "G t" '("GoTo ToDos" . consult-todo))
   )
 #+end_src
@@ -2016,7 +2016,7 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
   :demand t
   :after general
   :general
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "f u" '(sudo-edit-find-file :wk "Sudo find file")
     "f U" '(sudo-edit :wk "Sudo edit file"))
 )
@@ -2029,7 +2029,7 @@ I can’t find the cursor, and don’t want to move it to see it, I can hit a ke
   :ensure t
   ;; :defer t
   :general
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "c R" '(restart-emacs :wk "Restart Emacs"))
   )
 
@@ -2047,18 +2047,18 @@ Let's pimp 'org'
 Let's auto-toggle parent status.
 
 #+begin_src emacs-lisp
-(defun nemacs/org-summary-todo (n-done n-not-done)
+(defun nemaks/org-summary-todo (n-done n-not-done)
   "Switch entry to DONE when all subentries are done, to TODO otherwise."
   (let (org-log-done org-todo-log-states)   ; turn off logging
     (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
 
-(add-hook 'org-after-todo-statistics-hook #'nemacs/org-summary-todo)
+(add-hook 'org-after-todo-statistics-hook #'nemaks/org-summary-todo)
 #+end_src
 
 Nicer checkbox.
 
 #+BEGIN_SRC emacs-lisp
-(defun nemacs/org-pretty-checkbox ()
+(defun nemaks/org-pretty-checkbox ()
   (add-hook 'org-mode-hook (lambda ()
                              "Beautify Org Checkbox Symbol"
                              (push '("[ ]" .  "☐") prettify-symbols-alist)
@@ -2074,7 +2074,7 @@ Nicer checkbox.
 Nicer bullet point.
 
 #+BEGIN_SRC emacs-lisp
-(defun nemacs/org-pretty-bullet ()
+(defun nemaks/org-pretty-bullet ()
   ;; replace list '-' w/ a '•'
   (font-lock-add-keywords 'org-mode
                           '(("^ *\\([-]\\) "
@@ -2084,7 +2084,7 @@ Nicer bullet point.
 Better defaults.
 
 #+BEGIN_SRC emacs-lisp
-(defun nemacs/org-better-def ()
+(defun nemaks/org-better-def ()
   (setq
    ;; show actually italicized text instead of /italicized text/
    ;; org-hide-emphasis-markers t
@@ -2134,7 +2134,7 @@ Better defaults.
 Better statistics.
 
 #+BEGIN_SRC emacs-lisp
-(defun nemacs/org-better-stats ()
+(defun nemaks/org-better-stats ()
   (setq
    ;; auto recursive checkbox
    org-checkbox-hierarchical-statistics nil
@@ -2157,10 +2157,10 @@ Let's provide org
   :init
 
   (setq org-use-speed-commands t)
-  (nemacs/org-better-stats)
-  ;; (nemacs/org-pretty-checkbox) --> handled by org-modern
-  (nemacs/org-pretty-bullet)
-  (nemacs/org-better-def)
+  (nemaks/org-better-stats)
+  ;; (nemaks/org-pretty-checkbox) --> handled by org-modern
+  (nemaks/org-pretty-bullet)
+  (nemaks/org-better-def)
 
   ;; should disable latext math eval
   (setq org-use-sub-superscripts '{})
@@ -2176,7 +2176,7 @@ Let's provide org
           (sequence "TO-READ(r)" "READING(R)" "|" "HAVE-READ(d)")
           (sequence "PROJ(p)" "|" "COMPLETED(c)")))
   ;;:general
-  ;; (nemacs/leader-keys )
+  ;; (nemaks/leader-keys )
   :hook
   ;; (org-mode . olivetti-mode)
   ;; (org-mode . variable-pitch-mode)
@@ -2192,7 +2192,7 @@ Let's provide org
      (emacs-lisp . t)
      (awk . t)))
   :general
-  (nemacs/leader-keys org-mode-map
+  (nemaks/leader-keys org-mode-map
     "m a" '(org-agenda :wk "Org agenda")
     "m e" '(org-export-dispatch :wk "Org export dispatch")
     "m i" '(org-toggle-item :wk "Org toggle item")
@@ -2211,14 +2211,14 @@ And a "smoll" function to coop with cookies statistics
 Thanks [[https://emacs.stackexchange.com/questions/60710/is-there-any-way-of-getting-overview-statistics-for-all-checkboxes-in-a-given-or][you]].
 
 #+begin_src emacs-lisp
-(defun nemacs/org--aggregate-cookies ()
+(defun nemaks/org--aggregate-cookies ()
   (save-excursion
     (org-back-to-heading t)
     (let* ((prop (string-match "\\<aggregate\\>"
                                (or (org-entry-get nil "COOKIE_DATA") "")))
            )
       (if prop
-          (let* ((counts (nemacs/org--aggregate-cookies-one-level))
+          (let* ((counts (nemaks/org--aggregate-cookies-one-level))
                  (numerator (car counts))
                  (denominator (cadr counts))
                  (cookie-regex "\\[\\([0-9]*\\)/\\([0-9]*\\)\\]")
@@ -2233,10 +2233,10 @@ Thanks [[https://emacs.stackexchange.com/questions/60710/is-there-any-way-of-get
                   (delete-region (point) (+ (point) ndel))
                   ))))
       (if (org-up-heading-safe)
-          (nemacs/org--aggregate-cookies))
+          (nemaks/org--aggregate-cookies))
       )))
 
-(defun nemacs/org--aggregate-cookies-one-level ()
+(defun nemaks/org--aggregate-cookies-one-level ()
   (save-excursion
     (let* ((current (point))
            (next (save-excursion (outline-next-heading) (point)))
@@ -2261,7 +2261,7 @@ Thanks [[https://emacs.stackexchange.com/questions/60710/is-there-any-way-of-get
       `(,numerator ,denominator)
       )))
 
-(add-hook 'org-checkbox-statistics-hook (function nemacs/org--aggregate-cookies))
+(add-hook 'org-checkbox-statistics-hook (function nemaks/org--aggregate-cookies))
 #+end_src
 
 **** org-modern
@@ -2424,7 +2424,7 @@ Let's setup the famous `lsp-mode`
   :ensure (:wait t)
   ;; :demand t
   :hook (
-         ;; (lsp-mode . nemacs/lsp-mode-setup)
+         ;; (lsp-mode . nemaks/lsp-mode-setup)
          (yaml-mode . lsp-deferred)
          (prog-mode . lsp-deferred)
          (lsp-mode . lsp-enable-which-key-integration))
@@ -2455,7 +2455,7 @@ Let's setup the famous `lsp-mode`
   (setq lsp-disabled-clients '(semgrep-ls))
   (setq lsp-keymap-prefix "M-m l")
   (setq lsp-diagnostics-provider :flycheck)
-  ;; :general FIXME: feed custom lsp general ? 
+  ;; :general FIXME: feed custom lsp general ?
   ;; :keymap 'lsp-mode-map
   ;;   "l" '(:ignore t :wk "LSP")
   ;;   "l l" '(lsp-command-map :wk "LSP")
@@ -2487,14 +2487,14 @@ Seems to make the screen cluttered, needs a few tweaks.
   :after ( lsp-mode general)
   ;; :defer t
   :commands lsp-ui-mode
-  :config 
+  :config
   (progn
     ;; Enable inline documentation
     (setq lsp-ui-sideline-enable t)
     (setq lsp-ui-doc-position 'bottom))
   (add-hook 'lsp-after-open-hook 'lsp-enable-imenu)
-  :general 
-  (nemacs/leader-keys
+  :general
+  (nemaks/leader-keys
     :keymaps 'prog-mode-map
     "G m" '("imenu" . lsp-ui-imenu))
   )
@@ -2641,7 +2641,7 @@ $ go -u install \
                       :underline t :foreground "green"
                       :weight 'bold))
 
-(defun nemacs/go-mode-setup ()
+(defun nemaks/go-mode-setup ()
   "Basic Go mode setup."
   ;; (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'gofmt-before-save t t)
@@ -2653,9 +2653,9 @@ $ go -u install \
   :mode "\\.go\\'"
   :after general
   :hook
-  (go-mode . nemacs/go-mode-setup)
+  (go-mode . nemaks/go-mode-setup)
   :config
-  ;; (add-hook 'go-mode-hook #'nemacs/go-mode-setup)
+  ;; (add-hook 'go-mode-hook #'nemaks/go-mode-setup)
 
   ;; golang compat build tag
   ;; TODO: hook to lsp-go-mode
@@ -2667,7 +2667,7 @@ $ go -u install \
           lsp-enable-on-type-formatting nil))
   (setq gofmt-command "gofumpt")
   :general
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     :major-modes '(go-mode)
     :keymap '(go-mode-map)
     "m r" '(go-rename :wk "Go rename"))
@@ -2679,7 +2679,7 @@ $ go -u install \
   :defer t
   :after (general go-mode)
   :general
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     :major-modes '(go-mode)
     :keymap '(go-mode-map)
      "m tg" '(:ignore t :wk "Go test gen")
@@ -2688,24 +2688,13 @@ $ go -u install \
      "m tga" '(go-gen-test-all :wk "Go test all"))
     )
 
-;; (use-package go-rename
-;;   :ensure t
-;;   :defer t
-;;   :after (general go-mode)
-;;   :general
-;;   (nemacs/leader-keys
-;;     :major-modes '(go-mode)
-;;     :keymap '(go-mode-map)
-;;     "m r" '(go-rename :wk "Go rename"))
-;;   )
-
 ;; install a struct filler
 (use-package go-fill-struct
   :ensure t
   :defer t
   :after (general go-mode)
   :general
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     :major-modes '(go-mode)
     :gkeymaps '(go-mode-map)
     "m s" '(go-fill-struct :wk "Fill structure"))
@@ -2716,12 +2705,11 @@ $ go -u install \
   :defer t
   :after (general go-mode)
   :general
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     :major-modes
    '(go-mode)
    :keymaps
    '(go-mode-map)
-   ;; "m" '(:ignore t :wk "Go")
    "m t" '(:ignore t :wk "Go tag")
    "m t a" '(go-tag-add :wk "Add tag")
    "m t r" '(go-tag-remove :wk "Remove tag"))
@@ -2733,10 +2721,10 @@ $ go -u install \
 
 ;; set golangci-lint
 (defvar-local flycheck-local-checkers nil)
-(defun +nemacs/flycheck-checker-get(fn checker property)
+(defun +nemaks/flycheck-checker-get(fn checker property)
   (or (alist-get property (alist-get checker flycheck-local-checkers))
       (funcall fn checker property)))
-(advice-add 'flycheck-checker-get :around '+nemacs/flycheck-checker-get)
+(advice-add 'flycheck-checker-get :around '+nemaks/flycheck-checker-get)
 
 (add-hook 'go-mode-hook (lambda()
                           (flycheck-golangci-lint-setup)
@@ -2752,7 +2740,7 @@ $ go -u install \
   :defer t
   :mode (("\\.\\(yml\\|yaml\\)\\'" . yaml-mode)
          )
-  ;; :hook 
+  ;; :hook
   :init (setq emojify-mode -1))
 #+END_SRC
 
@@ -2799,7 +2787,7 @@ https://www.flycheck.org/en/latest/
   (flycheck-emacs-lisp-load-path 'inherit "necessary with alternatives to package.el")
   (flycheck-display-error-delay .3)
   :general
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "e n" '(flycheck-next-error     :repeat t :wk "next")
     "e N" '(flycheck-next-error     :repeat t :wk "next")
     "e p" '(flycheck-previous-error :repeat t :wk "previous")
@@ -2850,7 +2838,7 @@ The `flyspell-prog-mode` checks for misspellings in comments.
   (git-commit-mode . flyspell-prog-mode)
   (text-mode . flyspell-prog-mode)
   :general
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "s b" '(flyspell-buffer :wk "Check buffer")
     "s n" '(flyspell-goto-next-error :wk "Go to next error")
     "s p" '(flycheck-popup-auto-correct-mode :wk "Toggle popup")
@@ -2869,7 +2857,7 @@ And let's try that one
   :ensure t
   :after (flyspell general)
   :general
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "s B" '(flyspell-correct-wrapper :wk "Correct wrapper")
     "s P" '(flyspell-correct-at-point :wk "Correct at point")
     )
@@ -2885,7 +2873,7 @@ And let's try that one
   (setq flyspell-correct-interface #'flyspell-correct-popup))
 
 ;; auto load flyspell per buffer
-(add-hook 'after-change-major-mode-hook 'nemacs/flyspell-on-for-buffer-type)
+(add-hook 'after-change-major-mode-hook 'nemaks/flyspell-on-for-buffer-type)
 
 ;; skip code block check
 (add-to-list 'ispell-skip-region-alist '("^#+BEGIN_SRC emacs-lisp" . "^#+END_SRC"))
@@ -2900,7 +2888,7 @@ All credit to the [[https://www.emacswiki.org/emacs/FlySpell][emacswiki]].
 
 #+begin_src emacs-lisp
 ;; stollen from https://www.emacswiki.org/emacs/FlySpell, sorry mom
-(defun nemacs/flyspell-on-for-buffer-type ()
+(defun nemaks/flyspell-on-for-buffer-type ()
   "Enable Flyspell appropriately for the major mode of the current buffer.  Uses `flyspell-prog-mode' for modes derived from `prog-mode', so only strings and comments get checked.  All other text-buffers get `flyspell-mode' to check all text.  If flyspell is already enabled, does nothing."
   (interactive)
   (if (not (symbol-value flyspell-mode)) ; if not already on
@@ -2920,7 +2908,7 @@ All credit to the [[https://www.emacswiki.org/emacs/FlySpell][emacswiki]].
                 )))
         )))
 
-(defun nemacs/flyspell-toggle ()
+(defun nemaks/flyspell-toggle ()
   "Turn Flyspell on if it is off, or off if it is on.  When turning on, it uses `flyspell-on-for-buffer-type' so code-vs-text is handled appropriately."
   (interactive)
   (if (symbol-value flyspell-mode)
@@ -2928,9 +2916,9 @@ All credit to the [[https://www.emacswiki.org/emacs/FlySpell][emacswiki]].
         (message "Flyspell off")
         (flyspell-mode -1))
                                         ; else - flyspell is off, turn it on
-    (nemacs/flyspell-on-for-buffer-type)))
+    (nemaks/flyspell-on-for-buffer-type)))
 
-(defun nemacs/fd-switch-dictionary()
+(defun nemaks/fd-switch-dictionary()
   (interactive)
   (let* ((dic ispell-current-dictionary)
          (change (if (string= dic "francais") "english" "francais")))
@@ -2953,7 +2941,7 @@ All credit to the [[https://www.emacswiki.org/emacs/FlySpell][emacswiki]].
   :ensure (:wait t)
   :demand t)
 
-(defun nemacs/magit-display-buffer-pop-up-frame (buffer)
+(defun nemaks/magit-display-buffer-pop-up-frame (buffer)
   "Create or update the magit status dedicated buffer window"
   (if (with-current-buffer buffer (eq major-mode 'magit-status-mode))
       (display-buffer buffer
@@ -2976,12 +2964,12 @@ All credit to the [[https://www.emacswiki.org/emacs/FlySpell][emacswiki]].
   :custom
   (magit-display-buffer-function #'
    ;; magit-display-buffer-same-window-except-diff-v1)
-   nemacs/magit-display-buffer-pop-up-frame)
+   nemaks/magit-display-buffer-pop-up-frame)
   :config
   ;; (magit-rebase-commit-arguments '("--format=%h %an %s"))
   (transient-bind-q-to-quit)
   :general
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "g b"  '(magit-branch :wk "Git branch")
     "g B"  '(magit-blame  :wk "Git blame")
     "g c"  '(magit-clone    :wk "Git clone")
@@ -3041,7 +3029,7 @@ machine gitlab.com/api/v4 login [username]^forge password [token]
   :after (general)
   :diminish
   :general
-  (nemacs/leader-keys
+  (nemaks/leader-keys
     "p" '(projectile-command-map :wk "Projectile"))
   :config (add-to-list 'projectile-globally-ignored-directories "*node_modules")
   (add-to-list 'projectile-globally-ignored-directories "*vendor")
