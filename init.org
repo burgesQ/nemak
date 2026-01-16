@@ -1537,13 +1537,20 @@ See the [[https://github.com/abo-abo/swiper#ivy][repo (swiper#ivy)]].
   )
 
 (setq ivy-use-selectable-prompt t)
+#+end_src
 
-;; ??
+**** ivy-prescient 
+
+#+begin_src emacs-lisp
+;; prescient.el is a library which sorts and filters lists of candidates
+;; Conflict with smex, disabling sorting fix it
 (use-package ivy-prescient
   :ensure (:wait t)
   :demand t
+  :after ivy
   :init
-  (setq prescient-use-char-folding nil) ;; helps with regexp too big errors for long paths
+  ;; Disable prescient sorting to coop w/ smex.
+  (setq ivy-prescient-enable-sorting nil)
   :config
   (ivy-prescient-mode))
 #+end_src
@@ -1582,22 +1589,10 @@ Enhance Ivy with [[https://github.com/abo-abo/swiper][swiper]].
   :ensure t
   :after (ivy general)
   :defer t
+  :commands (swiper swiper-isearch)  ;; Autoload seulement quand appelé
   :general
   (general-define-key
    "C-s" '(swiper-isearch :wk "Search with swiper")))
-
-;; (use-package swiper
-;;   :ensure t
-;;   :defer t
-;;   :after (ivy general)
-;;   :commands (swiper swiper-isearch)  ;; Autoload seulement quand appelé
-;;   :init
-;;   ;; Définir le keybinding sans charger swiper
-;;   (global-set-key (kbd "C-s") 'swiper-isearch))
-;;   ;; :config
-;;   ;; :bind (("C-s" . swiper-isearch)))  ;; :bind est mieux pour ça
-;; ;; TODO: add which key
-;; ;;  (global-set-key (kbd "C-s") 'swiper-isearch))
 #+end_src
 
 **** counsel
@@ -1632,13 +1627,27 @@ Enhance ivy & other with frequently / most used invocation.
 See [[https://github.com/nonsequitur/smex][the official repo]] for more.
 
 #+BEGIN_SRC emacs-lisp
+;; Persist history accross runs
+(use-feature savehist
+  :ensure nil
+  :demand t
+  :config
+  (setq savehist-file
+        (expand-file-name "savehist" user-emacs-directory))
+  (setq history-length 1000)
+  (setq savehist-additional-variables
+        '(kill-ring search-ring regexp-search-ring))
+  (savehist-mode 1))
+
 (use-package smex
   :ensure t
   :demand t
   :after (ivy counsel)
+  :init
   :config
   (smex-initialize)
-)
+  ;; Save history periodically.
+  (smex-auto-update))
 #+END_SRC
 
 *** QoL
