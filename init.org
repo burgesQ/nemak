@@ -3133,6 +3133,7 @@ Let's setup 'claude.el'
 
 ;; Install monet emacs backend
 (use-package monet
+  :disabled t
   ;; :ensure t
   ;; :vc (:url "https://github.com/stevemolitor/monet" :rev :newest)
   :ensure (;; :wait t
@@ -3170,6 +3171,7 @@ Let's setup 'claude.el'
 
 ;; install claude-code.el
 (use-package claude-code 
+  :disabled t
   ;; :ensure t
   :ensure (;; :wait t 
                  :host github 
