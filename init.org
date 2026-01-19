@@ -18,33 +18,22 @@ Thanks
 - [[https://github.com/jeremygooch/jeremacs][less monstruous but still huge]]
 - [[https://www.patrickdelliott.com/emacs.d/][nicely assembled config]]
 
-* TODO how to use [0/3]
-
-#+begin_example console
-$ emacs -q -l ~/repo/perso/nemaks/emacs-init.el --init-directory=~/repo/perso/nemaks
-#+end_example
-
-** TODO install as ~/.emacs
-** TODO as systemctl service (aka emacsclient)
-** TODO misc
-chemacs
-
 * WIP TODOs
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
-** TODO v1 [10/14] [71%]
+** TODO v1 [11/15] [73%]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
-*** TODO claude-el
-*** TODO LSP
+*** DONE claude-el
+*** WIP LSP
 
 *** WIP keybinding
 - [ ] migrate global-set-key to :map
 - [ ] migrate from :map to :general (+ which key)
 *** IDEA treesitter (another attempt)
-
+*** TODO drop neotree in favor of treemacs (reduce deps)
 *** DONE early init
 *** DONE elpa management
 *** DONE key describe (helpful)
@@ -55,6 +44,108 @@ chemacs
 *** DONE [fly/spell/*]check
 *** DONE magit
 *** DONE org
+* how to use 
+
+#+begin_example console
+$ emacs -q -l ~/repo/perso/nemaks/emacs-init.el --init-directory=~/repo/perso/nemaks
+#+end_example
+
+** hook to emacs init
+
+To use, please set the following into the earliest emacs loading file (`~/.emacs`, `~/.emacs/init.el`)
+
+#+BEGIN_EXAMPLE emacs-lisp
+;; ~/.emacs-init.el
+(require 'org)
+(org-babel-load-file
+  (expand-file-name "init.org"
+    "~/path/to/nemaks/")
+)
+#+END_EXAMPLE
+
+** as systemctl service (aka emacsclient)
+
+#+begin_example console
+$ # Start the emacs daemon serivce for the user.
+$ systemctl --user enable ./emacs.service
+$ # Then access an instance.
+$ emacsclient -nc 
+#+end_example
+
+** chemacs2
+
+Multiple emacs version may coexist, thanks to [[ttps://github.com/plexus/chemacs2.git][chemacs2]] -
+
+#+BEGIN_EXAMPLE console
+  $ git clone https://github.com/plexus/chemacs2.git ~/.emacs.d
+  (...)
+  $ cat .emacs-profiles.el
+  (("default"   . ((user-emacs-directory . "~/.emacs.legacy")))
+   ("legacy" . ((user-emacs-directory . "~/repo/perso/doomeacs")))
+   ("spacemacs"   . ((user-emacs-directory . "~/repo/perso/spacemacs"))))
+  $ emacs --with-profile default
+#+END_EXAMPLE
+
+
+**  misc
+
+*** build emacs 29
+
+Quick helper
+
+#+BEGIN_EXAMPLE console
+  $ git clone https://github.com/emacs-mirror/emacs \
+    --branch 29.1 \
+    --single-branch \
+    --depth 1
+  $ cd emacs
+  $ git submodule update --init --recursive
+  $ apt update && apt install -y \
+      libgccjit0  libgccjit-13-dev libharfbuzz-dev libjansson4 libmagickwand-dev libjansson-dev libtree-sitter-dev libxpm-dev libgif-dev libgnutls28-dev \
+      texinfo \
+      imagemagick imagemagick-6-common
+  $ ./autogen.sh
+  $ ./configure \
+     --without-compress-install \
+     --with-native-compilation \
+     --with-mailutils \
+     --with-pop \
+     --with-modules \
+     --with-tree-sitter \
+     --with-x-toolkit=no \
+     --with-x \
+     --with-rsvg \
+     --with-imagemagick \
+     --with-threads \
+     --with-cairo \
+     --with-harfbuzz \
+     --without-toolkit-scroll-bars \
+     GCC=g++-10 CC=gcc-10
+  $ make -k -j4
+  $ sudo make install
+#+END_EXAMPLE
+
+
+
+*** flycheck-golangci-lint patch 
+
+#+begin_src diff
+
+# emacs.d/elap/30.2/flycheck-golangci-lint-20251203/flycheck-golangci-lint.el
+
+-
+- (if (and version (>= (car version) 2))
++ ;; (if (and version (>= (car version) 2))
+        ;; v2.x: Use new format (without text output flag to avoid mixed output)
+-    '("--output.checkstyle.path=stdout")
++    '("--output.checkstyle.path=stdout" "--output.text.path=/dev/null" "--show-stats=false" "--path-mode=abs")
+-       v1.x or fallback: Use legacy format
+-    '("--out-format=checkstyle")))
++      ;; v1.x or fallback: Use legacy format
++    ;;'("--out-format=checkstyle")))
+
+#+end_src
+
 * TODO the config [0/17]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
