@@ -2543,61 +2543,48 @@ Let's setup the famous `lsp-mode`
 
 (use-package lsp-mode
   :ensure (:wait t)
+  :commands (lsp lsp-deferred)
+  :custom
+  (lsp-idle-delay 0.5)  
+  ;; (lsp-log-io nil)      
+  (read-process-output-max (* 1024 1024)) ;; 1MB
+
+  ; Features
+  ;; Disable yasnippet
+  (lsp-enable-snippet nil)  
+  ;; Disable file watcher.
+  (lsp-enable-file-watchers nil)
+  (lsp-keep-workspace-alive nil)
+  (lsp-completion-provider :capf)
+  
+
+  ;; Diagnostics flycheck.
+  (lsp-diagnostics-provider :flycheck)
+  
+  ;; Disable cubersum clients.
+  (lsp-disabled-clients '(semgrep-ls))  ;; emacs-lisp-ls viré, pas nécessaire
+
+  ;; UI
+  (lsp-headerline-breadcrumb-enable t)
+  (lsp-headerline-breadcrumb-segments
+   '(path-up-to-project file symbols))
+
+  (lsp-ui-doc-enable t)
+
+  :init
+  (setq lsp-keymap-prefix "M-m l")
+
   ;; :demand t
   :hook (
-         ;; (lsp-mode . nemaks/lsp-mode-setup)
          (yaml-mode . lsp-deferred)
          ;; Activate LSP for prog-modes except emacs-lisp-mode
          ((prog-mode . (lambda ()
                          (unless (derived-mode-p 'emacs-lisp-mode)
                            (lsp-deferred)))))
          (lsp-mode . lsp-enable-which-key-integration))
-  :custom
-  (read-processs-output-max (* 1024 1024))
-  :commands (lsp lsp-deferred)
-  :config (setq lsp-idle-delay 1)
-  (setq
-   lsp-headerline-breadcrumb-segments
-   '(path-up-to-project file symbols))
+
+  :config
   (lsp-headerline-breadcrumb-mode)
-
-  (setq
-   lsp-ui-doc-enable t
-   ;; disable file watched
-   lsp-enable-file-watchers nil
-   ;; don't keep workspace alive
-   lsp-keep-workspace-alive nil
-   ;; disable yasnippet
-   lsp-enable-snippet nil
-   ;; lsp-clangd
-   ;; lsp-clangd-binary-path '/usr/bin/clangd
-   ;; Use complation at point
-   lsp-completion-provider :capf)
-
-  ;; Disable lsp pour certains modes
-  ;; (add-to-list 'lsp-disabled-clients 'emacs-lisp-ls)
-
-  :init
-  ;; turn off problematic modes
-  (setq lsp-disabled-clients '(semgrep-ls emacs-lisp-ls))
-  (setq lsp-keymap-prefix "M-m l")
-  (setq lsp-diagnostics-provider :flycheck)
-
-  ;; :general FIXME: feed custom lsp general ?
-  ;; :keymap 'lsp-mode-map
-  ;;   "l" '(:ignore t :wk "LSP")
-  ;;   "l l" '(lsp-command-map :wk "LSP")
-  ;;   "l f" '(:ignore t :wk "LSP find")
-  ;;   "l fr" '(lsp-find-references t :wk "Reference")
-  ;;   "l fr" '(lsp-treemacs-references t :wk "Tree reference")
-  ;;   "l fd" '(lsp-find-definition t :wk "Definition")
-  ;;   "l fD" '(lsp-find-declaration t :wk "Declaration")
-  ;;   "l fi" '(lsp-find-implementation t :wk "Implementation")
-  ;;   "l r" '(lsp-rename :wk "LSP rename")
-  ;;   "l s" '(:ignore t :wk "LSP session")
-  ;;   "l sd" '(lsp-describe-session :wk "LSP describe session")
-  ;;   "l w" '(:ignore t :wk "LSP workspace")
-  ;;   "l wa" '(lsp-workspace-folders-add :wk "LSP add workspace"))
 )
 #+end_src
 
@@ -2905,7 +2892,6 @@ Nice package for systemd file editing. See the official [[https://elpa.gnu.org/p
 ****** TODO markdown + vmd
 ****** TODO rust mod
 ****** TODO toml mod
-
 
 **** on the fly checkers
 
