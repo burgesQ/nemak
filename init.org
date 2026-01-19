@@ -544,7 +544,6 @@ modeline.
 )
 #+END_SRC
 
-
 *** keybinding
 
 **** general
@@ -1550,7 +1549,6 @@ Uses position instead of index field."
 
 #+end_src
 
-
 *** completion
 
 Generic auto-complete with boosted Ivy + company.
@@ -2519,15 +2517,20 @@ Useful when inserting code block into org files
 **** IDEA treesitter
 
 #+begin_src emacs-lisp
-;; (use-package treesit-auto
-;;   :ensure (:wait t)
-;;   :demand t
-;;   :custom
-;;   (treesit-auto-install 'prompt)
-;;   :config
-;;   (setq treesit-auto-langs '(javascript typescript tsx css html))
-;;   (treesit-auto-add-to-auto-mode-alist '(javascript typescript tsx css html))
-;;   (global-treesit-auto-mode))
+(use-package treesit-auto
+  :ensure t
+  :demand t
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  ;; Used languages.
+  (setq treesit-auto-langs 
+        '(bash c cpp css go html javascript json python rust sql toml tsx typescript yaml))
+  
+  ;; Enable tree-sitter modes.
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
+
 #+end_src
 **** WIP LSP
 
