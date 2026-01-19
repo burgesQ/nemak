@@ -2685,7 +2685,7 @@ Disabled ATM. Let's look into it later.
    :client-configs lsp-docker-client-configs)
   )
 #+end_src
-***** TODO languages
+***** languages
 ****** docker-mode
 
 #+begin_src emacs-lisp
@@ -2770,12 +2770,22 @@ $ go -u install \
   :hook
   (go-mode . nemaks/go-mode-setup)
   :config
-  ;; (add-hook 'go-mode-hook #'nemaks/go-mode-setup)
 
-  ;; golang compat build tag
-  ;; TODO: hook to lsp-go-mode
-  (setq
-   lsp-go-env '((GOFLAGS . "-tags=integration,e2e,nowatcher")))
+  ;; Build tags par défaut (peut être overridé via .dir-locals.el)
+  (defvar nemaks/go-build-tags "integration,e2e,nowatcher"
+    "Default Go build tags.")
+  
+  (defun nemaks/go-mode-setup ()
+    "Setup Go mode with LSP and formatting."
+    ;; Format on save
+    (add-hook 'before-save-hook #'gofmt-before-save nil t)
+    (add-hook 'before-save-hook #'lsp-organize-imports nil t)
+    
+    ;; Build tags (per projec configuration possible).
+    (setq-local lsp-go-build-flags 
+                (vector (format "-tags=%s" nemaks/go-build-tags))))
+
+
   (progn ;; use flycheck, not flymake
     (setq lsp-prefer-flymake nil
           lsp-enable-indentation nil
@@ -2785,7 +2795,10 @@ $ go -u install \
   (nemaks/leader-keys
     :major-modes '(go-mode)
     :keymap '(go-mode-map)
-    "m r" '(go-rename :wk "Go rename"))
+    "m r" '(go-rename :wk "Go rename")
+    "m t" '(:ignore t :wk "Test/Tag")
+    "m i" '(lsp-organize-imports :wk "Organize imports")
+)
   )
 
 ;; install a test generator
@@ -2881,18 +2894,65 @@ Nice package for systemd file editing. See the official [[https://elpa.gnu.org/p
    "m o" '(systemd-doc-open)))
 #+END_SRC
 
-****** TODO python mod
+****** python mod
 
-****** TODO php mod
+#+begin_src emacs-lisp
+;; Python
+(use-package python-mode
+  :ensure nil  ;; Built-in
+  :mode ("\\.py\\'" . python-mode)
+  :hook 
+  (python-mode . (lambda ()
+                   (setq-local tab-width 4
+                               python-indent-offset 4))))
+#+end_src
+
+****** php mod
+
+#+begin_src emacs-lisp
+;; PHP
+(use-package php-mode
+  :ensure t
+  :mode "\\.php\\'")
+#+end_src
+
+****** SQL
+
+#+begin_src emacs-lisp
+;; SQL
+(use-package sql
+  :ensure nil
+  :mode ("\\.sql\\'" . sql-mode))
+#+end_src
+****** rust mod
+
+#+begin_src emacs-lisp
+;; Rust
+(use-package rust-mode
+  :ensure t
+  :mode "\\.rs\\'"
+  :init
+  (setq rust-format-on-save t))
+#+end_src
+
+****** web 
+
+#+begin_src emacs-lisp
+;; Web (HTML/JS/CSS)
+(use-package web-mode
+  :ensure t
+  :mode ("\\.html?\\'" "\\.jsx?\\'" "\\.tsx?\\'")
+  :config
+  (setq web-mode-markup-indent-offset 2
+        web-mode-css-indent-offset 2
+        web-mode-code-indent-offset 2))
+#+end_src
 
 ****** TODO c/c++ mod
 
 ****** TODO cmake
-****** TODO SQL
 ****** TODO markdown + vmd
-****** TODO rust mod
 ****** TODO toml mod
-
 **** on the fly checkers
 
 Various kind of on the flt error reporters.
