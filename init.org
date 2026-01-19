@@ -262,9 +262,9 @@ The following is a table shows values from popular Emacs configurations.
    1 nil
    (lambda ()
      (setq file-name-handler-alist default-file-name-handler-alist
-           gc-cons-threshold 50000000
-           read-process-output-max (* 1024 1024)
-           gc-cons-percentage 0.2)
+           gc-cons-threshold  (* 16 1024 1024)  ;; 16MB (Doom use)
+           read-process-output-max (* 1024 1024) ;; 1MB for LSP
+           gc-cons-percentage 0.1)
      (message "gc-cons-threshold & file-name-handler-alist restored")
      (when (boundp 'after-focus-change-function)
        (add-function :after after-focus-change-function #'+nemaks/gc-after-focus-change))
@@ -3002,13 +3002,15 @@ https://www.flycheck.org/en/latest/
 #+begin_src emacs-lisp
 (use-package flycheck
   :ensure t
-  :after (general)
   :diminish
+  :after (general)
   :init
   (global-flycheck-mode)
   :commands (flycheck-mode)
   ;; :hook (lsp-mode . flycheck-mode)
+
   :custom
+  (flycheck-check-syntax-automatically '(save mode-enabled))  ;; Not at each stroke.
   (flycheck-emacs-lisp-load-path 'inherit "necessary with alternatives to package.el")
   (flycheck-display-error-delay .3)
   :general
