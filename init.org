@@ -2583,7 +2583,7 @@ Useful when inserting code block into org files
   (global-treesit-auto-mode))
 
 #+end_src
-**** WIP LSP
+**** LSP
 
 Let's setup the famous `lsp-mode`
 
@@ -2636,6 +2636,30 @@ Let's setup the famous `lsp-mode`
   :config
   (lsp-headerline-breadcrumb-mode)
 )
+
+;; Register makefile.
+(with-eval-after-load 'lsp-mode
+  (add-to-list 'lsp-language-id-configuration '(makefile-mode . "makefile"))
+  (add-to-list 'lsp-language-id-configuration '(makefile-gmake-mode . "makefile"))
+
+  ;; Setup autotool for makefile.
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection "autotools-language-server")
+    :activation-fn (lsp-activate-on "makefile")
+    :major-modes '(makefile-mode makefile-gmake-mode makefile-automake-mode)
+    :server-id 'autotools-ls))
+
+  ;; ;; Setup makels for makefile.
+  ;; (lsp-register-client
+  ;;  (make-lsp-client
+  ;;   :new-connection (lsp-stdio-connection "makels")
+  ;;   :activation-fn (lsp-activate-on "makefile")
+  ;;   :major-modes '(makefile-mode makefile-gmake-mode)
+  ;;   :priority 0
+  ;;   :server-id 'makels))
+  )
+
 #+end_src
 
 ***** lsp-ui
