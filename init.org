@@ -22,18 +22,18 @@ Thanks
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
-** TODO v1 [11/15] [73%]
+** TODO v1 [12/15] [80%]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
-*** DONE claude-el
+*** TODO drop neotree in favor of treemacs (reduce deps)
 *** WIP LSP
 
 *** WIP keybinding
 - [ ] migrate global-set-key to :map
 - [ ] migrate from :map to :general (+ which key)
-*** IDEA treesitter (another attempt)
-*** TODO drop neotree in favor of treemacs (reduce deps)
+*** DONE claude-el
+*** DONE treesitter (another attempt)
 *** DONE early init
 *** DONE elpa management
 *** DONE key describe (helpful)
@@ -86,7 +86,6 @@ Multiple emacs version may coexist, thanks to [[ttps://github.com/plexus/chemacs
   $ emacs --with-profile default
 #+END_EXAMPLE
 
-
 **  misc
 
 *** build emacs 29
@@ -124,7 +123,6 @@ Quick helper
   $ make -k -j4
   $ sudo make install
 #+END_EXAMPLE
-
 
 
 *** flycheck-golangci-lint patch 
@@ -687,14 +685,6 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     "t tl" '(load-theme :wk "Load theme")
     "t tn" '((lambda () (interactive) (load-theme 'doom-one t)) :wk "Load night theme")
     "t td" '((lambda () (interactive) (load-theme 'doom-one-light t)) :wk "Toggle day theme")
-    )
-
-  ;; tabs 
-  (nemaks/leader-keys
-    "T" '(:ignore t :wk "tabs")
-    ;; "T n" '(load-theme :wk "Load theme")
-    ;; "T n" '((lambda () (interactive) (load-theme 'doom-one t)) :wk "Load night theme")
-    ;; "T d" '((lambda () (interactive) (load-theme 'doom-one-light t)) :wk "Toggle day theme")
     )
 
   ;; Windows
