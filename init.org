@@ -22,16 +22,15 @@ Thanks
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
-** TODO v1 [12/15] [80%]
+** TODO v1 [13/15] [86%]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
 *** TODO drop neotree in favor of treemacs (reduce deps)
-*** WIP LSP
-
 *** WIP keybinding
 - [ ] migrate global-set-key to :map
 - [ ] migrate from :map to :general (+ which key)
+*** DONE LSP
 *** DONE claude-el
 *** DONE treesitter (another attempt)
 *** DONE early init
@@ -144,7 +143,7 @@ Quick helper
 
 #+end_src
 
-* TODO the config [0/17]
+* TODO the config [0/7]
 :PROPERTIES:
 :COOKIE_DATA: todo recursive
 :END:
@@ -399,7 +398,7 @@ But when capturing, I subsequently open smaller frames that shouldn’t be odd l
 ;;; early-init.el ends here
 #+END_SRC
 
-** TODO config [0/16]
+** TODO config [0/6]
 *** init.el header
 
 #+begin_src emacs-lisp
@@ -673,12 +672,15 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
   (nemaks/leader-keys
     "t" '(:ignore t :wk "Toggle")
     "t e" '(flycheck-list-errors :wk "Toggle errors list")
-    ;; "t e" '(lsp-treemacs-errors-list :wk "Toggle errors list")
-    "t L" '(display-fill-column-indicator-mode :wk "Toggle long lines visual limit")
-    "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
+    
+    "t l" '(:ignore t :wk "Toggle line stuffs")
+    "t ll" '(display-fill-column-indicator-mode :wk "Toggle long lines visual limit")
+    "t lh" '(column-enforce-mode :wk "Toggle highligth long lines")
+    "t ln" '(display-line-numbers-mode :wk "Toggle line numbers")
+    "t lt" '(visual-line-mode :wk "Toggle truncated lines")
+
     "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
     ;; "t s" '(nemaks/flyspell-toggle t :wk "Toggle spell check")
-    "t T" '(visual-line-mode :wk "Toggle truncated lines")
 
     ;; Theming sub-category.
     "t t" '(:ignore t :wk "Theme")
@@ -1149,13 +1151,14 @@ We're asking emacs to render symbol w/ apple ttf emoji.
 Native to emacs 27.1+. Set indicator to 80 columns.
 
 #+BEGIN_SRC emacs-lisp
-;; set 100 col indicator
+;; set 80 col indicator
 (setq
  display-fill-column-indicator-column 80
  fill-column 80)
 
 ;; selectivly enable visual column limit for some mode.
 (dolist (mode '(org-mode-hook
+                git-commit-mode
                 prog-mode-hook))
   (add-hook mode
             (lambda ()
