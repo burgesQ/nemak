@@ -75,25 +75,25 @@ $ emacsclient -nc
 
 Multiple emacs version may coexist, thanks to [[ttps://github.com/plexus/chemacs2.git][chemacs2]] -
 
-#+BEGIN_EXAMPLE console
-  $ git clone https://github.com/plexus/chemacs2.git ~/.emacs.d
-  (...)
-  $ cat .emacs-profiles.el
-  (("default"   . ((user-emacs-directory . "~/.emacs.legacy")))
-   ("legacy" . ((user-emacs-directory . "~/repo/perso/doomeacs")))
-   ("spacemacs"   . ((user-emacs-directory . "~/repo/perso/spacemacs"))))
-  $ emacs --with-profile default
+#+BEGIN_EXAMPLE shell
+$ git clone https://github.com/plexus/chemacs2.git ~/.emacs.d
+(...)
+$ cat .emacs-profiles.el
+(("default"   . ((user-emacs-directory . "~/.emacs.legacy")))
+ ("legacy" . ((user-emacs-directory . "~/repo/perso/doomeacs")))
+ ("spacemacs"   . ((user-emacs-directory . "~/repo/perso/spacemacs"))))
+$ emacs --with-profile default
 #+END_EXAMPLE
 
 **  misc
 
-*** build emacs 29
+*** build emacs 30.2
 
 Quick helper
 
 #+BEGIN_EXAMPLE console
   $ git clone https://github.com/emacs-mirror/emacs \
-    --branch 29.1 \
+    --branch 30.2 \
     --single-branch \
     --depth 1
   $ cd emacs
@@ -119,7 +119,7 @@ Quick helper
      --with-harfbuzz \
      --without-toolkit-scroll-bars \
      GCC=g++-10 CC=gcc-10
-  $ make -k -j4
+  $ make -k -j$(nproc)
   $ sudo make install
 #+END_EXAMPLE
 
@@ -127,7 +127,6 @@ Quick helper
 *** flycheck-golangci-lint patch 
 
 #+begin_src diff
-
 # emacs.d/elap/30.2/flycheck-golangci-lint-20251203/flycheck-golangci-lint.el
 
 -
@@ -140,7 +139,6 @@ Quick helper
 -    '("--out-format=checkstyle")))
 +      ;; v1.x or fallback: Use legacy format
 +    ;;'("--out-format=checkstyle")))
-
 #+end_src
 
 * TODO the config [0/7]
@@ -259,9 +257,12 @@ The following is a table shows values from popular Emacs configurations.
    1 nil
    (lambda ()
      (setq file-name-handler-alist default-file-name-handler-alist
-           gc-cons-threshold  (* 16 1024 1024)  ;; 16MB (Doom use)
+           gc-cons-threshold 50000000
+           ;; gc-cons-threshold 100000000
+           ;; gc-cons-threshold  (* 16 1024 1024)  ;; 16MB (Doom use)
            read-process-output-max (* 1024 1024) ;; 1MB for LSP
-           gc-cons-percentage 0.1)
+           ;; gc-cons-percentage 0.1
+           gc-cons-percentage 0.2)
      (message "gc-cons-threshold & file-name-handler-alist restored")
      (when (boundp 'after-focus-change-function)
        (add-function :after after-focus-change-function #'+nemaks/gc-after-focus-change))
@@ -638,7 +639,9 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
     "h" '(:ignore t :wk "Help"))
 
   ;; lsp
-  (nemaks/leader-keys lsp-mode
+  (nemaks/leader-keys 
+    :major-modes '(lsp-mode)
+    :keymap '(lsp-mode-map)
     "l" '(:ignore t :wk "LSP"))
 
   ;; Major mode
@@ -650,15 +653,19 @@ See the [[https://github.com/noctuid/general.el][repo]] for more info.
   (nemaks/leader-keys
     :major-modes '(org-mode)
     :keymap '(org-mode-map)
-    "m" '(:ignore t :wk "Org mode")
-    )
+    "m" '(:ignore t :wk "Org mode"))
 
   ;; While go is the major mode
   (nemaks/leader-keys ;; go-mode
     :major-modes '(go-mode)
     :keymap '(go-mode-map)
-    "m" '(:ignore t :wk "Go mode")
-    )
+    "m" '(:ignore t :wk "Go mode"))
+  
+  ;; While python is the major mode
+  (nemaks/leader-keys ;; python-mode
+    :major-modes '(python-mode)
+    :keymap '(python-mode-map)
+    "m" '(:ignore t :wk "Python mode"))
 
   ;; Spelling
   ;; namespace mostly used by 'flyspell'
