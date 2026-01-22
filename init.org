@@ -2981,14 +2981,55 @@ Nice package for systemd file editing. See the official [[https://elpa.gnu.org/p
 ****** python mod
 
 #+begin_src emacs-lisp
-;; Python
+;; Python Ruff + Pyright
 (use-package python-mode
-  :ensure nil  ;; Built-in
+  :ensure nil ;; Built-in.
+  :after (general)
   :mode ("\\.py\\'" . python-mode)
-  :hook 
-  (python-mode . (lambda ()
-                   (setq-local tab-width 4
-                               python-indent-offset 4))))
+  :hook
+  (python-mode . lsp-deferred)
+  (python-mode . nemaks/python-mode-setup)
+  :config
+  (setq python-indent-offset 4
+        tab-width 4
+        python-shell-interpreter "python3")
+  :general 
+  (nemaks/leader-keys
+    :major-modes '(python-mode python-ts-mode)
+    :keymaps '(python-mode-map)
+    "m f" '(lsp-format-buffer :wk "Format buffer")
+    "m i" '(lsp-organize-imports :wk "Organize imports")
+    "m r" '(lsp-rename :wk "Rename symbol")))
+
+(defun nemaks/python-mode-setup ()
+  "Python setup: format + organize imports on save."
+  (add-hook 'before-save-hook #'lsp-format-buffer nil t)
+  (add-hook 'before-save-hook #'lsp-organize-imports nil t))
+
+(with-eval-after-load 'lsp-mode
+  ;; Ruff LSP (linting + formatting)
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection "ruff-lsp")
+    :activation-fn (lsp-activate-on "python")
+    :server-id 'ruff-lsp
+    :priority 10
+    :add-on? t))
+  
+  ;; Pyright (type checking)
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection '("pyright-langserver" "--stdio"))
+    :activation-fn (lsp-activate-on "python")
+    :server-id 'pyright
+    :priority 5
+    :multi-root t))
+  
+  ;; Config
+  (setq lsp-pyright-auto-import-completions t
+        lsp-pyright-auto-search-paths t
+        lsp-pyright-use-library-code-for-types t))
+
 #+end_src
 
 ****** php mod
