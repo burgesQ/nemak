@@ -2280,23 +2280,25 @@ Let's provide org
 
 #+begin_src emacs-lisp
 (use-package org
-  ;; :ensure (:wait t)
-  ;; :defer t
+  :ensure nil ;; Built-in.
   :demand t
   :after general
   :init
-
   (setq org-use-speed-commands t)
   (nemaks/org-better-stats)
   ;; (nemaks/org-pretty-checkbox) --> handled by org-modern
   (nemaks/org-pretty-bullet)
   (nemaks/org-better-def)
-
-  ;; should disable latext math eval
+  ;; Should disable latext math eval.
   (setq org-use-sub-superscripts '{})
-
-  ;; The following + electric indent to fix code block
+  ;; Fix code block intentation (+ disable electric indent).
   (setq org-edit-src-content-indentation 0)
+
+  :config
+  (setq org-src-fontify-natively t
+        org-src-tab-acts-natively t
+        org-confirm-babel-evaluate nil
+        org-edit-src-content-indentation 0)
 
 
   ;; todo setup
@@ -2305,22 +2307,23 @@ Let's provide org
         '((sequence "IDEA(i)" "TODO(t)" "WIP(w)" "REVIEW(r)"  "|" "DONE(d)" "CANCELED")
           (sequence "TO-READ(r)" "READING(R)" "|" "HAVE-READ(d)")
           (sequence "PROJ(p)" "|" "COMPLETED(c)")))
-  ;;:general
-  ;; (nemaks/leader-keys )
-  :hook
-  ;; (org-mode . olivetti-mode)
-  ;; (org-mode . variable-pitch-mode)
-  (org-mode . visual-line-mode)
-  (org-mode . (lambda () (electric-indent-local-mode -1))) ;; disable electric indentation
 
-  :config
   (set-face-attribute 'org-ellipsis nil :inherit 'default :box nil)
   (add-to-list 'org-latex-packages-alist '("" "braket" t))
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((js . t)
+   '((awk . t)
      (emacs-lisp . t)
-     (awk . t)))
+     (js . t)
+     (shell . t) ))
+
+  :hook
+  ;; (org-mode . olivetti-mode)
+  ;; (org-mode . variable-pitch-mode)
+  (org-mode . visual-line-mode)
+  ;; Disable electric indentation.
+  (org-mode . (lambda () (electric-indent-local-mode -1))) 
+
   :general
   (nemaks/leader-keys org-mode-map
     "m a" '(org-agenda :wk "Org agenda")
@@ -2475,10 +2478,6 @@ Useful when inserting code block into org files
 #+BEGIN_SRC emacs-lisp
 (require 'org-tempo)
 
-(setq org-src-fontify-natively t
-      org-src-tab-acts-natively t
-      org-confirm-babel-evaluate nil
-      org-edit-src-content-indentation 0)
 #+END_SRC
 
 **** org-toc
