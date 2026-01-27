@@ -847,7 +847,6 @@ Which key for helpful emacs
   ;; Hide commands in M-x which don't work in the current mode
   (setq read-extended-command-predicate 
         #'command-completion-default-include-p)
-
 )
 #+end_src
 
@@ -1549,6 +1548,36 @@ Uses position instead of index field."
 
 #+end_src
 
+**** whitespace handling 
+
+We could enforce the cleanup of them on save - but it's messy with team's git.
+Although, now gitlab offer the option to "hide whitespace changes" in merge request views.
+So let's show them:
+
+#+BEGIN_SRC emacs-lisp
+;; Visualy show (red high-lighted) extra whitespace.
+(defun nemaks/show-ghosts ()
+  (setq show-trailing-whitespace t))
+
+(add-hook 'prog-mode-hook
+          'nemaks/show-ghosts)
+(add-hook 'text-mode-hook
+          'nemaks/show-ghosts)
+
+;; Customize & toggle whitespace-mode
+;; Show long lines (red highlighted) at 250 to not conflict
+;; neihter of `column-enforce-mode` and `display-fill-column`.
+(setq whitespace-line-column 250)
+(add-hook 'prog-mode-hook
+          'whitespace-mode)
+
+;; Delete file' trailing whitespace on save.
+(defun nemaks/nuke-trailing-whitespace ()
+  (delete-trailing-whitespace))
+
+(add-hook 'before-save-hook
+          'nemaks/nuke-trailing-whitespace)
+#+END_SRC
 *** completion
 
 Generic auto-complete with boosted Ivy + company.
